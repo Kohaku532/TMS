@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Receipt - Cart</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 40px;
+            background-color: #f9f9f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .receipt-container {
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            padding: 30px;
+            border: 2px solid #333;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .receipt-header {
+            text-align: center;
+            border-bottom: 2px dashed #333;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .receipt-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+
+        .receipt-header p {
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .total-section {
+            text-align: right;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-top: 2px solid #333;
+            padding-top: 15px;
+            margin-top: 10px;
+            color: #000;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .btn-print {
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-print:hover { background: #555; }
+
+        .btn-back {
+            background: #fff;
+            color: #333;
+            border: 2px solid #333;
+            text-decoration: none;
+        }
+
+        .btn-back:hover { background: #f0f0f0; }
+
+        /* Print Mode: စက္ကူပေါ် Print ထုတ်ရင် ခလုတ်တွေကို ဖျောက်ထားမည် */
+        @media print {
+            .action-buttons { display: none; }
+            body { background: #fff; padding: 0; }
+            .receipt-container { border: none; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <h1>RESTAURANT RECEIPT</h1>
+            <div id="receipt-table-num" style="font-size: 1.2rem; font-weight: bold; background: #333; color: #fff; padding: 4px 15px; border-radius: 20px; display: inline-block; margin-top: 10px;">Table: -</div>
+            <p>Thank you for ordering with us!</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="receipt-items">
+                <!-- ဤနေရာတွင် ဂျာဗားစခရစ်က အစားအစာစာရင်းများ လာထည့်ပေးမည် -->
+            </tbody>
+        </table>
+
+        <!-- စုစုပေါင်း ကျသင့်ငွေပြသမည့်နေရာ -->
+        <div class="total-section" id="grand-total">
+            Grand Total: 0 Ks
+        </div>
+
+        <div class="action-buttons">
+            <a href="index.html" class="btn btn-back">Go Back Menu</a>
+            <button class="btn" style="background-color: #28a745; color:#fff; border:none;" onclick="confirmOrderToAdmin()">Confirm Order</button>
+            <button class="btn btn-print" onclick="window.print()">Print Bill</button>
+        </div>
+    </div>
+
+    <script>
+        // LocalStorage မှ Data ပြန်ဆွဲထုတ်ခြင်း
+        const cartItems = JSON.parse(localStorage.getItem('restaurantCart')) || [];
+        const tableNum = localStorage.getItem('selectedTableNumber') || "Unknown Table";
+        
+        const tableBody = document.getElementById('receipt-items');
+        const grandTotalElement = document.getElementById('grand-total');
+        const tableNumElement = document.getElementById('receipt-table-num');
+
+        // စာမျက်နှာစဖွင့်တာနဲ့ ရွေးခဲ့တဲ့ ဝိုင်းနံပါတ်ကို ချက်ချင်းပြသပေးခြင်း
+        tableNumElement.innerText = "📍 " + tableNum;
+
+        let totalBill = 0;
+
+        if (cartItems.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No items ordered yet.</td></tr>`;
+        } else {
+            // တစ်ခုချင်းစီကို Table row အဖြစ် ပြောင်းလဲတွက်ချက်ခြင်း
+            cartItems.forEach((item, idx) => {
+                let itemTotal = item.price * item.qty;
+                totalBill += itemTotal;
+
+                let row = `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${item.name}</td>
+                        <td>${item.price} Ks</td>
+                        <td>${item.qty}</td>
+                        <td>${itemTotal} Ks</td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // စုစုပေါင်း ကျသင့်ငွေကို ပြသပေးခြင်း
+        grandTotalElement.innerText = "Grand Total: " + totalBill + " Ks";
+
+        // မီးဖိုချောင် (Admin) သို့ Order ပေးပို့ခြင်း
+        function confirmOrderToAdmin() {
+            if (cartItems.length === 0) {
+                alert("မှာယူထားသော အစားအစာမရှိသဖြင့် Order အတည်ပြု၍မရနိုင်ပါ။");
+                return;
+            }
+
+            let adminOrdersList = JSON.parse(localStorage.getItem('adminOrdersList')) || [];
+            let newOrder = {
+                table: tableNum,
+                time: new Date().toLocaleTimeString(),
+                items: cartItems,
+                grandTotal: totalBill
+            };
+
+            adminOrdersList.push(newOrder);
+            localStorage.setItem('adminOrdersList', JSON.stringify(adminOrdersList));
+
+            alert("လူကြီးမင်း၏ Order ကို မီးဖိုချောင် (Admin) သို့ ပေးပို့လိုက်ပါပြီ။");
+            
+            // ယခုမှာယူမှု ပြီးဆုံးသွားပြီဖြစ်၍ Cart ရော၊ ရွေးချယ်ခဲ့သည့် ဝိုင်းနံပါတ်ကိုပါ တစ်ခါတည်းဖျက်မည်
+            localStorage.removeItem('restaurantCart');
+            localStorage.removeItem('selectedTableNumber');
+            
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
