@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Incoming Orders</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            padding: 30px;
+            color: #333;
+        }
+
+        .admin-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 2px solid #333;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .admin-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .refresh-btn {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .refresh-btn:hover { background: #555; }
+
+        .order-card {
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+
+        .order-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th { background: #eee; font-weight: bold; }
+
+        .order-total {
+            text-align: right;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .status-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .status-btn:hover { background: #218838; }
+
+        .no-orders {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>👨‍🍳 Admin Order Dashboard</h1>
+            <button class="refresh-btn" onclick="loadAdminOrders()">Refresh Orders</button>
+        </div>
+
+        <!-- မှာယူထားသော အော်ဒါများ ဤနေရာတွင် ပေါ်လာမည် -->
+        <div id="orders-list"></div>
+    </div>
+
+    <script>
+        function loadAdminOrders() {
+            const ordersList = document.getElementById('orders-list');
+            // Customer ဘက်က အတည်ပြုလိုက်တဲ့ အော်ဒါတွေကို ဆွဲယူမယ်
+            const allOrders = JSON.parse(localStorage.getItem('adminOrdersList')) || [];
+
+            ordersList.innerHTML = '';
+
+            if (allOrders.length === 0) {
+                ordersList.innerHTML = '<div class="no-orders">ယခုလောလောဆယ် မည်သည့် Order မှ မရှိသေးပါ။</div>';
+                return;
+            }
+
+            // အော်ဒါတစ်ခုချင်းစီကို ကတ်ပြားပုံစံနဲ့ ထုတ်ပြခြင်း
+            allOrders.forEach((order, index) => {
+                let tableRows = '';
+                order.items.forEach((item, idx) => {
+                    tableRows += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${item.name}</td>
+                            <td>${item.price} Ks</td>
+                            <td>${item.qty}</td>
+                            <td>${item.price * item.qty} Ks</td>
+                        </tr>
+                    `;
+                });
+                let orderCard = `
+                    <div class="order-card" id="order-${index}">
+                        <div style="font-size: 1.4rem; font-weight: bold; background-color: #d1ecf1; color: #0c5460; padding: 8px 15px; border-radius: 6px; display: inline-block; margin-bottom: 15px; border: 1px solid #bee5eb;">
+                            📍 Table ${order.table}
+                        </div>
+                        <div class="order-title">
+                            <span>📦 Order #${index + 1}</span>
+                            <span style="font-size: 0.9rem; color: #666;">${order.time}</span>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Item</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                        <div class="order-total">Total Cost: ${order.grandTotal} Ks</div>
+                        <button class="status-btn" onclick="completeOrder(${index})">Done / Cooked</button>
+                    </div>
+                `;
+                ordersList.innerHTML += orderCard;
+            });
+        }
+
+        // အော်ဒါ လုပ်ဆောင်ပြီးသွားရင် ဖြုတ်ပစ်မည့် လုပ်ဆောင်ချက်
+        function completeOrder(index) {
+            let allOrders = JSON.parse(localStorage.getItem('adminOrdersList')) || [];
+            allOrders.splice(index, 1); // ပြီးသွားတဲ့ အော်ဒါကို စာရင်းထဲက ဖြတ်ထုတ်မယ်
+            localStorage.setItem('adminOrdersList', JSON.stringify(allOrders));
+            loadAdminOrders(); // စာမျက်နှာကို Update ပြန်လုပ်မယ်
+        }
+
+        // စာမျက်နှာ စဖွင့်တာနဲ့ အော်ဒါတွေကို ဆွဲတင်မယ်
+        loadAdminOrders();
+
+        // ၅ စက္ကန့်တိုင်း အော်ဒါအသစ် တက်မတက် အလိုအလျောက် စစ်ဆေးပေးမည့် စနစ်
+        setInterval(loadAdminOrders, 5000);
+    </script>
+</body>
+</html>
