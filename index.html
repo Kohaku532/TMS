@@ -38,11 +38,16 @@
             font-weight: bold;
         }
         .menu-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
             max-width: 600px;
             margin: 0 auto;
+        }
+        /* Category ခေါင်းစဉ်များ */
+        .category-title {
+            font-size: 18px;
+            color: #2f3542;
+            margin: 20px 0 10px 5px;
+            border-left: 4px solid #ff4757;
+            padding-left: 8px;
         }
         .menu-item {
             background: white;
@@ -52,21 +57,37 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 12px;
         }
         .item-info h3 {
-            font-size: 18px;
+            font-size: 16px;
             color: #2f3542;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .item-info p {
-            color: #747d8c;
+            color: #ff4757;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .order-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        /* Quantity ရွေးချယ်ရန် Box */
+        .qty-input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ced6e0;
+            border-radius: 6px;
             font-size: 14px;
         }
         .order-btn {
             background: #2ed573;
             color: white;
             border: none;
-            padding: 8px 15px;
+            padding: 7px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
@@ -84,41 +105,15 @@
         <div id="table-badge">Checking Table...</div>
     </header>
 
-    <div class="menu-container">
-        <!-- Menu Item 1 -->
-        <div class="menu-item">
-            <div class="item-info">
-                <h3>Chicken Fried Rice</h3>
-                <p>4,500 MMK</p>
-            </div>
-            <button class="order-btn" onclick="placeOrder('Chicken Fried Rice', 4500)">Order</button>
-        </div>
-
-        <!-- Menu Item 2 -->
-        <div class="menu-item">
-            <div class="item-info">
-                <h3>Special Pork Curry</h3>
-                <p>5,500 MMK</p>
-            </div>
-            <button class="order-btn" onclick="placeOrder('Special Pork Curry', 5500)">Order</button>
-        </div>
-
-        <!-- Menu Item 3 -->
-        <div class="menu-item">
-            <div class="item-info">
-                <h3>Fresh Lemon Juice</h3>
-                <p>2,000 MMK</p>
-            </div>
-            <button class="order-btn" onclick="placeOrder('Fresh Lemon Juice', 2000)">Order</button>
-        </div>
+    <div class="menu-container" id="menuContainer">
+        <!-- Categories များကို JavaScript ဖြင့် အလိုအလျောက် ခွဲခြားဖော်ပြမည် -->
     </div>
 
     <script>
-        // ၁။ URL ထဲက ?table=X ဆိုတဲ့ တန်ဖိုးကို ဖမ်းယူခြင်း
+        // ၁။ URL ထဲက table parameter ကို ဖမ်းယူခြင်း
         const urlParams = new URLSearchParams(window.location.search);
         const tableNumber = urlParams.get('table'); 
 
-        // ၂။ ဖမ်းလို့ရလာတဲ့ Table နံပါတ်ကို Header ပေါ်မှာ ပေါ်လာအောင် လုပ်ခြင်း
         const tableBadge = document.getElementById('table-badge');
         if (tableNumber) {
             tableBadge.innerText = `Table Number: ${tableNumber}`;
@@ -126,24 +121,69 @@
             tableBadge.innerText = `Table Not Specified`;
         }
 
-        // ၃။ Customer က Order နှိပ်တဲ့အခါ ဘယ် Table ကလဲဆိုတာနဲ့ တွဲပြီး လုပ်ဆောင်မယ့် Function
-        function placeOrder(itemName, price) {
-            const currentTable = tableNumber ? tableNumber : "Unknown";
+        // ၂။ Menu ဒေတာများ (Category: Food / Juice, Price များပါဝင်သည်)
+        const menuItems = [
+            { id: 1, name: "Chicken Fried Rice", price: 4500, category: "Food" },
+            { id: 2, name: "Special Pork Curry", price: 5500, category: "Food" },
+            { id: 3, name: "Chicken Cheese Burger", price: 4000, category: "Food" },
+            { id: 4, name: "Fresh Lemon Juice", price: 2000, category: "Juice" },
+            { id: 5, name: "Orange Juice", price: 2500, category: "Juice" },
+            { id: 6, name: "Avocado Smoothie", price: 3000, category: "Juice" }
+        ];
+
+        // ၃. Categories အလိုက် Menu များကို မျက်နှာပြင်ပေါ်သို့ တင်ခြင်း
+        const menuContainer = document.getElementById('menuContainer');
+        
+        // Category များကို ယူရန် (Food, Juice)
+        const categories = [...new Set(menuItems.map(item => item.category))];
+
+        categories.forEach(category => {
+            // Category ခေါင်းစဉ် ဖန်တီးခြင်း
+            const catTitle = document.createElement('div');
+            catTitle.className = 'category-title';
+            catTitle.innerText = category;
+            menuContainer.appendChild(catTitle);
+
+            // သက်ဆိုင်ရာ Category ထဲပါသော Item များကို စစ်ထုတ်ပြီး ဖော်ပြခြင်း
+            const filteredItems = menuItems.filter(item => item.category === category);
             
-            // လက်တလော စမ်းသပ်ကြည့်လို့ရအောင် Alert ပြထားခြင်း
-            alert(`Order Confirmed!\n\nTable: ${currentTable}\nItem: ${itemName}\nPrice: ${price} MMK`);
+            filteredItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'menu-item';
+                itemDiv.innerHTML = `
+                    <div class="item-info">
+                        <h3>${item.name}</h3>
+                        <p>${item.price.toLocaleString()} MMK</p>
+                    </div>
+                    <div class="order-controls">
+                        <input type="number" min="1" value="1" class="qty-input" id="qty-${item.id}">
+                        <button class="order-btn" onclick="placeOrder('${item.name}', ${item.price}, ${item.id})">Order</button>
+                    </div>
+                `;
+                menuContainer.appendChild(itemDiv);
+            });
+        });
+
+        // ၄။ Customer က Quantity ထည့်ပြီး Order နှိပ်သည့်အခါ
+        function placeOrder(itemName, price, itemId) {
+            const currentTable = tableNumber ? tableNumber : "Unknown";
+            const quantity = document.getElementById(`qty-${itemId}`).value;
+            
+            const totalPrice = price * quantity;
+
+            // စမ်းသပ်ရန် Alert ပြခြင်း
+            alert(`Order Confirmed!\n\nTable: ${currentTable}\nItem: ${itemName}\nQuantity: ${quantity}\nTotal Price: ${totalPrice.toLocaleString()} MMK`);
             
             /* 
-              နောင် Backend (Node.js/Database) နဲ့ ချိတ်တဲ့အခါ 
-              ဒီနေရာမှာ fetch() API သုံးပြီး Database ဆီ ပို့ရပါမယ်:
-              
+              Backend (Node.js/Database) သို့ ပို့လိုပါက:
               fetch('http://localhost:3000/api/orders', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ 
                       table_id: currentTable, 
                       item_name: itemName, 
-                      price: price 
+                      quantity: quantity,
+                      total_price: totalPrice 
                   })
               });
             */
