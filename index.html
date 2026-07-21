@@ -15,6 +15,7 @@
             background-color: #f8f9fa;
             color: #333;
             padding: 20px;
+            padding-bottom: 80px;
         }
         header {
             text-align: center;
@@ -41,7 +42,6 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        /* Category ခေါင်းစဉ်များ */
         .category-title {
             font-size: 18px;
             color: #2f3542;
@@ -74,7 +74,6 @@
             align-items: center;
             gap: 10px;
         }
-        /* Quantity ရွေးချယ်ရန် Box */
         .qty-input {
             width: 50px;
             padding: 5px;
@@ -96,6 +95,31 @@
         .order-btn:hover {
             background: #26af5f;
         }
+        /* Cart သို့သွားရန် Floating Button */
+        .view-cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #2f3542;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .view-cart-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -105,8 +129,11 @@
         <div id="table-badge">Checking Table...</div>
     </header>
 
-    <div class="menu-container" id="menuContainer">
-        <!-- Categories များကို JavaScript ဖြင့် အလိုအလျောက် ခွဲခြားဖော်ပြမည် -->
+    <div class="menu-container" id="menuContainer"></div>
+
+    <!-- အောက်ခြေတွင် Cart သို့သွားမည့် Bar -->
+    <div class="view-cart-bar">
+        <button class="view-cart-btn" id="viewCartBtn">View Cart / Order Summary</button>
     </div>
 
     <script>
@@ -121,7 +148,7 @@
             tableBadge.innerText = `Table Not Specified`;
         }
 
-        // ၂။ Menu ဒေတာများ (Category: Food / Juice, Price များပါဝင်သည်)
+        // ၂။ Menu ဒေတာများ
         const menuItems = [
             { id: 1, name: "Chicken Fried Rice", price: 4500, category: "Food" },
             { id: 2, name: "Special Pork Curry", price: 5500, category: "Food" },
@@ -131,20 +158,15 @@
             { id: 6, name: "Avocado Smoothie", price: 3000, category: "Juice" }
         ];
 
-        // ၃. Categories အလိုက် Menu များကို မျက်နှာပြင်ပေါ်သို့ တင်ခြင်း
         const menuContainer = document.getElementById('menuContainer');
-        
-        // Category များကို ယူရန် (Food, Juice)
         const categories = [...new Set(menuItems.map(item => item.category))];
 
         categories.forEach(category => {
-            // Category ခေါင်းစဉ် ဖန်တီးခြင်း
             const catTitle = document.createElement('div');
             catTitle.className = 'category-title';
             catTitle.innerText = category;
             menuContainer.appendChild(catTitle);
 
-            // သက်ဆိုင်ရာ Category ထဲပါသော Item များကို စစ်ထုတ်ပြီး ဖော်ပြခြင်း
             const filteredItems = menuItems.filter(item => item.category === category);
             
             filteredItems.forEach(item => {
@@ -157,37 +179,39 @@
                     </div>
                     <div class="order-controls">
                         <input type="number" min="1" value="1" class="qty-input" id="qty-${item.id}">
-                        <button class="order-btn" onclick="placeOrder('${item.name}', ${item.price}, ${item.id})">Order</button>
+                        <button class="order-btn" onclick="addToCart('${item.name}', ${item.price}, ${item.id})">Add</button>
                     </div>
                 `;
                 menuContainer.appendChild(itemDiv);
             });
         });
 
-        // ၄။ Customer က Quantity ထည့်ပြီး Order နှိပ်သည့်အခါ
-        function placeOrder(itemName, price, itemId) {
-            const currentTable = tableNumber ? tableNumber : "Unknown";
-            const quantity = document.getElementById(`qty-${itemId}`).value;
+        // ၃။ ပစ္စည်းများကို Cart ထဲသို့ ထည့်သွင်းခြင်း (localStorage သုံး၍ သိမ်းမည်)
+        function addToCart(itemName, price, itemId) {
+            const quantity = parseInt(document.getElementById(`qty-${itemId}`).value);
             
-            const totalPrice = price * quantity;
+            // လက်ရှိ cart ဒေတာကို LocalStorage မှ ယူမည် (မရှိသေးရင် array အလွတ်စမည်)
+            let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
 
-            // စမ်းသပ်ရန် Alert ပြခြင်း
-            alert(`Order Confirmed!\n\nTable: ${currentTable}\nItem: ${itemName}\nQuantity: ${quantity}\nTotal Price: ${totalPrice.toLocaleString()} MMK`);
-            
-            /* 
-              Backend (Node.js/Database) သို့ ပို့လိုပါက:
-              fetch('http://localhost:3000/api/orders', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
-                      table_id: currentTable, 
-                      item_name: itemName, 
-                      quantity: quantity,
-                      total_price: totalPrice 
-                  })
-              });
-            */
+            // ပစ္စည်း တူပြီးသား ရှိမရှိ စစ်ဆေးခြင်း
+            let existingItem = cart.find(item => item.name === itemName);
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ name: itemName, price: price, quantity: quantity });
+            }
+
+            // LocalStorage ထဲ ပြန်သိမ်းမည်
+            localStorage.setItem('restaurant_cart', JSON.stringify(cart));
+
+            alert(`${quantity}x ${itemName} added to cart!`);
         }
+
+        // ၄။ Cart စာမျက်နှာ (`cart.html`) သို့ Table နံပါတ်ပါ ပို့ပေးရန်
+        document.getElementById('viewCartBtn').addEventListener('click', function() {
+            const currentTable = tableNumber ? tableNumber : "1";
+            window.location.href = `cart.html?table=${currentTable}`;
+        });
     </script>
 
 </body>
