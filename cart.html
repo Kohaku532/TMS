@@ -4,92 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart - Smart Restaurant</title>
+    <!-- Firebase SDKs ထည့်သွင်းခြင်း -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #f8f9fa;
-            color: #333;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-        h1 {
-            color: #2f3542;
-            font-size: 22px;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-        #cartTableBadge {
-            text-align: center;
-            color: #ff4757;
-            font-weight: bold;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #f1f2f6;
-            font-size: 14px;
-        }
-        th {
-            background-color: #f1f2f6;
-            color: #2f3542;
-        }
-        .total-section {
-            font-size: 18px;
-            font-weight: bold;
-            text-align: right;
-            margin-bottom: 20px;
-            color: #2f3542;
-        }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-        }
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-        .back-btn {
-            background: #dfe4ea;
-            color: #2f3542;
-        }
-        .confirm-btn {
-            background: #2ed573;
-            color: white;
-        }
-        .confirm-btn:hover {
-            background: #26af5f;
-        }
-        .empty-cart {
-            text-align: center;
-            color: #747d8c;
-            padding: 30px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f8f9fa; color: #333; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h1 { color: #2f3542; font-size: 22px; margin-bottom: 5px; text-align: center; }
+        #cartTableBadge { text-align: center; color: #ff4757; font-weight: bold; margin-bottom: 20px; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f2f6; font-size: 14px; }
+        th { background-color: #f1f2f6; color: #2f3542; }
+        .total-section { font-size: 18px; font-weight: bold; text-align: right; margin-bottom: 20px; color: #2f3542; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
+        .back-btn { background: #dfe4ea; color: #2f3542; }
+        .confirm-btn { background: #2ed573; color: white; }
+        .confirm-btn:hover { background: #26af5f; }
+        .empty-cart { text-align: center; color: #747d8c; padding: 30px; }
     </style>
 </head>
 <body>
@@ -98,9 +31,7 @@
         <h1>Your Order Summary</h1>
         <div id="cartTableBadge">Loading Table...</div>
 
-        <div id="cartContent">
-            <!-- Cart ထဲပါသော ပစ္စည်းများကို ဇယားဖြင့် ပြမည် -->
-        </div>
+        <div id="cartContent"></div>
 
         <div id="actionButtons" style="display: none;">
             <div class="total-section" id="totalAmount">Total: 0 MMK</div>
@@ -112,16 +43,24 @@
     </div>
 
     <script>
-        // ၁။ URL ထဲက Table နံပါတ်ကို ဖမ်းယူခြင်း
+        // Firebase Configuration (သင့်ရဲ့ Project အချက်အလက်များဖြင့် အစားထိုးပါ)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const urlParams = new URLSearchParams(window.location.search);
         const tableNumber = urlParams.get('table') || "1";
         
         document.getElementById('cartTableBadge').innerText = `Table Number: ${tableNumber}`;
-
-        // Back link ကို Table နံပါတ်နဲ့တကွ ပြန်ချိတ်ပေးခြင်း
         document.getElementById('backMenuBtn').href = `index.html?table=${tableNumber}`;
 
-        // ၂။ LocalStorage မှ Cart ဒေတာများကို ဖတ်ယူခြင်း
         const cartContent = document.getElementById('cartContent');
         const actionButtons = document.getElementById('actionButtons');
         let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
@@ -133,54 +72,46 @@
                 return;
             }
 
-            let html = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Qty</th>
-                            <th>Price</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
+            let html = `<table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead><tbody>`;
             let grandTotal = 0;
-
-            cart.forEach((item, index) => {
+            cart.forEach((item) => {
                 let subtotal = item.price * item.quantity;
                 grandTotal += subtotal;
-                html += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td>${item.quantity}</td>
-                        <td>${item.price.toLocaleString()}</td>
-                        <td>${subtotal.toLocaleString()} MMK</td>
-                    </tr>
-                `;
+                html += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toLocaleString()}</td><td>${subtotal.toLocaleString()} MMK</td></tr>`;
             });
-
             html += `</tbody></table>`;
             cartContent.innerHTML = html;
-            
             document.getElementById('totalAmount').innerText = `Total: ${grandTotal.toLocaleString()} MMK`;
             actionButtons.style.display = "block";
         }
-
         renderCart();
 
-        // ၃။ Order အတည်ပြုခြင်း (Confirm Order နှိပ်သည့်အခါ)
-        function submitOrder() {
+        // 🌟 Firebase Firestore သို့ အော်ဒါ တင်သွင်းခြင်း
+        async function submitOrder() {
             let grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-            alert(`🎉 Order Successfully Placed!\n\nTable: ${tableNumber}\nTotal Amount: ${grandTotal.toLocaleString()} MMK\n\nကျေးဇူးတင်ပါသည်၊ စားပွဲဝိုင်းသို့ ခဏစောင့်ဆိုင်းပေးပါ။`);
+            let newOrder = {
+                table: tableNumber,
+                items: cart,
+                total: grandTotal,
+                status: "Pending",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
 
-            // Order တင်ပြီးပါက Cart ကို ရှင်းထုတ်မည်
-            localStorage.removeItem('restaurant_cart');
-            
-            // Menu စာမျက်နှာဆီသို့ ပြန်လည် ပို့ဆောင်မည်
-            window.location.href = `index.html?table=${tableNumber}`;
+            try {
+                // Firestore database ထဲရှိ 'orders' collection သို့ အော်ဒါအသစ် ထည့်မည်
+                await db.collection("orders").add(newOrder);
+
+                alert(`🎉 Order Successfully Placed!\n\nTable: ${tableNumber}\nTotal Amount: ${grandTotal.toLocaleString()} MMK\n\nကျေးဇူးတင်ပါသည်၊ စားပွဲဝိုင်းသို့ ခဏစောင့်ဆိုင်းပေးပါ။`);
+
+                // Cart ကို ရှင်းထုတ်ပြီး Menu ဆီ ပြန်ပို့မည်
+                localStorage.removeItem('restaurant_cart');
+                window.location.href = `index.html?table=${tableNumber}`;
+            } catch (error) {
+                console.error("Error adding order: ", error);
+                alert("အော်ဒါတင်ရာတွင် အမှားအယွင်း ရှိသွားပါသည်။ ကျေးဇူးပြု၍ ထပ်ကြိုးစားပါ။");
+            }
         }
     </script>
 
