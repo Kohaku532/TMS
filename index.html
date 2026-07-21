@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+/*<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -339,5 +339,160 @@
             window.location.href = 'cart.html'; 
         }
     </script>
+</body>
+</html>*/
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Restaurant Menu</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            background: #ff4757;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        #table-badge {
+            font-size: 15px;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        .menu-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .menu-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-info h3 {
+            font-size: 18px;
+            color: #2f3542;
+            margin-bottom: 5px;
+        }
+        .item-info p {
+            color: #747d8c;
+            font-size: 14px;
+        }
+        .order-btn {
+            background: #2ed573;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .order-btn:hover {
+            background: #26af5f;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Smart Restaurant Menu</h1>
+        <div id="table-badge">Checking Table...</div>
+    </header>
+
+    <div class="menu-container">
+        <!-- Menu Item 1 -->
+        <div class="menu-item">
+            <div class="item-info">
+                <h3>Chicken Fried Rice</h3>
+                <p>4,500 MMK</p>
+            </div>
+            <button class="order-btn" onclick="placeOrder('Chicken Fried Rice', 4500)">Order</button>
+        </div>
+
+        <!-- Menu Item 2 -->
+        <div class="menu-item">
+            <div class="item-info">
+                <h3>Special Pork Curry</h3>
+                <p>5,500 MMK</p>
+            </div>
+            <button class="order-btn" onclick="placeOrder('Special Pork Curry', 5500)">Order</button>
+        </div>
+
+        <!-- Menu Item 3 -->
+        <div class="menu-item">
+            <div class="item-info">
+                <h3>Fresh Lemon Juice</h3>
+                <p>2,000 MMK</p>
+            </div>
+            <button class="order-btn" onclick="placeOrder('Fresh Lemon Juice', 2000)">Order</button>
+        </div>
+    </div>
+
+    <script>
+        // ၁။ URL ထဲက ?table=X ဆိုတဲ့ တန်ဖိုးကို ဖမ်းယူခြင်း
+        const urlParams = new URLSearchParams(window.location.search);
+        const tableNumber = urlParams.get('table'); 
+
+        // ၂။ ဖမ်းလို့ရလာတဲ့ Table နံပါတ်ကို Header ပေါ်မှာ ပေါ်လာအောင် လုပ်ခြင်း
+        const tableBadge = document.getElementById('table-badge');
+        if (tableNumber) {
+            tableBadge.innerText = `Table Number: ${tableNumber}`;
+        } else {
+            tableBadge.innerText = `Table Not Specified`;
+        }
+
+        // ၃။ Customer က Order နှိပ်တဲ့အခါ ဘယ် Table ကလဲဆိုတာနဲ့ တွဲပြီး လုပ်ဆောင်မယ့် Function
+        function placeOrder(itemName, price) {
+            const currentTable = tableNumber ? tableNumber : "Unknown";
+            
+            // လက်တလော စမ်းသပ်ကြည့်လို့ရအောင် Alert ပြထားခြင်း
+            alert(`Order Confirmed!\n\nTable: ${currentTable}\nItem: ${itemName}\nPrice: ${price} MMK`);
+            
+            /* 
+              နောင် Backend (Node.js/Database) နဲ့ ချိတ်တဲ့အခါ 
+              ဒီနေရာမှာ fetch() API သုံးပြီး Database ဆီ ပို့ရပါမယ်:
+              
+              fetch('http://localhost:3000/api/orders', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                      table_id: currentTable, 
+                      item_name: itemName, 
+                      price: price 
+                  })
+              });
+            */
+        }
+    </script>
+
 </body>
 </html>
