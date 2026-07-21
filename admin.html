@@ -3,198 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Incoming Orders</title>
+    <title>Admin Dashboard - Live Orders</title>
+    <!-- Firebase SDKs ထည့်သွင်းခြင်း -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-
-        body {
-            background-color: #f0f2f5;
-            padding: 30px;
-            color: #333;
-        }
-
-        .admin-container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 2px solid #333;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        .admin-header h1 {
-            font-size: 1.8rem;
-        }
-
-        .refresh-btn {
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .refresh-btn:hover { background: #555; }
-
-        .order-card {
-            border: 2px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            background: #fafafa;
-        }
-
-        .order-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px dashed #ccc;
-            padding-bottom: 5px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th { background: #eee; font-weight: bold; }
-
-        .order-total {
-            text-align: right;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .status-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 6px 15px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .status-btn:hover { background: #218838; }
-
-        .no-orders {
-            text-align: center;
-            padding: 40px;
-            color: #777;
-            font-size: 1.1rem;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; color: #333; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { background: #2f3542; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 22px; margin-bottom: 5px; }
+        p { color: #a4b0be; font-size: 14px; }
+        .orders-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .order-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid #ff4757; animation: fadeIn 0.3s ease; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f2f6; padding-bottom: 10px; margin-bottom: 15px; }
+        .order-title { font-size: 18px; font-weight: bold; color: #2f3542; }
+        .order-time { font-size: 13px; color: #747d8c; background: #f1f2f6; padding: 4px 8px; border-radius: 6px; }
+        .order-items-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .order-items-table th, .order-items-table td { padding: 8px; text-align: left; font-size: 14px; border-bottom: 1px dashed #f1f2f6; }
+        .order-items-table th { color: #747d8c; }
+        .order-footer { display: flex; justify-content: space-between; align-items: center; }
+        .total-price { font-size: 16px; font-weight: bold; color: #ff4757; }
+        .complete-btn { background: #2ed573; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .complete-btn:hover { background: #26af5f; }
+        .no-orders { text-align: center; background: white; padding: 40px; border-radius: 12px; color: #747d8c; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <div class="admin-header">
-            <h1>👨‍🍳 Admin Order Dashboard</h1>
-            <button class="refresh-btn" onclick="loadAdminOrders()">Refresh Orders</button>
-        </div>
+    <div class="container">
+        <header>
+            <h1>Restaurant Admin Dashboard</h1>
+            <p>Firebase Real-time Orders Management</p>
+        </header>
 
-        <!-- မှာယူထားသော အော်ဒါများ ဤနေရာတွင် ပေါ်လာမည် -->
-        <div id="orders-list"></div>
+        <!-- အော်ဒါများ ပေါ်မည့် နေရာ -->
+        <div class="orders-grid" id="ordersContainer">
+            <div class="no-orders">⌛ အော်ဒါအချက်အလက်များကို ချိတ်ဆက်နေပါသည်...</div>
+        </div>
     </div>
 
     <script>
-        function loadAdminOrders() {
-            const ordersList = document.getElementById('orders-list');
-            // Customer ဘက်က အတည်ပြုလိုက်တဲ့ အော်ဒါတွေကို ဆွဲယူမယ်
-            const allOrders = JSON.parse(localStorage.getItem('adminOrdersList')) || [];
+        // Firebase Configuration (သင့်ရဲ့ Project အချက်အလက်များဖြင့် အစားထိုးပါ)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-            ordersList.innerHTML = '';
+        const ordersContainer = document.getElementById('ordersContainer');
 
-            if (allOrders.length === 0) {
-                ordersList.innerHTML = '<div class="no-orders">ယခုလောလောဆယ် မည်သည့် Order မှ မရှိသေးပါ။</div>';
+        // 🌟 Firebase Real-time Listener (Data ပြောင်းလဲမှုရှိတိုင်း အလိုအလျောက် Update လုပ်ပေးမည်)
+        db.collection("orders").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+                ordersContainer.innerHTML = `<div class="no-orders">📭 လက်တလော အော်ဒါအသစ် မရှိသေးပါ။</div>`;
                 return;
             }
 
-            // အော်ဒါတစ်ခုချင်းစီကို ကတ်ပြားပုံစံနဲ့ ထုတ်ပြခြင်း
-            allOrders.forEach((order, index) => {
-                let tableRows = '';
-                order.items.forEach((item, idx) => {
-                    tableRows += `
-                        <tr>
-                            <td>${idx + 1}</td>
-                            <td>${item.name}</td>
-                            <td>${item.price} Ks</td>
-                            <td>${item.qty}</td>
-                            <td>${item.price * item.qty} Ks</td>
-                        </tr>
-                    `;
-                });
-                let orderCard = `
-                    <div class="order-card" id="order-${index}">
-                        <div style="font-size: 1.4rem; font-weight: bold; background-color: #d1ecf1; color: #0c5460; padding: 8px 15px; border-radius: 6px; display: inline-block; margin-bottom: 15px; border: 1px solid #bee5eb;">
-                            📍 Table ${order.table}
+            let html = '';
+            snapshot.forEach((doc) => {
+                let order = doc.data();
+                let docId = doc.id; // Firebase Document ID (အော်ဒါဖျက်ရန် သုံးမည်)
+
+                let itemsHtml = '';
+                if (order.items) {
+                    order.items.forEach(item => {
+                        itemsHtml += `
+                            <tr>
+                                <td>${item.name}</td>
+                                <td>x ${item.quantity}</td>
+                                <td>${(item.price * item.quantity).toLocaleString()} MMK</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                html += `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-title">Table ${order.table}</div>
+                            <div class="order-time">🕒 ${order.timeStr || 'Just now'}</div>
                         </div>
-                        <div class="order-title">
-                            <span>📦 Order #${index + 1}</span>
-                            <span style="font-size: 0.9rem; color: #666;">${order.time}</span>
-                        </div>
-                        <table>
+                        <table class="order-items-table">
                             <thead>
                                 <tr>
-                                    <th>No.</th>
-                                    <th>Item</th>
-                                    <th>Price</th>
+                                    <th>Item Name</th>
                                     <th>Qty</th>
-                                    <th>Total</th>
+                                    <th>Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${tableRows}
+                                ${itemsHtml}
                             </tbody>
                         </table>
-                        <div class="order-total">Total Cost: ${order.grandTotal} Ks</div>
-                        <button class="status-btn" onclick="completeOrder(${index})">Done / Cooked</button>
+                        <div class="order-footer">
+                            <div class="total-price">Total: ${order.total ? order.total.toLocaleString() : 0} MMK</div>
+                            <button class="complete-btn" onclick="completeOrder('${docId}')">Mark as Complete</button>
+                        </div>
                     </div>
                 `;
-                ordersList.innerHTML += orderCard;
             });
+
+            ordersContainer.innerHTML = html;
+        });
+
+        // 🌟 အော်ဒါပြီးပြတ်သွား၍ Database ထဲမှ ဖျောက်ထုတ်ရန် (Complete နှိပ်လျှင်)
+        window.completeOrder = async function(docId) {
+            if (confirm("ဤအော်ဒါကို ပြီးစီးပြီဟု သတ်မှတ်ပြီး ဖျက်မည်မှာ သေချာပါသလား?")) {
+                try {
+                    await db.collection("orders").doc(docId).delete();
+                } catch (error) {
+                    console.error("Error removing order: ", error);
+                    alert("အော်ဒါဖျက်ရာတွင် အမှားအယွင်း ရှိသွားပါသည်။");
+                }
+            }
         }
-
-        // အော်ဒါ လုပ်ဆောင်ပြီးသွားရင် ဖြုတ်ပစ်မည့် လုပ်ဆောင်ချက်
-        function completeOrder(index) {
-            let allOrders = JSON.parse(localStorage.getItem('adminOrdersList')) || [];
-            allOrders.splice(index, 1); // ပြီးသွားတဲ့ အော်ဒါကို စာရင်းထဲက ဖြတ်ထုတ်မယ်
-            localStorage.setItem('adminOrdersList', JSON.stringify(allOrders));
-            loadAdminOrders(); // စာမျက်နှာကို Update ပြန်လုပ်မယ်
-        }
-
-        // စာမျက်နှာ စဖွင့်တာနဲ့ အော်ဒါတွေကို ဆွဲတင်မယ်
-        loadAdminOrders();
-
-        // ၅ စက္ကန့်တိုင်း အော်ဒါအသစ် တက်မတက် အလိုအလျောက် စစ်ဆေးပေးမည့် စနစ်
-        setInterval(loadAdminOrders, 5000);
     </script>
+
 </body>
 </html>
