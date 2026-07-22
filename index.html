@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Restaurant Menu</title>
+    
     <style>
         * {
             box-sizing: border-box;
@@ -95,7 +96,6 @@
         .order-btn:hover {
             background: #26af5f;
         }
-        /* Cart သို့သွားရန် Floating Button */
         .view-cart-bar {
             position: fixed;
             bottom: 0;
@@ -131,10 +131,28 @@
 
     <div class="menu-container" id="menuContainer"></div>
 
-    <!-- အောက်ခြေတွင် Cart သို့သွားမည့် Bar -->
     <div class="view-cart-bar">
         <button class="view-cart-btn" id="viewCartBtn">View Cart / Order Summary</button>
     </div>
+
+    <!-- Firebase SDK Setup (Module Type) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
+            authDomain: "smart-restaurant-85871.firebaseapp.com",
+            projectId: "smart-restaurant-85871",
+            storageBucket: "smart-restaurant-85871.firebasestorage.app",
+            messagingSenderId: "909399970300",
+            appId: "1:909399970300:web:8da6c6522af7b1a6296279",
+            measurementId: "G-2Z502F3XZP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+    </script>
 
     <script>
         // ၁။ URL ထဲက table parameter ကို ဖမ်းယူခြင်း
@@ -186,14 +204,12 @@
             });
         });
 
-        // ၃။ ပစ္စည်းများကို Cart ထဲသို့ ထည့်သွင်းခြင်း (localStorage သုံး၍ သိမ်းမည်)
+        // ၃။ ပစ္စည်းများကို Cart ထဲသို့ ထည့်သွင်းခြင်း
         function addToCart(itemName, price, itemId) {
             const quantity = parseInt(document.getElementById(`qty-${itemId}`).value);
             
-            // လက်ရှိ cart ဒေတာကို LocalStorage မှ ယူမည် (မရှိသေးရင် array အလွတ်စမည်)
             let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
 
-            // ပစ္စည်း တူပြီးသား ရှိမရှိ စစ်ဆေးခြင်း
             let existingItem = cart.find(item => item.name === itemName);
             if (existingItem) {
                 existingItem.quantity += quantity;
@@ -201,13 +217,12 @@
                 cart.push({ name: itemName, price: price, quantity: quantity });
             }
 
-            // LocalStorage ထဲ ပြန်သိမ်းမည်
             localStorage.setItem('restaurant_cart', JSON.stringify(cart));
 
             alert(`${quantity}x ${itemName} added to cart!`);
         }
 
-        // ၄။ Cart စာမျက်နှာ (`cart.html`) သို့ Table နံပါတ်ပါ ပို့ပေးရန်
+        // ၄။ Cart စာမျက်နှာ (`cart.html`) သို့ သွားရန်
         document.getElementById('viewCartBtn').addEventListener('click', function() {
             const currentTable = tableNumber ? tableNumber : "1";
             window.location.href = `cart.html?table=${currentTable}`;
