@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner Dashboard - Sales & Profit Report</title>
+    <title>Owner Dashboard - Sales, Profit & Income Report</title>
     <!-- Firebase SDKs ထည့်သွင်းခြင်း -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -11,6 +11,7 @@
         :root {
             --primary: #ff4757;
             --success: #2ed573;
+            --info: #1e90ff;
             --dark: #2f3542;
             --light: #f1f2f6;
             --bg-color: #f8f9fa;
@@ -21,7 +22,7 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); padding: 25px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
 
         header { 
             background: linear-gradient(135deg, #2f3542, #1e272e); 
@@ -35,8 +36,8 @@
         h1 { font-size: 24px; margin-bottom: 8px; font-weight: 600; }
         header p { color: #a4b0be; font-size: 14px; }
 
-        /* Stats Cards */
-        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        /* Stats Cards (3 Columns) */
+        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .stat-card { 
             background: var(--card-bg); 
             padding: 22px; 
@@ -48,8 +49,9 @@
             border-top: 4px solid var(--primary);
         }
         .stat-card.profit-card { border-top-color: var(--success); }
+        .stat-card.income-card { border-top-color: var(--info); }
         .stat-card span { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-        .stat-card h3 { font-size: 24px; color: var(--dark); font-weight: 700; }
+        .stat-card h3 { font-size: 22px; color: var(--dark); font-weight: 700; }
 
         /* Filter Section */
         .filter-section { 
@@ -100,17 +102,21 @@
     <div class="container">
         <header>
             <h1>Owner Financial Dashboard</h1>
-            <p>Daily Sales & Profit Monitoring System</p>
+            <p>Daily Sales, Profit & Total Income Monitoring System</p>
         </header>
 
-        <!-- 📊 စုစုပေါင်း ရောင်းရငွေနှင့် အမြတ်ငွေ Cards -->
+        <!-- 📊 ဝင်ငွေ၊ အရောင်းနှင့် အမြတ်ငွေ Cards ၃ ခု -->
         <div class="stats-container">
+            <div class="stat-card income-card">
+                <span>စုစုပေါင်း ဝင်ငွေ (Total Income)</span>
+                <h3 id="totalIncome" style="color: var(--info);">0 MMK</h3>
+            </div>
             <div class="stat-card">
-                <span>စုစုပေါင်း ရောင်းရငွေ (Total Sales)</span>
+                <span>ရွေးချယ်ထားသောရက် ရောင်းရငွေ (Daily Sales)</span>
                 <h3 id="selectedSales">0 MMK</h3>
             </div>
             <div class="stat-card profit-card">
-                <span>စုစုပေါင်း အမြတ်ငွေ (Total Profit)</span>
+                <span>ရွေးချယ်ထားသောရက် အမြတ်ငွေ (Daily Profit)</span>
                 <h3 id="selectedProfit" style="color: var(--success);">0 MMK</h3>
             </div>
         </div>
@@ -170,32 +176,41 @@
             tableTitle.innerText = `${selectedDate} ရက်စွဲအတွက် ရောင်းချခဲ့ရသော အော်ဒါများ`;
 
             db.collection("orders").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-                let totalSales = 0;
-                let totalProfit = 0;
+                let overallIncome = 0; // ဒေတာဘေ့စ်ထဲရှိ အော်ဒါအားလုံး၏ စုစုပေါင်းဝင်ငွေ
+                let dailySales = 0;    // ရွေးချယ်ထားသော တစ်နေ့တာ ရောင်းရငွေ
+                let dailyProfit = 0;   // ရွေးချယ်ထားသော တစ်နေ့တာ အမြတ်ငွေ
                 let rowsHtml = '';
                 let count = 0;
 
                 snapshot.forEach((doc) => {
                     let order = doc.data();
+                    let orderTotal = order.total || 0;
+                    let orderProfit = order.profit || 0;
 
+                    // စုစုပေါင်း ဝင်ငွေအတွက် အော်ဒါအားလုံးကို ပေါင်းမည်
+                    overallIncome += orderTotal;
+
+                    // ရွေးချယ်ထားသော ရက်စွဲနှင့် တူညီမှသာ တစ်နေ့တာစာရင်းတွက်မည်
                     if (order.dateStr === selectedDate) {
-                        totalSales += (order.total || 0);
-                        totalProfit += (order.profit || 0);
+                        dailySales += orderTotal;
+                        dailyProfit += orderProfit;
                         count++;
 
                         rowsHtml += `
                             <tr>
                                 <td>Table ${order.table}</td>
                                 <td>${order.timeStr || '-'}</td>
-                                <td><b>${(order.total || 0).toLocaleString()} MMK</b></td>
-                                <td style="color: var(--success); font-weight: bold;">+${(order.profit || 0).toLocaleString()} MMK</td>
+                                <td><b>${orderTotal.toLocaleString()} MMK</b></td>
+                                <td style="color: var(--success); font-weight: bold;">+${orderProfit.toLocaleString()} MMK</td>
                             </tr>
                         `;
                     }
                 });
 
-                document.getElementById('selectedSales').innerText = totalSales.toLocaleString() + " MMK";
-                document.getElementById('selectedProfit').innerText = totalProfit.toLocaleString() + " MMK";
+                // UI ထဲသို့ တန်ဖိုးများ ထည့်သွင်းခြင်း
+                document.getElementById('totalIncome').innerText = overallIncome.toLocaleString() + " MMK";
+                document.getElementById('selectedSales').innerText = dailySales.toLocaleString() + " MMK";
+                document.getElementById('selectedProfit').innerText = dailyProfit.toLocaleString() + " MMK";
 
                 if (count === 0) {
                     reportTableBody.innerHTML = `<tr><td colspan="4" class="no-data">📭 ရွေးချယ်ထားသော ရက်စွဲအတွက် ရောင်းအားစာရင်း မရှိသေးပါ။</td></tr>`;
