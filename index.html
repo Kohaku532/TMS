@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Restaurant Menu</title>
+    <!-- Firebase Compat SDKs (Cart & Owner Page များနှင့် Version တူအောင် ညှိထားပါသည်) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     
     <style>
         * {
@@ -60,6 +63,18 @@
             align-items: center;
             margin-bottom: 12px;
         }
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .item-img {
+            width: 65px;
+            height: 65px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #eee;
+        }
         .item-info h3 {
             font-size: 16px;
             color: #2f3542;
@@ -76,7 +91,7 @@
             gap: 10px;
         }
         .qty-input {
-            width: 50px;
+            width: 45px;
             padding: 5px;
             text-align: center;
             border: 1px solid #ced6e0;
@@ -129,17 +144,16 @@
         <div id="table-badge">Checking Table...</div>
     </header>
 
-    <div class="menu-container" id="menuContainer"></div>
+    <div class="menu-container" id="menuContainer">
+        <p style="text-align: center; color: #777;">Loading Menu Items...</p>
+    </div>
 
     <div class="view-cart-bar">
         <button class="view-cart-btn" id="viewCartBtn">View Cart / Order Summary</button>
     </div>
 
-    <!-- Firebase SDK Setup (Module Type) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-
+    <script>
+        // ၁။ Firebase Configuration Setup
         const firebaseConfig = {
             apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
             authDomain: "smart-restaurant-85871.firebaseapp.com",
@@ -149,13 +163,10 @@
             appId: "1:909399970300:web:8da6c6522af7b1a6296279",
             measurementId: "G-2Z502F3XZP"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-    </script>
-
-    <script>
-        // ၁။ URL ထဲက table parameter ကို ဖမ်းယူခြင်း
+        // ၂။ URL ထဲက table parameter ကို ဖမ်းယူခြင်း
         const urlParams = new URLSearchParams(window.location.search);
         const tableNumber = urlParams.get('table'); 
 
@@ -166,47 +177,62 @@
             tableBadge.innerText = `Table Not Specified`;
         }
 
-        // ၂။ Menu ဒေတာများ
-        const menuItems = [
-            { id: 1, name: "Chicken Fried Rice", price: 4500, category: "Food" },
-            { id: 2, name: "Special Pork Curry", price: 5500, category: "Food" },
-            { id: 3, name: "Chicken Cheese Burger", price: 4000, category: "Food" },
-            { id: 4, name: "Fresh Lemon Juice", price: 2000, category: "Juice" },
-            { id: 5, name: "Orange Juice", price: 2500, category: "Juice" },
-            { id: 6, name: "Avocado Smoothie", price: 3000, category: "Juice" }
-        ];
-
+        // ၃။ Firestore မှ Dynamic Menu Items များကို Category အလိုက် Live ဖတ်ယူခြင်း
         const menuContainer = document.getElementById('menuContainer');
-        const categories = [...new Set(menuItems.map(item => item.category))];
 
-        categories.forEach(category => {
-            const catTitle = document.createElement('div');
-            catTitle.className = 'category-title';
-            catTitle.innerText = category;
-            menuContainer.appendChild(catTitle);
+        db.collection("menu").onSnapshot(snapshot => {
+            menuContainer.innerHTML = ""; // Container ကို ရှင်းထုတ်မည်
 
-            const filteredItems = menuItems.filter(item => item.category === category);
-            
-            filteredItems.forEach(item => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'menu-item';
-                itemDiv.innerHTML = `
-                    <div class="item-info">
-                        <h3>${item.name}</h3>
-                        <p>${item.price.toLocaleString()} MMK</p>
-                    </div>
-                    <div class="order-controls">
-                        <input type="number" min="1" value="1" class="qty-input" id="qty-${item.id}">
-                        <button class="order-btn" onclick="addToCart('${item.name}', ${item.price}, ${item.id})">Add</button>
-                    </div>
-                `;
-                menuContainer.appendChild(itemDiv);
+            if (snapshot.empty) {
+                menuContainer.innerHTML = `<p style="text-align: center; color: #777;">No menu items available right now.</p>`;
+                return;
+            }
+
+            let menuItems = [];
+            snapshot.forEach(doc => {
+                menuItems.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Unique Categories များကို သီးသန့်ခွဲထုတ်ခြင်း
+            const categories = [...new Set(menuItems.map(item => item.category || 'General'))];
+
+            categories.forEach(category => {
+                // Category Title Heading
+                const catTitle = document.createElement('div');
+                catTitle.className = 'category-title';
+                catTitle.innerText = category;
+                menuContainer.appendChild(catTitle);
+
+                const filteredItems = menuItems.filter(item => (item.category || 'General') === category);
+                
+                filteredItems.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'menu-item';
+                    
+                    const imgUrl = item.image || 'https://via.placeholder.com/65?text=Food';
+
+                    itemDiv.innerHTML = `
+                        <div class="item-left">
+                            <img src="${imgUrl}" class="item-img" alt="${item.name}">
+                            <div class="item-info">
+                                <h3>${item.name}</h3>
+                                <p>${Number(item.price).toLocaleString()} MMK</p>
+                            </div>
+                        </div>
+                        <div class="order-controls">
+                            <input type="number" min="1" value="1" class="qty-input" id="qty-${item.id}">
+                            <button class="order-btn" onclick="addToCart('${item.name}', ${item.price}, '${item.id}')">Add</button>
+                        </div>
+                    `;
+                    menuContainer.appendChild(itemDiv);
+                });
             });
         });
 
-        // ၃။ ပစ္စည်းများကို Cart ထဲသို့ ထည့်သွင်းခြင်း
+        // ၄။ ပစ္စည်းများကို LocalStorage Cart ထဲသို့ ထည့်သွင်းခြင်း
         function addToCart(itemName, price, itemId) {
-            const quantity = parseInt(document.getElementById(`qty-${itemId}`).value);
+            const quantityInput = document.getElementById(`qty-${itemId}`);
+            const quantity = parseInt(quantityInput.value) || 1;
             
             let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
 
@@ -214,15 +240,14 @@
             if (existingItem) {
                 existingItem.quantity += quantity;
             } else {
-                cart.push({ name: itemName, price: price, quantity: quantity });
+                cart.push({ name: itemName, price: Number(price), quantity: quantity });
             }
 
             localStorage.setItem('restaurant_cart', JSON.stringify(cart));
-
-            alert(`${quantity}x ${itemName} added to cart!`);
+            alert(`🎉 ${quantity}x ${itemName} added to cart!`);
         }
 
-        // ၄။ Cart စာမျက်နှာ (`cart.html`) သို့ သွားရန်
+        // ၅။ Cart စာမျက်နှာ (`cart.html`) သို့ သွားရန် Button Listener
         document.getElementById('viewCartBtn').addEventListener('click', function() {
             const currentTable = tableNumber ? tableNumber : "1";
             window.location.href = `cart.html?table=${currentTable}`;
