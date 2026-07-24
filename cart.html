@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart - Smart Restaurant</title>
-    <!-- Firebase SDKs ထည့်သွင်းခြင်း -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <style>
@@ -17,12 +17,43 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f2f6; font-size: 14px; }
         th { background-color: #f1f2f6; color: #2f3542; }
         .total-section { font-size: 18px; font-weight: bold; text-align: right; margin-bottom: 20px; color: #2f3542; }
-        .btn-group { display: flex; gap: 10px; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        .btn-row { display: flex; gap: 10px; }
         .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
         .back-btn { background: #dfe4ea; color: #2f3542; }
-        .confirm-btn { background: #2ed573; color: white; }
+        .pay-btn { background: #1e90ff; color: white; }
+        .pay-btn:hover { background: #0f7ae5; }
+        .confirm-btn { background: #2ed573; color: white; width: 100%; }
         .confirm-btn:hover { background: #26af5f; }
         .empty-cart { text-align: center; color: #747d8c; padding: 30px; }
+
+        /* Payment Modal Styling */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-title { font-size: 18px; margin-bottom: 15px; font-weight: bold; color: #2f3542; }
+        .payment-options { display: flex; gap: 10px; margin-bottom: 15px; }
+        .opt-btn { flex: 1; padding: 10px; border: 2px solid #dfe4ea; border-radius: 8px; cursor: pointer; background: #f1f2f6; font-weight: bold; }
+        .opt-btn.active { border-color: #1e90ff; background: #e8f2ff; color: #1e90ff; }
+        .qr-box { margin: 15px 0; display: none; }
+        .qr-box img { width: 180px; height: 180px; border-radius: 8px; border: 1px solid #ddd; padding: 5px; }
+        .cash-box { margin: 15px 0; padding: 15px; background: #fff3cd; color: #856404; border-radius: 8px; font-weight: bold; display: none; }
+        .close-btn { background: #ff4757; color: white; padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -36,14 +67,42 @@
         <div id="actionButtons" style="display: none;">
             <div class="total-section" id="totalAmount">Total: 0 MMK</div>
             <div class="btn-group">
-                <a href="#" id="backMenuBtn" class="btn back-btn">← Add More Items</a>
-                <button class="btn confirm-btn" onclick="submitOrder()">Confirm Order</button>
+                <button class="btn pay-btn" onclick="openPaymentModal()">💳 Payment Options</button>
+                <div class="btn-row">
+                    <a href="#" id="backMenuBtn" class="btn back-btn">← Add More Items</a>
+                    <button class="btn confirm-btn" onclick="submitOrder()">Confirm Order</button>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Payment Selection Modal -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-title">Select Payment Method</div>
+            <div class="payment-options">
+                <button class="opt-btn" id="btnKPay" onclick="selectPayment('kpay')">K Pay</button>
+                <button class="opt-btn" id="btnCash" onclick="selectPayment('cash')">Cash</button>
+            </div>
+
+            <!-- KBZ Pay QR Display -->
+            <div class="qr-box" id="kpayBox">
+                <p style="font-size: 13px; color: #666; margin-bottom: 8px;">Scan to Pay with K Pay</p>
+                <!-- ⚠️ မိမိတို့၏ KBZ Pay QR Code ပုံ Path သို့မဟုတ် URL ပြောင်းပေးပါ -->
+                <img src="https://via.placeholder.com/180?text=KPay+QR+Code" alt="KPay QR Code">
+            </div>
+
+            <!-- Cash Notice Display -->
+            <div class="cash-box" id="cashBox">
+                📍 Please go to the counter to pay with cash.
+            </div>
+
+            <button class="close-btn" onclick="closePaymentModal()">Close</button>
+        </div>
+    </div>
+
     <script>
-        // Firebase Configuration (သင့်ရဲ့ Project အချက်အလက်များ)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
             authDomain: "smart-restaurant-85871.firebaseapp.com",
@@ -65,6 +124,7 @@
         const cartContent = document.getElementById('cartContent');
         const actionButtons = document.getElementById('actionButtons');
         let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
+        let selectedPaymentMethod = "Cash"; // Default payment method
 
         function renderCart() {
             if (cart.length === 0) {
@@ -87,7 +147,38 @@
         }
         renderCart();
 
-        // 🌟 Firebase Firestore သို့ အော်ဒါ တင်သွင်းခြင်း
+        // Payment Modal Controls
+        function openPaymentModal() {
+            document.getElementById('paymentModal').style.display = 'flex';
+            selectPayment('kpay'); // Default to K Pay when opened
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        function selectPayment(method) {
+            const kpayBox = document.getElementById('kpayBox');
+            const cashBox = document.getElementById('cashBox');
+            const btnKPay = document.getElementById('btnKPay');
+            const btnCash = document.getElementById('btnCash');
+
+            if (method === 'kpay') {
+                kpayBox.style.display = 'block';
+                cashBox.style.display = 'none';
+                btnKPay.classList.add('active');
+                btnCash.classList.remove('active');
+                selectedPaymentMethod = "K Pay";
+            } else {
+                kpayBox.style.display = 'none';
+                cashBox.style.display = 'block';
+                btnCash.classList.add('active');
+                btnKPay.classList.remove('active');
+                selectedPaymentMethod = "Cash";
+            }
+        }
+
+        // Firebase Firestore သို့ အော်ဒါ တင်သွင်းခြင်း
         async function submitOrder() {
             let grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -95,18 +186,17 @@
                 table: tableNumber,
                 items: cart,
                 total: grandTotal,
+                paymentMethod: selectedPaymentMethod,
                 status: "Pending",
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
             try {
-                // Firestore database ထဲရှိ 'orders' collection သို့ အော်ဒါအသစ် ထည့်မည်
                 await db.collection("orders").add(newOrder);
 
-                alert(`🎉 Order Successfully Placed!\n\nTable: ${tableNumber}\nTotal Amount: ${grandTotal.toLocaleString()} MMK\n\nကျေးဇူးတင်ပါသည်၊ စားပွဲဝိုင်းသို့ ခဏစောင့်ဆိုင်းပေးပါ။`);
+                alert(`🎉 Order Successfully Placed!\n\nTable: ${tableNumber}\nPayment: ${selectedPaymentMethod}\nTotal Amount: ${grandTotal.toLocaleString()} MMK\n\nကျေးဇူးတင်ပါသည်၊ စားပွဲဝိုင်းသို့ ခဏစောင့်ဆိုင်းပေးပါ။`);
 
-                // Cart ကို ရှင်းထုတ်ပြီး Menu ဆီ ပြန်ပို့မည်
                 localStorage.removeItem('restaurant_cart');
                 window.location.href = `index.html?table=${tableNumber}`;
             } catch (error) {
