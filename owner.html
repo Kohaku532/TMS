@@ -14,31 +14,24 @@
         .dashboard { max-width: 850px; margin: 0 auto; }
         header { background: #2f3542; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
         
-        /* Sales Summary Box */
         .revenue-card { background: #2ed573; color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .revenue-card h2 { font-size: 32px; margin-top: 5px; }
         .date-picker-box { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .date-picker-box input { padding: 6px 10px; border-radius: 6px; border: none; outline: none; font-weight: bold; color: #2f3542; }
 
-        /* Section Box Style */
         .section-box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .section-title { font-size: 18px; color: #2f3542; margin-bottom: 15px; border-bottom: 2px solid #f1f2f6; padding-bottom: 8px; }
 
-        /* Menu Add Form */
         .add-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
         .add-form input { flex: 1; min-width: 140px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none; }
         .btn-add { background: #1e90ff; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .btn-add:hover { background: #0f7ae5; }
 
-        /* Menu List Table */
         .menu-table { width: 100%; border-collapse: collapse; }
         .menu-table th, .menu-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
         .menu-table th { background: #f8f9fa; color: #2f3542; }
         .item-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
         .btn-delete { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .btn-delete:hover { background: #e84118; }
 
-        /* Order Card */
         .order-card { background: #f8f9fa; border: 1px solid #eccc68; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
         .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; font-weight: bold; }
         .order-items { margin-bottom: 10px; font-size: 14px; color: #57606f; }
@@ -54,7 +47,6 @@
         <h1>Owner Dashboard</h1>
     </header>
 
-    <!-- ရက်စွဲအလိုက် ဝင်ငွေ စစ်ဆေးသည့် ကတ် -->
     <div class="revenue-card">
         <small>Total Sales Revenue</small>
         <h2 id="selectedSales">0 MMK</h2>
@@ -64,19 +56,16 @@
         </div>
     </div>
 
-    <!-- 1. Menu Management Section (ပုံပါ ထည့်ရန်) -->
+    <!-- 1. Menu Management -->
     <div class="section-box">
         <h2 class="section-title">🍔 Manage Menu Items</h2>
-        
-        <!-- Add Item Form -->
         <form class="add-form" onsubmit="addMenuItem(event)">
             <input type="text" id="itemName" placeholder="Item Name (e.g. Fried Rice)" required>
             <input type="number" id="itemPrice" placeholder="Price (MMK)" required min="0">
-            <input type="url" id="itemImage" placeholder="Image URL (e.g. https://...)" required>
+            <input type="url" id="itemImage" placeholder="Image URL (https://...)" required>
             <button type="submit" class="btn-add">+ Add Item</button>
         </form>
 
-        <!-- Menu Table -->
         <table class="menu-table">
             <thead>
                 <tr>
@@ -92,7 +81,7 @@
         </table>
     </div>
 
-    <!-- 2. Recent Orders Section -->
+    <!-- 2. Customer Orders -->
     <div class="section-box">
         <h2 class="section-title">🛒 Customer Orders (<span id="displayDateLabel">Today</span>)</h2>
         <div id="ordersContainer">
@@ -102,7 +91,6 @@
 </div>
 
 <script>
-    // Firebase Setup
     const firebaseConfig = {
         apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
         authDomain: "smart-restaurant-85871.firebaseapp.com",
@@ -120,21 +108,17 @@
     const salesDateInput = document.getElementById('salesDate');
     const displayDateLabel = document.getElementById('displayDateLabel');
 
-    let allOrders = []; // Filter လုပ်ရလွယ်အောင် Order များကို သိမ်းထားမည့် Array
+    let allOrders = [];
 
-    // ဒီနေ့ ရက်စွဲကို Input မှာ Default ထည့်ပေးခြင်း (YYYY-MM-DD)
+    // Set default date to Today
     const today = new Date();
     salesDateInput.value = today.toISOString().split('T')[0];
 
-    // ==========================================
-    // 🍔 MENU MANAGEMENT (WITH IMAGE URL)
-    // ==========================================
-
-    // ၁။ Menu Items ဖတ်ပြခြင်း
+    // Read Menu Items
     db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
         menuContainer.innerHTML = "";
         if (snapshot.empty) {
-            menuContainer.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">No menu items found. Add your first item above!</td></tr>`;
+            menuContainer.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">No menu items found.</td></tr>`;
             return;
         }
 
@@ -154,64 +138,43 @@
         });
     });
 
-    // ၂။ Menu Item အသစ်ထည့်ခြင်း (Image URL ပါဝင်သည်)
+    // Add New Menu Item
     async function addMenuItem(event) {
         event.preventDefault();
         const nameInput = document.getElementById('itemName');
         const priceInput = document.getElementById('itemPrice');
         const imageInput = document.getElementById('itemImage');
 
-        const name = nameInput.value.trim();
-        const price = Number(priceInput.value);
-        const image = imageInput.value.trim();
-
-        if (!name || isNaN(price)) return;
-
         try {
             await db.collection("menu").add({
-                name: name,
-                price: price,
-                image: image,
+                name: nameInput.value.trim(),
+                price: Number(priceInput.value),
+                image: imageInput.value.trim(),
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            nameInput.value = "";
-            priceInput.value = "";
-            imageInput.value = "";
+            nameInput.value = ""; priceInput.value = ""; imageInput.value = "";
         } catch (error) {
             console.error("Error adding item: ", error);
-            alert("မေနူးထည့်သွင်းရာတွင် အမှားအယွင်းရှိသွားပါသည်။");
         }
     }
 
-    // ၃။ Menu Item ဖျက်ခြင်း
+    // Delete Menu Item
     async function deleteMenuItem(docId) {
         if (confirm("ဒီ Item ကို တကယ်ဖျက်မှာ သေချာပါသလား?")) {
-            try {
-                await db.collection("menu").doc(docId).delete();
-            } catch (error) {
-                console.error("Error deleting item: ", error);
-            }
+            await db.collection("menu").doc(docId).delete();
         }
     }
 
-
-    // ==========================================
-    // 📅 DATE-WISE SALES & ORDERS FILTERING
-    // ==========================================
-
-    // Real-Time Orders Fetching
+    // Read Orders & Filter by Date
     db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         allOrders = [];
-        snapshot.forEach(doc => {
-            allOrders.push(doc.data());
-        });
-        filterSalesByDate(); // Firestore မှ Data ရောက်တိုင်း Filter ပြန်လုပ်မည်
+        snapshot.forEach(doc => allOrders.push(doc.data()));
+        filterSalesByDate();
     });
 
-    // ရက်စွဲအလိုက် Filter လုပ်သည့် Function
     function filterSalesByDate() {
-        const selectedDateStr = salesDateInput.value; // "YYYY-MM-DD"
+        const selectedDateStr = salesDateInput.value;
         if (!selectedDateStr) return;
 
         let totalRevenue = 0;
@@ -221,46 +184,35 @@
         const filteredOrders = allOrders.filter(order => {
             const createdAt = order.timestamp || order.createdAt;
             if (createdAt && typeof createdAt.toDate === 'function') {
-                const dateObj = createdAt.toDate();
-                // ISO Date string မှ YYYY-MM-DD ယူခြင်း
-                const orderDateStr = dateObj.toLocaleDateString('sv-SE'); // Returns YYYY-MM-DD format
-                return orderDateStr === selectedDateStr;
+                return createdAt.toDate().toLocaleDateString('sv-SE') === selectedDateStr;
             }
             return false;
         });
 
         if (filteredOrders.length === 0) {
-            ordersContainer.innerHTML = `<p style='text-align:center; color: #777;'>No orders on ${selectedDateStr}.</p>`;
+            ordersContainer.innerHTML = `<p style='text-align:center; color: #777;'>No orders found on ${selectedDateStr}.</p>`;
             selectedSalesElement.innerText = "0 MMK";
             return;
         }
 
         filteredOrders.forEach(order => {
-            const orderTotal = Number(order.total || order.totalAmount || 0);
-            const tableNum = order.table || order.tableNumber || 'N/A';
+            const orderTotal = Number(order.total || 0);
             const createdAt = order.timestamp || order.createdAt;
-            
-            let orderTime = order.timeStr || "";
-            if (createdAt && typeof createdAt.toDate === 'function') {
-                orderTime = createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
+            let orderTime = (createdAt && typeof createdAt.toDate === 'function') ? createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
 
             totalRevenue += orderTotal;
 
-            let itemsText = "";
-            if (order.items && Array.isArray(order.items)) {
-                itemsText = order.items.map(i => `${i.name} (x${i.quantity})`).join(", ");
-            }
+            let itemsText = (order.items && Array.isArray(order.items)) 
+                ? order.items.map(i => `${i.name} (x${i.quantity})`).join(", ") 
+                : "";
 
             ordersContainer.innerHTML += `
                 <div class="order-card">
                     <div class="order-header">
-                        <span>Table ${tableNum} <span class="payment-badge">${order.paymentMethod || 'Cash'}</span></span>
+                        <span>Table ${order.table || 'N/A'} <span class="payment-badge">${order.paymentMethod || 'Cash'}</span></span>
                         <span class="status-badge">${orderTime}</span>
                     </div>
-                    <div class="order-items">
-                        <strong>Items:</strong> ${itemsText || 'No items listed'}
-                    </div>
+                    <div class="order-items"><strong>Items:</strong> ${itemsText}</div>
                     <div class="order-footer">
                         <span>Total Amount:</span>
                         <span>${orderTotal.toLocaleString()} MMK</span>
