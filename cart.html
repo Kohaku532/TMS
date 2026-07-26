@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #f8f9fa; color: #333; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         h1 { color: #2f3542; font-size: 22px; margin-bottom: 5px; text-align: center; }
@@ -22,31 +22,12 @@
         .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
         .back-btn { background: #dfe4ea; color: #2f3542; }
         .pay-btn { background: #1e90ff; color: white; }
-        .pay-btn:hover { background: #0f7ae5; }
         .confirm-btn { background: #2ed573; color: white; width: 100%; }
-        .confirm-btn:hover { background: #26af5f; }
         .empty-cart { text-align: center; color: #747d8c; padding: 30px; }
 
-        /* Payment Modal Styling */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .modal-title { font-size: 18px; margin-bottom: 15px; font-weight: bold; color: #2f3542; }
+        /* Payment Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
         .payment-options { display: flex; gap: 10px; margin-bottom: 15px; }
         .opt-btn { flex: 1; padding: 10px; border: 2px solid #dfe4ea; border-radius: 8px; cursor: pointer; background: #f1f2f6; font-weight: bold; }
         .opt-btn.active { border-color: #1e90ff; background: #e8f2ff; color: #1e90ff; }
@@ -67,7 +48,7 @@
         <div id="actionButtons" style="display: none;">
             <div class="total-section" id="totalAmount">Total: 0 MMK</div>
             <div class="btn-group">
-                <button class="btn pay-btn" onclick="openPaymentModal()">💳 Payment Options</button>
+                <button class="btn pay-btn" onclick="openPaymentModal()">💳 Payment Options (<span id="payMethodLabel">K Pay</span>)</button>
                 <div class="btn-row">
                     <a href="#" id="backMenuBtn" class="btn back-btn">← Add More Items</a>
                     <button class="btn confirm-btn" onclick="submitOrder()">Confirm Order</button>
@@ -76,41 +57,36 @@
         </div>
     </div>
 
-    <!-- Payment Selection Modal -->
+    <!-- Payment Modal -->
     <div class="modal-overlay" id="paymentModal">
         <div class="modal-content">
-            <div class="modal-title">Select Payment Method</div>
+            <h3 style="margin-bottom: 15px;">Select Payment Method</h3>
             <div class="payment-options">
-                <button class="opt-btn" id="btnKPay" onclick="selectPayment('kpay')">K Pay</button>
+                <button class="opt-btn active" id="btnKPay" onclick="selectPayment('kpay')">K Pay</button>
                 <button class="opt-btn" id="btnCash" onclick="selectPayment('cash')">Cash</button>
             </div>
 
-            <!-- KBZ Pay QR Display -->
             <div class="qr-box" id="kpayBox">
                 <p style="font-size: 13px; color: #666; margin-bottom: 8px;">Scan to Pay with K Pay</p>
-                <!-- ⚠️ မိမိတို့၏ KBZ Pay QR Code ပုံ Path သို့မဟုတ် URL ပြောင်းပေးပါ -->
                 <img src="https://via.placeholder.com/180?text=KPay+QR+Code" alt="KPay QR Code">
             </div>
 
-            <!-- Cash Notice Display -->
             <div class="cash-box" id="cashBox">
-                📍 Please go to the counter to pay with cash.
+                📍 Please pay cash at the counter or to the waiter.
             </div>
 
-            <button class="close-btn" onclick="closePaymentModal()">Close</button>
+            <button class="close-btn" onclick="closePaymentModal()">Done</button>
         </div>
     </div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
             authDomain: "smart-restaurant-85871.firebaseapp.com",
             projectId: "smart-restaurant-85871",
             storageBucket: "smart-restaurant-85871.firebasestorage.app",
             messagingSenderId: "909399970300",
-            appId: "1:909399970300:web:8da6c6522af7b1a6296279",
-            measurementId: "G-2Z502F3XZP"
+            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -124,11 +100,11 @@
         const cartContent = document.getElementById('cartContent');
         const actionButtons = document.getElementById('actionButtons');
         let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
-        let selectedPaymentMethod = "Cash"; // Default payment method
+        let selectedPaymentMethod = "K Pay";
 
         function renderCart() {
             if (cart.length === 0) {
-                cartContent.innerHTML = `<div class="empty-cart">Your cart is currently empty.</div>`;
+                cartContent.innerHTML = `<div class="empty-cart">Your cart is empty.</div>`;
                 actionButtons.style.display = "none";
                 return;
             }
@@ -147,38 +123,26 @@
         }
         renderCart();
 
-        // Payment Modal Controls
-        function openPaymentModal() {
-            document.getElementById('paymentModal').style.display = 'flex';
-            selectPayment('kpay'); // Default to K Pay when opened
-        }
-
-        function closePaymentModal() {
-            document.getElementById('paymentModal').style.display = 'none';
-        }
+        function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; selectPayment('kpay'); }
+        function closePaymentModal() { document.getElementById('paymentModal').style.display = 'none'; }
 
         function selectPayment(method) {
-            const kpayBox = document.getElementById('kpayBox');
-            const cashBox = document.getElementById('cashBox');
-            const btnKPay = document.getElementById('btnKPay');
-            const btnCash = document.getElementById('btnCash');
-
             if (method === 'kpay') {
-                kpayBox.style.display = 'block';
-                cashBox.style.display = 'none';
-                btnKPay.classList.add('active');
-                btnCash.classList.remove('active');
+                document.getElementById('kpayBox').style.display = 'block';
+                document.getElementById('cashBox').style.display = 'none';
+                document.getElementById('btnKPay').classList.add('active');
+                document.getElementById('btnCash').classList.remove('active');
                 selectedPaymentMethod = "K Pay";
             } else {
-                kpayBox.style.display = 'none';
-                cashBox.style.display = 'block';
-                btnCash.classList.add('active');
-                btnKPay.classList.remove('active');
+                document.getElementById('kpayBox').style.display = 'none';
+                document.getElementById('cashBox').style.display = 'block';
+                document.getElementById('btnCash').classList.add('active');
+                document.getElementById('btnKPay').classList.remove('active');
                 selectedPaymentMethod = "Cash";
             }
+            document.getElementById('payMethodLabel').innerText = selectedPaymentMethod;
         }
 
-        // Firebase Firestore သို့ အော်ဒါ တင်သွင်းခြင်း
         async function submitOrder() {
             let grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -188,23 +152,19 @@
                 total: grandTotal,
                 paymentMethod: selectedPaymentMethod,
                 status: "Pending",
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             try {
                 await db.collection("orders").add(newOrder);
-
-                alert(`🎉 Order Successfully Placed!\n\nTable: ${tableNumber}\nPayment: ${selectedPaymentMethod}\nTotal Amount: ${grandTotal.toLocaleString()} MMK\n\nကျေးဇူးတင်ပါသည်၊ စားပွဲဝိုင်းသို့ ခဏစောင့်ဆိုင်းပေးပါ။`);
-
+                alert(`🎉 Order Placed Successfully!\n\nTable: ${tableNumber}\nTotal: ${grandTotal.toLocaleString()} MMK`);
                 localStorage.removeItem('restaurant_cart');
                 window.location.href = `index.html?table=${tableNumber}`;
             } catch (error) {
-                console.error("Error adding order: ", error);
-                alert("အော်ဒါတင်ရာတွင် အမှားအယွင်း ရှိသွားပါသည်။ ကျေးဇူးပြု၍ ထပ်ကြိုးစားပါ။");
+                console.error("Error submitting order: ", error);
+                alert("အော်ဒါတင်ရာတွင် အမှားအယွင်း ရှိသွားပါသည်။ ပြန်လည်ကြိုးစားပါ။");
             }
         }
     </script>
-
 </body>
 </html>
