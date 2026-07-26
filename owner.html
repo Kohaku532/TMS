@@ -35,9 +35,13 @@
         .order-card { background: #f8f9fa; border: 1px solid #eccc68; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
         .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; font-weight: bold; }
         .order-items { margin-bottom: 10px; font-size: 14px; color: #57606f; }
-        .order-footer { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #ff4757; }
-        .status-badge { background: #ffa502; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
-        .payment-badge { background: #70a1ff; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; }
+        .order-footer { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #2f3542; }
+        
+        .time-badge { background: #70a1ff; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+        .payment-badge { background: #ffa502; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; }
+        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; font-weight: bold; }
+        .status-pending { background: #ff7f50; color: white; }
+        .status-finished { background: #2ed573; color: white; }
     </style>
 </head>
 <body>
@@ -81,9 +85,9 @@
         </table>
     </div>
 
-    <!-- 2. Customer Orders -->
+    <!-- 2. Customer Orders History -->
     <div class="section-box">
-        <h2 class="section-title">🛒 Customer Orders (<span id="displayDateLabel">Today</span>)</h2>
+        <h2 class="section-title">🛒 All Orders Record (<span id="displayDateLabel">Today</span>)</h2>
         <div id="ordersContainer">
             <p style="text-align: center; color: #777;">Loading sales data...</p>
         </div>
@@ -114,7 +118,7 @@
     const today = new Date();
     salesDateInput.value = today.toISOString().split('T')[0];
 
-    // Read Menu Items
+    // Read Menu Items Realtime
     db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
         menuContainer.innerHTML = "";
         if (snapshot.empty) {
@@ -166,10 +170,12 @@
         }
     }
 
-    // Read Orders & Filter by Date
+    // Read All Orders Realtime (Includes Finished & Pending Orders)
     db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         allOrders = [];
-        snapshot.forEach(doc => allOrders.push(doc.data()));
+        snapshot.forEach(doc => {
+            allOrders.push(doc.data());
+        });
         filterSalesByDate();
     });
 
@@ -181,6 +187,7 @@
         ordersContainer.innerHTML = "";
         displayDateLabel.innerText = selectedDateStr;
 
+        // Filter orders based on chosen date
         const filteredOrders = allOrders.filter(order => {
             const createdAt = order.timestamp || order.createdAt;
             if (createdAt && typeof createdAt.toDate === 'function') {
@@ -198,29 +205,39 @@
         filteredOrders.forEach(order => {
             const orderTotal = Number(order.total || 0);
             const createdAt = order.timestamp || order.createdAt;
-            let orderTime = (createdAt && typeof createdAt.toDate === 'function') ? createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+            let orderTime = (createdAt && typeof createdAt.toDate === 'function') 
+                ? createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                : "";
 
+            // Always accumulate revenue regardless of status (Finished or Pending)
             totalRevenue += orderTotal;
 
             let itemsText = (order.items && Array.isArray(order.items)) 
                 ? order.items.map(i => `${i.name} (x${i.quantity})`).join(", ") 
                 : "";
 
+            const statusClass = (order.status === 'Finished' || order.status === 'Completed') ? 'status-finished' : 'status-pending';
+            const orderStatus = order.status || 'Pending';
+
             ordersContainer.innerHTML += `
                 <div class="order-card">
                     <div class="order-header">
-                        <span>Table ${order.table || 'N/A'} <span class="payment-badge">${order.paymentMethod || 'Cash'}</span></span>
-                        <span class="status-badge">${orderTime}</span>
+                        <span>Table ${order.table || 'N/A'} 
+                            <span class="payment-badge">${order.paymentMethod || 'Cash'}</span>
+                            <span class="status-badge ${statusClass}">${orderStatus}</span>
+                        </span>
+                        <span class="time-badge">${orderTime}</span>
                     </div>
                     <div class="order-items"><strong>Items:</strong> ${itemsText}</div>
                     <div class="order-footer">
-                        <span>Total Amount:</span>
-                        <span>${orderTotal.toLocaleString()} MMK</span>
+                        <span>Amount:</span>
+                        <span style="color: #2ed573;">${orderTotal.toLocaleString()} MMK</span>
                     </div>
                 </div>
             `;
         });
 
+        // Display Grand Total Revenue for the selected date
         selectedSalesElement.innerText = `${totalRevenue.toLocaleString()} MMK`;
     }
 </script>
