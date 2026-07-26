@@ -3,256 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Restaurant Menu</title>
-    <!-- Firebase Compat SDKs (Cart & Owner Page များနှင့် Version တူအောင် ညှိထားပါသည်) -->
+    <title>Menu - Smart Restaurant</title>
+    <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-    
+
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background-color: #f8f9fa;
-            color: #333;
-            padding: 20px;
-            padding-bottom: 80px;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-            background: #ff4757;
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-        #table-badge {
-            font-size: 15px;
-            background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            display: inline-block;
-            font-weight: bold;
-        }
-        .menu-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .category-title {
-            font-size: 18px;
-            color: #2f3542;
-            margin: 20px 0 10px 5px;
-            border-left: 4px solid #ff4757;
-            padding-left: 8px;
-        }
-        .menu-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .item-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .item-img {
-            width: 65px;
-            height: 65px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #eee;
-        }
-        .item-info h3 {
-            font-size: 16px;
-            color: #2f3542;
-            margin-bottom: 4px;
-        }
-        .item-info p {
-            color: #ff4757;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .order-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .qty-input {
-            width: 45px;
-            padding: 5px;
-            text-align: center;
-            border: 1px solid #ced6e0;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        .order-btn {
-            background: #2ed573;
-            color: white;
-            border: none;
-            padding: 7px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        .order-btn:hover {
-            background: #26af5f;
-        }
-        .view-cart-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #2f3542;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-        .view-cart-btn {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f8f9fa; padding: 15px; padding-bottom: 80px; }
+        .header { background: #2f3542; color: white; text-align: center; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .table-badge { background: #ff4757; color: white; padding: 4px 10px; border-radius: 20px; font-size: 14px; font-weight: bold; }
+        
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .menu-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
+        .menu-card img { width: 100%; height: 120px; object-fit: cover; }
+        .menu-details { padding: 12px; }
+        .menu-title { font-size: 15px; font-weight: bold; color: #2f3542; margin-bottom: 5px; }
+        .menu-price { color: #ff4757; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
+        .add-btn { width: 100%; background: #2ed573; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .add-btn:active { background: #26af5f; }
+
+        /* Floating Cart Bar */
+        .cart-bar { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: #1e90ff; color: white; padding: 12px 20px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); font-weight: bold; text-decoration: none; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Smart Restaurant Menu</h1>
-        <div id="table-badge">Checking Table...</div>
-    </header>
-
-    <div class="menu-container" id="menuContainer">
-        <p style="text-align: center; color: #777;">Loading Menu Items...</p>
+    <div class="header">
+        <h1>Smart Restaurant</h1>
+        <p style="margin-top: 5px;">Table Number: <span id="tableNoBadge" class="table-badge">1</span></p>
     </div>
 
-    <div class="view-cart-bar">
-        <button class="view-cart-btn" id="viewCartBtn">View Cart / Order Summary</button>
+    <!-- Menu Grid Area -->
+    <div class="menu-grid" id="menuGrid">
+        <p style="grid-column: 1/-1; text-align: center; color: #777;">Loading menu items...</p>
     </div>
+
+    <!-- Floating Cart View Button -->
+    <a href="#" id="viewCartBtn" class="cart-bar">
+        <span>🛒 View Cart (<span id="cartCount">0</span>)</span>
+        <span id="cartTotal">0 MMK →</span>
+    </a>
 
     <script>
-        // ၁။ Firebase Configuration Setup
         const firebaseConfig = {
             apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
             authDomain: "smart-restaurant-85871.firebaseapp.com",
             projectId: "smart-restaurant-85871",
             storageBucket: "smart-restaurant-85871.firebasestorage.app",
             messagingSenderId: "909399970300",
-            appId: "1:909399970300:web:8da6c6522af7b1a6296279",
-            measurementId: "G-2Z502F3XZP"
+            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ၂။ URL ထဲက table parameter ကို ဖမ်းယူခြင်း
+        // Get Table Number from URL (e.g. index.html?table=5)
         const urlParams = new URLSearchParams(window.location.search);
-        const tableNumber = urlParams.get('table'); 
+        const tableNumber = urlParams.get('table') || "1";
+        document.getElementById('tableNoBadge').innerText = tableNumber;
+        document.getElementById('viewCartBtn').href = `cart.html?table=${tableNumber}`;
 
-        const tableBadge = document.getElementById('table-badge');
-        if (tableNumber) {
-            tableBadge.innerText = `Table Number: ${tableNumber}`;
-        } else {
-            tableBadge.innerText = `Table Not Specified`;
-        }
+        let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
+        updateCartBar();
 
-        // ၃။ Firestore မှ Dynamic Menu Items များကို Category အလိုက် Live ဖတ်ယူခြင်း
-        const menuContainer = document.getElementById('menuContainer');
-
-        db.collection("menu").onSnapshot(snapshot => {
-            menuContainer.innerHTML = ""; // Container ကို ရှင်းထုတ်မည်
+        // Real-Time Menu Sync from Firestore
+        db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+            const menuGrid = document.getElementById('menuGrid');
+            menuGrid.innerHTML = "";
 
             if (snapshot.empty) {
-                menuContainer.innerHTML = `<p style="text-align: center; color: #777;">No menu items available right now.</p>`;
+                menuGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #777;">No menu items available right now.</p>`;
                 return;
             }
 
-            let menuItems = [];
             snapshot.forEach(doc => {
-                menuItems.push({ id: doc.id, ...doc.data() });
-            });
+                const item = doc.data();
+                const defaultImg = "https://via.placeholder.com/150?text=Food";
 
-            // Unique Categories များကို သီးသန့်ခွဲထုတ်ခြင်း
-            const categories = [...new Set(menuItems.map(item => item.category || 'General'))];
-
-            categories.forEach(category => {
-                // Category Title Heading
-                const catTitle = document.createElement('div');
-                catTitle.className = 'category-title';
-                catTitle.innerText = category;
-                menuContainer.appendChild(catTitle);
-
-                const filteredItems = menuItems.filter(item => (item.category || 'General') === category);
-                
-                filteredItems.forEach(item => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'menu-item';
-                    
-                    const imgUrl = item.image || 'https://via.placeholder.com/65?text=Food';
-
-                    itemDiv.innerHTML = `
-                        <div class="item-left">
-                            <img src="${imgUrl}" class="item-img" alt="${item.name}">
-                            <div class="item-info">
-                                <h3>${item.name}</h3>
-                                <p>${Number(item.price).toLocaleString()} MMK</p>
-                            </div>
+                menuGrid.innerHTML += `
+                    <div class="menu-card">
+                        <img src="${item.image || defaultImg}" alt="${item.name}" onerror="this.src='${defaultImg}'">
+                        <div class="menu-details">
+                            <div class="menu-title">${item.name}</div>
+                            <div class="menu-price">${Number(item.price).toLocaleString()} MMK</div>
+                            <button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">+ Add</button>
                         </div>
-                        <div class="order-controls">
-                            <input type="number" min="1" value="1" class="qty-input" id="qty-${item.id}">
-                            <button class="order-btn" onclick="addToCart('${item.name}', ${item.price}, '${item.id}')">Add</button>
-                        </div>
-                    `;
-                    menuContainer.appendChild(itemDiv);
-                });
+                    </div>
+                `;
             });
         });
 
-        // ၄။ ပစ္စည်းများကို LocalStorage Cart ထဲသို့ ထည့်သွင်းခြင်း
-        function addToCart(itemName, price, itemId) {
-            const quantityInput = document.getElementById(`qty-${itemId}`);
-            const quantity = parseInt(quantityInput.value) || 1;
-            
-            let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
-
-            let existingItem = cart.find(item => item.name === itemName);
-            if (existingItem) {
-                existingItem.quantity += quantity;
+        function addToCart(name, price) {
+            const existingIndex = cart.findIndex(i => i.name === name);
+            if (existingIndex > -1) {
+                cart[existingIndex].quantity += 1;
             } else {
-                cart.push({ name: itemName, price: Number(price), quantity: quantity });
+                cart.push({ name, price, quantity: 1 });
             }
-
             localStorage.setItem('restaurant_cart', JSON.stringify(cart));
-            alert(`🎉 ${quantity}x ${itemName} added to cart!`);
+            updateCartBar();
         }
 
-        // ၅။ Cart စာမျက်နှာ (`cart.html`) သို့ သွားရန် Button Listener
-        document.getElementById('viewCartBtn').addEventListener('click', function() {
-            const currentTable = tableNumber ? tableNumber : "1";
-            window.location.href = `cart.html?table=${currentTable}`;
-        });
-    </script>
+        function updateCartBar() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+            document.getElementById('cartCount').innerText = totalItems;
+            document.getElementById('cartTotal').innerText = `${totalPrice.toLocaleString()} MMK →`;
+        }
+    </script>
 </body>
 </html>
