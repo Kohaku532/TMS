@@ -20,6 +20,7 @@
         .order-items { margin-bottom: 10px; font-size: 14px; color: #57606f; }
         .order-footer { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #ff4757; }
         .status-badge { background: #ffa502; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+        .payment-badge { background: #70a1ff; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -59,12 +60,12 @@
     const ordersContainer = document.getElementById('ordersContainer');
     const todaySalesElement = document.getElementById('todaySales');
 
-    // Firestore မှ Order များနှင့် Sales များကို Real-Time ဖတ်ယူခြင်း
-    db.collection("orders").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    // Firestore မှ Order များနှင့် Sales များကို Real-Time ဖတ်ယူခြင်း (Cart Page ၏ timestamp Field ဖြင့် ချိန်ညှိထားပါသည်)
+    db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         ordersContainer.innerHTML = "";
         let todayTotal = 0;
 
-        // ဒီနေ့ ရက်စွဲကို ယူခြင်း (YYYY-MM-DD)
+        // ဒီနေ့ ရက်စွဲကို ယူခြင်း
         const now = new Date();
         const todayString = now.toDateString(); 
 
@@ -77,18 +78,26 @@
         snapshot.forEach(doc => {
             const order = doc.data();
             
+            // Field Name များကို တူညီအောင် ပြင်ဆင်ယူခြင်း
+            const orderTotal = Number(order.total || order.totalAmount || 0);
+            const tableNum = order.table || order.tableNumber || 'N/A';
+            const createdAt = order.timestamp || order.createdAt;
+
             // Order တင်သည့်အချိန်တွက်ချက်ခြင်း
-            let orderTime = "Just now";
+            let orderTime = order.timeStr || "Just now";
             let orderDateString = "";
-            if (order.createdAt) {
-                const dateObj = order.createdAt.toDate();
+            
+            if (createdAt && typeof createdAt.toDate === 'function') {
+                const dateObj = createdAt.toDate();
                 orderTime = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 orderDateString = dateObj.toDateString();
+            } else {
+                orderDateString = now.toDateString();
             }
 
             // ဒီနေ့ တင်ထားသော Order ဖြစ်ပါက တစ်ရက်စာ ဝင်ငွေထဲ ပေါင်းထည့်မည်
             if (orderDateString === todayString) {
-                todayTotal += Number(order.totalAmount || 0);
+                todayTotal += orderTotal;
             }
 
             // Item စာရင်းများကို Text စာသားအဖြစ် ပြောင်းခြင်း
@@ -101,15 +110,15 @@
             ordersContainer.innerHTML += `
                 <div class="order-card">
                     <div class="order-header">
-                        <span>Table ${order.tableNumber || 'N/A'}</span>
+                        <span>Table ${tableNum} <span class="payment-badge">${order.paymentMethod || 'Cash'}</span></span>
                         <span class="status-badge">${orderTime}</span>
                     </div>
                     <div class="order-items">
-                        <strong>Items:</strong> ${itemsText}
+                        <strong>Items:</strong> ${itemsText || 'No items listed'}
                     </div>
                     <div class="order-footer">
-                        <span>Total:</span>
-                        <span>${Number(order.totalAmount || 0).toLocaleString()} MMK</span>
+                        <span>Total Amount:</span>
+                        <span>${orderTotal.toLocaleString()} MMK</span>
                     </div>
                 </div>
             `;
@@ -119,7 +128,7 @@
         todaySalesElement.innerText = `${todayTotal.toLocaleString()} MMK`;
     }, error => {
         console.error("Firestore Error: ", error);
-        ordersContainer.innerHTML = "<p style='color:red; text-align:center;'>Error loading sales data. Check Database Rules.</p>";
+        ordersContainer.innerHTML = "<p style='color:red; text-align:center;'>Error loading sales data. Check Firestore Database Rules or Index.</p>";
     });
 </script>
 
