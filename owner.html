@@ -9,48 +9,65 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f1f2f6; padding: 20px; }
-        .dashboard { max-width: 850px; margin: 0 auto; }
-        header { background: #2f3542; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f1f2f6; padding: 20px; color: #2f3542; }
+        .dashboard { max-width: 900px; margin: 0 auto; }
+        header { background: #2f3542; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
-        .revenue-card { background: #2ed573; color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .revenue-card h2 { font-size: 32px; margin-top: 5px; }
-        .date-picker-box { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .date-picker-box input { padding: 6px 10px; border-radius: 6px; border: none; outline: none; font-weight: bold; color: #2f3542; }
+        /* Revenue Section */
+        .revenue-card { background: #2ed573; color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; text-align: center; box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3); }
+        .revenue-card h2 { font-size: 36px; margin-top: 8px; font-weight: 700; }
+        .date-picker-box { margin-top: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.2); padding: 8px 15px; border-radius: 8px; width: fit-content; margin-left: auto; margin-right: auto; }
+        .date-picker-box input { padding: 6px 12px; border-radius: 6px; border: none; outline: none; font-weight: bold; color: #2f3542; font-size: 14px; }
 
+        /* General Section Box */
         .section-box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .section-title { font-size: 18px; color: #2f3542; margin-bottom: 15px; border-bottom: 2px solid #f1f2f6; padding-bottom: 8px; }
+        .section-title { font-size: 20px; color: #2f3542; margin-bottom: 15px; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
+        /* Add Menu Form */
         .add-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-        .add-form input { flex: 1; min-width: 140px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none; }
-        .btn-add { background: #1e90ff; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .add-form input { flex: 1; min-width: 140px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; outline: none; font-size: 14px; }
+        .add-form input:focus { border-color: #1e90ff; }
+        .btn-add { background: #1e90ff; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-add:hover { background: #0070e0; }
 
-        .menu-table { width: 100%; border-collapse: collapse; }
-        .menu-table th, .menu-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
-        .menu-table th { background: #f8f9fa; color: #2f3542; }
+        /* Table Styling */
+        .menu-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .menu-table th, .menu-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
+        .menu-table th { background: #f8f9fa; color: #2f3542; font-weight: 600; }
         .item-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
-        .btn-delete { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; }
+        .btn-delete:hover { background: #e84118; }
 
-        .order-card { background: #f8f9fa; border: 1px solid #eccc68; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; font-weight: bold; }
-        .order-items { margin-bottom: 10px; font-size: 14px; color: #57606f; }
-        .order-footer { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #2f3542; }
+        /* Order Cards Styling */
+        .order-card { background: #ffffff; border: 1px solid #e1e8ed; border-left: 5px solid #ffa502; padding: 15px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .order-card.finished { border-left-color: #2ed573; }
+        .order-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f2f6; padding-bottom: 8px; margin-bottom: 10px; font-weight: bold; }
+        .order-items { margin-bottom: 12px; font-size: 14px; color: #57606f; line-height: 1.5; }
+        .order-footer { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #2f3542; border-top: 1px dashed #eee; padding-top: 10px; }
         
-        .time-badge { background: #70a1ff; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
-        .payment-badge { background: #ffa502; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; }
-        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; font-weight: bold; }
+        /* Badges & Action Buttons */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .time-badge { background: #70a1ff; color: white; }
+        .payment-badge { background: #eccc68; color: #2f3542; margin-left: 5px; }
+        .status-badge { margin-left: 5px; }
         .status-pending { background: #ff7f50; color: white; }
         .status-finished { background: #2ed573; color: white; }
+
+        .btn-status { background: #2ed573; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px; }
+        .btn-status:hover { background: #26af5f; }
+        .btn-delete-order { background: #a4b0be; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-delete-order:hover { background: #747d8c; }
     </style>
 </head>
 <body>
 
 <div class="dashboard">
     <header>
-        <h1>Owner Dashboard</h1>
+        <h1>Smart Restaurant - Owner Dashboard</h1>
     </header>
 
+    <!-- Revenue Display Box -->
     <div class="revenue-card">
         <small>Total Sales Revenue</small>
         <h2 id="selectedSales">0 MMK</h2>
@@ -60,7 +77,7 @@
         </div>
     </div>
 
-    <!-- 1. Menu Management -->
+    <!-- 1. Menu Management Section -->
     <div class="section-box">
         <h2 class="section-title">🍔 Manage Menu Items</h2>
         <form class="add-form" onsubmit="addMenuItem(event)">
@@ -85,9 +102,11 @@
         </table>
     </div>
 
-    <!-- 2. Customer Orders History -->
+    <!-- 2. Customer Orders History Section -->
     <div class="section-box">
-        <h2 class="section-title">🛒 All Orders Record (<span id="displayDateLabel">Today</span>)</h2>
+        <h2 class="section-title">
+            🛒 Orders Record (<span id="displayDateLabel">Today</span>)
+        </h2>
         <div id="ordersContainer">
             <p style="text-align: center; color: #777;">Loading sales data...</p>
         </div>
@@ -95,6 +114,7 @@
 </div>
 
 <script>
+    // 1. Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
         authDomain: "smart-restaurant-85871.firebaseapp.com",
@@ -103,9 +123,13 @@
         messagingSenderId: "909399970300",
         appId: "1:909399970300:web:8da6c6522af7b1a6296279"
     };
-    firebase.initializeApp(firebaseConfig);
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.firestore();
 
+    // DOM Elements
     const ordersContainer = document.getElementById('ordersContainer');
     const selectedSalesElement = document.getElementById('selectedSales');
     const menuContainer = document.getElementById('menuContainer');
@@ -114,11 +138,15 @@
 
     let allOrders = [];
 
-    // Set default date to Today
+    // Set default selected date to Today in YYYY-MM-DD
     const today = new Date();
     salesDateInput.value = today.toISOString().split('T')[0];
 
-    // Read Menu Items Realtime
+    // ==========================================
+    // MENU MANAGEMENT (Realtime Read, Add, Delete)
+    // ==========================================
+
+    // Fetch and display menu items
     db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
         menuContainer.innerHTML = "";
         if (snapshot.empty) {
@@ -140,9 +168,11 @@
                 </tr>
             `;
         });
+    }, error => {
+        console.error("Error loading menu: ", error);
     });
 
-    // Add New Menu Item
+    // Add new menu item to Firestore
     async function addMenuItem(event) {
         event.preventDefault();
         const nameInput = document.getElementById('itemName');
@@ -157,28 +187,44 @@
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            nameInput.value = ""; priceInput.value = ""; imageInput.value = "";
+            // Reset Input Fields
+            nameInput.value = ""; 
+            priceInput.value = ""; 
+            imageInput.value = "";
         } catch (error) {
             console.error("Error adding item: ", error);
+            alert("အကြောင်းအရာသစ် ထည့်သွင်းရာတွင် အမှားအယွင်းရှိနေပါသည်။");
         }
     }
 
-    // Delete Menu Item
+    // Delete menu item from Firestore
     async function deleteMenuItem(docId) {
         if (confirm("ဒီ Item ကို တကယ်ဖျက်မှာ သေချာပါသလား?")) {
-            await db.collection("menu").doc(docId).delete();
+            try {
+                await db.collection("menu").doc(docId).delete();
+            } catch (error) {
+                console.error("Error deleting item: ", error);
+            }
         }
     }
 
-    // Read All Orders Realtime (Includes Finished & Pending Orders)
+    // ==========================================
+    // ORDERS & REVENUE MANAGEMENT (Realtime Read)
+    // ==========================================
+
+    // Listen to real-time order updates
     db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         allOrders = [];
         snapshot.forEach(doc => {
-            allOrders.push(doc.data());
+            allOrders.push({ id: doc.id, ...doc.data() });
         });
         filterSalesByDate();
+    }, error => {
+        console.error("Error loading orders: ", error);
+        ordersContainer.innerHTML = `<p style='text-align:center; color: red;'>Error loading orders dataset.</p>`;
     });
 
+    // Filter orders and calculate total sales revenue by chosen date
     function filterSalesByDate() {
         const selectedDateStr = salesDateInput.value;
         if (!selectedDateStr) return;
@@ -187,17 +233,24 @@
         ordersContainer.innerHTML = "";
         displayDateLabel.innerText = selectedDateStr;
 
-        // Filter orders based on chosen date
+        // Filter logic comparing local date string (YYYY-MM-DD)
         const filteredOrders = allOrders.filter(order => {
             const createdAt = order.timestamp || order.createdAt;
             if (createdAt && typeof createdAt.toDate === 'function') {
-                return createdAt.toDate().toLocaleDateString('sv-SE') === selectedDateStr;
+                const dateObj = createdAt.toDate();
+                // Format date object to YYYY-MM-DD string format safely
+                const year = dateObj.getFullYear();
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const formattedDate = `${year}-${month}-${day}`;
+                
+                return formattedDate === selectedDateStr;
             }
             return false;
         });
 
         if (filteredOrders.length === 0) {
-            ordersContainer.innerHTML = `<p style='text-align:center; color: #777;'>No orders found on ${selectedDateStr}.</p>`;
+            ordersContainer.innerHTML = `<p style='text-align:center; color: #777; padding: 20px;'>No orders found on ${selectedDateStr}.</p>`;
             selectedSalesElement.innerText = "0 MMK";
             return;
         }
@@ -205,40 +258,75 @@
         filteredOrders.forEach(order => {
             const orderTotal = Number(order.total || 0);
             const createdAt = order.timestamp || order.createdAt;
-            let orderTime = (createdAt && typeof createdAt.toDate === 'function') 
-                ? createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                : "";
+            
+            let orderTime = "";
+            if (createdAt && typeof createdAt.toDate === 'function') {
+                orderTime = createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
 
-            // Always accumulate revenue regardless of status (Finished or Pending)
+            // Accumulate Revenue Total
             totalRevenue += orderTotal;
 
+            // Map Order Items
             let itemsText = (order.items && Array.isArray(order.items)) 
-                ? order.items.map(i => `${i.name} (x${i.quantity})`).join(", ") 
-                : "";
+                ? order.items.map(i => `${i.name} <strong>(x${i.quantity})</strong>`).join(", ") 
+                : "No items listed";
 
-            const statusClass = (order.status === 'Finished' || order.status === 'Completed') ? 'status-finished' : 'status-pending';
+            const isFinished = (order.status === 'Finished' || order.status === 'Completed');
+            const statusClass = isFinished ? 'status-finished' : 'status-pending';
             const orderStatus = order.status || 'Pending';
 
             ordersContainer.innerHTML += `
-                <div class="order-card">
+                <div class="order-card ${isFinished ? 'finished' : ''}">
                     <div class="order-header">
-                        <span>Table ${order.table || 'N/A'} 
-                            <span class="payment-badge">${order.paymentMethod || 'Cash'}</span>
-                            <span class="status-badge ${statusClass}">${orderStatus}</span>
+                        <span>
+                            Table ${order.table || 'N/A'} 
+                            <span class="badge payment-badge">${order.paymentMethod || 'Cash'}</span>
+                            <span class="badge status-badge ${statusClass}">${orderStatus}</span>
                         </span>
-                        <span class="time-badge">${orderTime}</span>
+                        <span class="badge time-badge">${orderTime}</span>
                     </div>
-                    <div class="order-items"><strong>Items:</strong> ${itemsText}</div>
+                    <div class="order-items">
+                        <strong>Items:</strong> ${itemsText}
+                    </div>
                     <div class="order-footer">
-                        <span>Amount:</span>
-                        <span style="color: #2ed573;">${orderTotal.toLocaleString()} MMK</span>
+                        <div>
+                            ${!isFinished ? `<button class="btn-status" onclick="markAsFinished('${order.id}')">✓ Mark Finished</button>` : ''}
+                            <button class="btn-delete-order" onclick="deleteOrder('${order.id}')">Delete Order</button>
+                        </div>
+                        <div>
+                            <small style="color: #777; font-weight: normal;">Amount: </small>
+                            <span style="color: #2ed573; font-size: 16px;">${orderTotal.toLocaleString()} MMK</span>
+                        </div>
                     </div>
                 </div>
             `;
         });
 
-        // Display Grand Total Revenue for the selected date
+        // Display Total Sales Revenue
         selectedSalesElement.innerText = `${totalRevenue.toLocaleString()} MMK`;
+    }
+
+    // Toggle Order Status to Finished
+    async function markAsFinished(orderId) {
+        try {
+            await db.collection("orders").doc(orderId).update({
+                status: "Finished"
+            });
+        } catch (error) {
+            console.error("Error updating order status: ", error);
+        }
+    }
+
+    // Delete an order
+    async function deleteOrder(orderId) {
+        if (confirm("ဒီ Order ရာဇဝင်ကို ဖျက်မှာ သေချာပါသလား?")) {
+            try {
+                await db.collection("orders").doc(orderId).delete();
+            } catch (error) {
+                console.error("Error deleting order: ", error);
+            }
+        }
     }
 </script>
 
