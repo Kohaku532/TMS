@@ -3,168 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart - Smart Restaurant</title>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <title>Cart - Food Ordering</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f8f9fa; color: #333; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h1 { color: #2f3542; font-size: 22px; margin-bottom: 5px; text-align: center; }
-        #cartTableBadge { text-align: center; color: #ff4757; font-weight: bold; margin-bottom: 20px; font-size: 16px; }
+        * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f9f9f9; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 700px; background: #fff; border: 2px solid #000; border-radius: 12px; padding: 20px; }
+        .nav-links { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .nav-links a { text-decoration: none; color: #000; padding: 6px 16px; border: 2px solid #000; border-radius: 20px; font-weight: bold; }
+        .nav-links a.active, .nav-links a:hover { background-color: #000; color: #fff; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f1f2f6; font-size: 14px; }
-        th { background-color: #f1f2f6; color: #2f3542; }
-        .total-section { font-size: 18px; font-weight: bold; text-align: right; margin-bottom: 20px; color: #2f3542; }
-        .btn-group { display: flex; flex-direction: column; gap: 10px; }
-        .btn-row { display: flex; gap: 10px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; }
-        .back-btn { background: #dfe4ea; color: #2f3542; }
-        .pay-btn { background: #1e90ff; color: white; }
-        .confirm-btn { background: #2ed573; color: white; width: 100%; }
-        .empty-cart { text-align: center; color: #747d8c; padding: 30px; }
-
-        /* Payment Modal */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; }
-        .payment-options { display: flex; gap: 10px; margin-bottom: 15px; }
-        .opt-btn { flex: 1; padding: 10px; border: 2px solid #dfe4ea; border-radius: 8px; cursor: pointer; background: #f1f2f6; font-weight: bold; }
-        .opt-btn.active { border-color: #1e90ff; background: #e8f2ff; color: #1e90ff; }
-        .qr-box { margin: 15px 0; display: none; }
-        .qr-box img { width: 180px; height: 180px; border-radius: 8px; border: 1px solid #ddd; padding: 5px; }
-        .cash-box { margin: 15px 0; padding: 15px; background: #fff3cd; color: #856404; border-radius: 8px; font-weight: bold; display: none; }
-        .close-btn { background: #ff4757; color: white; padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        th, td { border-bottom: 1px solid #ccc; padding: 10px; text-align: left; }
+        .checkout-btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; font-size: 16px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .total-box { font-size: 18px; font-weight: bold; text-align: right; margin-bottom: 15px; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>Your Order Summary</h1>
-        <div id="cartTableBadge">Loading Table...</div>
+        <nav class="nav-links">
+            <a href="index.html">Menu</a>
+            <a href="cart.html" class="active">Cart</a>
+            <a href="owner.html">Owner View</a>
+            <a href="admin.html">Admin Panel</a>
+        </nav>
 
-        <div id="cartContent"></div>
+        <h1 style="text-align: center; margin-bottom: 15px;">Your Cart</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Food Item</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="cartTable"></tbody>
+        </table>
 
-        <div id="actionButtons" style="display: none;">
-            <div class="total-section" id="totalAmount">Total: 0 MMK</div>
-            <div class="btn-group">
-                <button class="btn pay-btn" onclick="openPaymentModal()">💳 Payment Options (<span id="payMethodLabel">K Pay</span>)</button>
-                <div class="btn-row">
-                    <a href="#" id="backMenuBtn" class="btn back-btn">← Add More Items</a>
-                    <button class="btn confirm-btn" onclick="submitOrder()">Confirm Order</button>
-                </div>
-            </div>
-        </div>
+        <div class="total-box">Total: $<span id="totalAmount">0.00</span></div>
+        <button class="checkout-btn" id="checkoutBtn">Place Order</button>
     </div>
 
-    <!-- Payment Modal -->
-    <div class="modal-overlay" id="paymentModal">
-        <div class="modal-content">
-            <h3 style="margin-bottom: 15px;">Select Payment Method</h3>
-            <div class="payment-options">
-                <button class="opt-btn active" id="btnKPay" onclick="selectPayment('kpay')">K Pay</button>
-                <button class="opt-btn" id="btnCash" onclick="selectPayment('cash')">Cash</button>
-            </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-            <div class="qr-box" id="kpayBox">
-                <p style="font-size: 13px; color: #666; margin-bottom: 8px;">Scan to Pay with K Pay</p>
-                <img src="https://via.placeholder.com/180?text=KPay+QR+Code" alt="KPay QR Code">
-            </div>
-
-            <div class="cash-box" id="cashBox">
-                📍 Please pay cash at the counter or to the waiter.
-            </div>
-
-            <button class="close-btn" onclick="closePaymentModal()">Done</button>
-        </div>
-    </div>
-
-    <script>
+        // ⚠️ မိမိတို့၏ Firebase Config ဖြင့် အစားထိုးပါ
         const firebaseConfig = {
-            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
-            authDomain: "smart-restaurant-85871.firebaseapp.com",
-            projectId: "smart-restaurant-85871",
-            storageBucket: "smart-restaurant-85871.firebasestorage.app",
-            messagingSenderId: "909399970300",
-            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const tableNumber = urlParams.get('table') || "1";
-        
-        document.getElementById('cartTableBadge').innerText = `Table Number: ${tableNumber}`;
-        document.getElementById('backMenuBtn').href = `index.html?table=${tableNumber}`;
-
-        const cartContent = document.getElementById('cartContent');
-        const actionButtons = document.getElementById('actionButtons');
-        let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
-        let selectedPaymentMethod = "K Pay";
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         function renderCart() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const tbody = document.getElementById('cartTable');
+            let total = 0;
+            tbody.innerHTML = '';
+
             if (cart.length === 0) {
-                cartContent.innerHTML = `<div class="empty-cart">Your cart is empty.</div>`;
-                actionButtons.style.display = "none";
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Cart is empty.</td></tr>';
+            } else {
+                cart.forEach((item, index) => {
+                    total += parseFloat(item.price);
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>$${parseFloat(item.price).toFixed(2)}</td>
+                            <td><button onclick="removeItem(${index})">Remove</button></td>
+                        </tr>
+                    `;
+                });
+            }
+            document.getElementById('totalAmount').innerText = total.toFixed(2);
+        }
+
+        window.removeItem = (index) => {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderCart();
+        };
+
+        document.getElementById('checkoutBtn').addEventListener('click', () => {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart.length === 0) {
+                alert(" Cart ထဲမှာ ပစ္စည်းမရှိပါ။");
                 return;
             }
 
-            let html = `<table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead><tbody>`;
-            let grandTotal = 0;
-            cart.forEach((item) => {
-                let subtotal = item.price * item.quantity;
-                grandTotal += subtotal;
-                html += `<tr><td>${item.name}</td><td>${item.quantity}</td><td>${item.price.toLocaleString()}</td><td>${subtotal.toLocaleString()} MMK</td></tr>`;
-            });
-            html += `</tbody></table>`;
-            cartContent.innerHTML = html;
-            document.getElementById('totalAmount').innerText = `Total: ${grandTotal.toLocaleString()} MMK`;
-            actionButtons.style.display = "block";
-        }
-        renderCart();
+            const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+            const ordersRef = ref(db, 'orders');
 
-        function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; selectPayment('kpay'); }
-        function closePaymentModal() { document.getElementById('paymentModal').style.display = 'none'; }
-
-        function selectPayment(method) {
-            if (method === 'kpay') {
-                document.getElementById('kpayBox').style.display = 'block';
-                document.getElementById('cashBox').style.display = 'none';
-                document.getElementById('btnKPay').classList.add('active');
-                document.getElementById('btnCash').classList.remove('active');
-                selectedPaymentMethod = "K Pay";
-            } else {
-                document.getElementById('kpayBox').style.display = 'none';
-                document.getElementById('cashBox').style.display = 'block';
-                document.getElementById('btnCash').classList.add('active');
-                document.getElementById('btnKPay').classList.remove('active');
-                selectedPaymentMethod = "Cash";
-            }
-            document.getElementById('payMethodLabel').innerText = selectedPaymentMethod;
-        }
-
-        async function submitOrder() {
-            let grandTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-            let newOrder = {
-                table: tableNumber,
+            push(ordersRef, {
                 items: cart,
-                total: grandTotal,
-                paymentMethod: selectedPaymentMethod,
-                status: "Pending",
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
+                totalPrice: total,
+                status: 'Pending',
+                orderDate: new Date().toISOString()
+            }).then(() => {
+                alert("Order တင်ခြင်း အောင်မြင်ပါသည်။");
+                localStorage.removeItem('cart');
+                renderCart();
+            });
+        });
 
-            try {
-                await db.collection("orders").add(newOrder);
-                alert(`🎉 Order Placed Successfully!\n\nTable: ${tableNumber}\nTotal: ${grandTotal.toLocaleString()} MMK`);
-                localStorage.removeItem('restaurant_cart');
-                window.location.href = `index.html?table=${tableNumber}`;
-            } catch (error) {
-                console.error("Error submitting order: ", error);
-                alert("အော်ဒါတင်ရာတွင် အမှားအယွင်း ရှိသွားပါသည်။ ပြန်လည်ကြိုးစားပါ။");
-            }
-        }
+        renderCart();
     </script>
 </body>
 </html>
