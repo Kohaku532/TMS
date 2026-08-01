@@ -3,129 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Live Orders</title>
-    <!-- Firebase SDKs ထည့်သွင်းခြင်း -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <title>Admin Panel</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #f0f2f5; color: #333; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        header { background: #2f3542; color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { font-size: 22px; margin-bottom: 5px; }
-        p { color: #a4b0be; font-size: 14px; }
-        .orders-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .order-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid #ff4757; animation: fadeIn 0.3s ease; }
-        .order-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f2f6; padding-bottom: 10px; margin-bottom: 15px; }
-        .order-title { font-size: 18px; font-weight: bold; color: #2f3542; }
-        .order-time { font-size: 13px; color: #747d8c; background: #f1f2f6; padding: 4px 8px; border-radius: 6px; }
-        .order-items-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        .order-items-table th, .order-items-table td { padding: 8px; text-align: left; font-size: 14px; border-bottom: 1px dashed #f1f2f6; }
-        .order-items-table th { color: #747d8c; }
-        .order-footer { display: flex; justify-content: space-between; align-items: center; }
-        .total-price { font-size: 16px; font-weight: bold; color: #ff4757; }
-        .complete-btn { background: #2ed573; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        .complete-btn:hover { background: #26af5f; }
-        .no-orders { text-align: center; background: white; padding: 40px; border-radius: 12px; color: #747d8c; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f9f9f9; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 850px; background: #fff; border: 2px solid #000; border-radius: 12px; padding: 20px; }
+        .nav-links { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .nav-links a { text-decoration: none; color: #000; padding: 6px 16px; border: 2px solid #000; border-radius: 20px; font-weight: bold; }
+        .nav-links a.active, .nav-links a:hover { background-color: #000; color: #fff; }
+        h2 { margin: 15px 0 10px; border-bottom: 2px solid #000; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .btn-delete { background: #d32f2f; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+        .btn-status { background: #2e7d32; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <header>
-            <h1>Restaurant Admin Dashboard</h1>
-            <p>Firebase Real-time Orders Management</p>
-        </header>
+        <nav class="nav-links">
+            <a href="index.html">Menu</a>
+            <a href="cart.html">Cart</a>
+            <a href="owner.html">Owner View</a>
+            <a href="admin.html" class="active">Admin Panel</a>
+        </nav>
 
-        <!-- အော်ဒါများ ပေါ်မည့် နေရာ -->
-        <div class="orders-grid" id="ordersContainer">
-            <div class="no-orders">⌛ အော်ဒါအချက်အလက်များကို ချိတ်ဆက်နေပါသည်...</div>
-        </div>
+        <h1>Admin Control Panel</h1>
+
+        <h2>Manage Menu Items</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="adminFoodTable"></tbody>
+        </table>
+
+        <h2>Manage Orders</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="adminOrderTable"></tbody>
+        </table>
     </div>
 
-    <script>
-        // Firebase Configuration (သင့်ရဲ့ Project အချက်အလက်များ)
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // ⚠️ မိမိတို့၏ Firebase Config ဖြင့် အစားထိုးပါ
         const firebaseConfig = {
-            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
-            authDomain: "smart-restaurant-85871.firebaseapp.com",
-            projectId: "smart-restaurant-85871",
-            storageBucket: "smart-restaurant-85871.firebasestorage.app",
-            messagingSenderId: "909399970300",
-            appId: "1:909399970300:web:8da6c6522af7b1a6296279",
-            measurementId: "G-2Z502F3XZP"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
-        const ordersContainer = document.getElementById('ordersContainer');
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        // 🌟 Firebase Real-time Listener (Data ပြောင်းလဲမှုရှိတိုင်း အလိုအလျောက် Update လုပ်ပေးမည်)
-        db.collection("orders").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-            if (snapshot.empty) {
-                ordersContainer.innerHTML = `<div class="no-orders">📭 လက်တလော အော်ဒါအသစ် မရှိသေးပါ။</div>`;
-                return;
+        // Manage Foods
+        onValue(ref(db, 'foods'), (snapshot) => {
+            const tbody = document.getElementById('adminFoodTable');
+            tbody.innerHTML = '';
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                Object.keys(data).forEach(id => {
+                    const item = data[id];
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>${item.category}</td>
+                            <td>$${parseFloat(item.price).toFixed(2)}</td>
+                            <td><button class="btn-delete" onclick="deleteFood('${id}')">Delete</button></td>
+                        </tr>
+                    `;
+                });
             }
-
-            let html = '';
-            snapshot.forEach((doc) => {
-                let order = doc.data();
-                let docId = doc.id; // Firebase Document ID (အော်ဒါဖျက်ရန် သုံးမည်)
-
-                let itemsHtml = '';
-                if (order.items) {
-                    order.items.forEach(item => {
-                        itemsHtml += `
-                            <tr>
-                                <td>${item.name}</td>
-                                <td>x ${item.quantity}</td>
-                                <td>${(item.price * item.quantity).toLocaleString()} MMK</td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                html += `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <div class="order-title">Table ${order.table}</div>
-                            <div class="order-time">🕒 ${order.timeStr || 'Just now'}</div>
-                        </div>
-                        <table class="order-items-table">
-                            <thead>
-                                <tr>
-                                    <th>Item Name</th>
-                                    <th>Qty</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${itemsHtml}
-                            </tbody>
-                        </table>
-                        <div class="order-footer">
-                            <div class="total-price">Total: ${order.total ? order.total.toLocaleString() : 0} MMK</div>
-                            <button class="complete-btn" onclick="completeOrder('${docId}')">Mark as Complete</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            ordersContainer.innerHTML = html;
         });
 
-        // 🌟 အော်ဒါပြီးပြတ်သွား၍ Database ထဲမှ ဖျောက်ထုတ်ရန် (Complete နှိပ်လျှင်)
-        window.completeOrder = async function(docId) {
-            if (confirm("ဤအော်ဒါကို ပြီးစီးပြီဟု သတ်မှတ်ပြီး ဖျက်မည်မှာ သေချာပါသလား?")) {
-                try {
-                    await db.collection("orders").doc(docId).delete();
-                } catch (error) {
-                    console.error("Error removing order: ", error);
-                    alert("အော်ဒါဖျက်ရာတွင် အမှားအယွင်း ရှိသွားပါသည်။");
-                }
+        // Manage Orders
+        onValue(ref(db, 'orders'), (snapshot) => {
+            const tbody = document.getElementById('adminOrderTable');
+            tbody.innerHTML = '';
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                Object.keys(data).forEach(id => {
+                    const order = data[id];
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>...${id.slice(-5)}</td>
+                            <td>$${order.totalPrice.toFixed(2)}</td>
+                            <td>${order.status}</td>
+                            <td>
+                                <button class="btn-status" onclick="markCompleted('${id}')">Mark Completed</button>
+                                <button class="btn-delete" onclick="deleteOrder('${id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
             }
-        }
-    </script>
+        });
 
+        // Global Action Functions
+        window.deleteFood = (id) => remove(ref(db, `foods/${id}`));
+        window.deleteOrder = (id) => remove(ref(db, `orders/${id}`));
+        window.markCompleted = (id) => update(ref(db, `orders/${id}`), { status: 'Completed' });
+    </script>
 </body>
 </html>
