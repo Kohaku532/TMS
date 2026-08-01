@@ -3,114 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu - Smart Restaurant</title>
-    <!-- Firebase Compat SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
+    <title>Menu - Food Ordering</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #f8f9fa; padding: 15px; padding-bottom: 80px; }
-        .header { background: #2f3542; color: white; text-align: center; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        .table-badge { background: #ff4757; color: white; padding: 4px 10px; border-radius: 20px; font-size: 14px; font-weight: bold; }
-        
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .menu-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
-        .menu-card img { width: 100%; height: 120px; object-fit: cover; }
-        .menu-details { padding: 12px; }
-        .menu-title { font-size: 15px; font-weight: bold; color: #2f3542; margin-bottom: 5px; }
-        .menu-price { color: #ff4757; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
-        .add-btn { width: 100%; background: #2ed573; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .add-btn:active { background: #26af5f; }
-
-        /* Floating Cart Bar */
-        .cart-bar { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: #1e90ff; color: white; padding: 12px 20px; border-radius: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); font-weight: bold; text-decoration: none; }
+        * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f9f9f9; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 800px; background: #fff; border: 2px solid #000; border-radius: 12px; padding: 20px; }
+        .nav-links { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .nav-links a { text-decoration: none; color: #000; padding: 6px 16px; border: 2px solid #000; border-radius: 20px; font-weight: bold; }
+        .nav-links a.active, .nav-links a:hover { background-color: #000; color: #fff; }
+        h1 { text-align: center; margin-bottom: 20px; }
+        .food-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+        .food-card { border: 2px solid #000; border-radius: 8px; padding: 12px; text-align: center; }
+        .food-card img { width: 100%; height: 120px; object-fit: cover; border-radius: 4px; }
+        .food-card h3 { margin: 8px 0; }
+        .food-card .price { font-weight: bold; color: #2e7d32; margin-bottom: 8px; }
+        .add-cart-btn { background: #000; color: #fff; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <nav class="nav-links">
+            <a href="index.html" class="active">Menu</a>
+            <a href="cart.html">Cart (<span id="cartCount">0</span>)</a>
+            <a href="owner.html">Owner View</a>
+            <a href="admin.html">Admin Panel</a>
+        </nav>
 
-    <div class="header">
-        <h1>Smart Restaurant</h1>
-        <p style="margin-top: 5px;">Table Number: <span id="tableNoBadge" class="table-badge">1</span></p>
+        <h1>Food Menu</h1>
+        <div class="food-grid" id="foodContainer">
+            <p style="text-align: center; grid-column: 1/-1;">Loading menu...</p>
+        </div>
     </div>
 
-    <!-- Menu Grid Area -->
-    <div class="menu-grid" id="menuGrid">
-        <p style="grid-column: 1/-1; text-align: center; color: #777;">Loading menu items...</p>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    <!-- Floating Cart View Button -->
-    <a href="#" id="viewCartBtn" class="cart-bar">
-        <span>🛒 View Cart (<span id="cartCount">0</span>)</span>
-        <span id="cartTotal">0 MMK →</span>
-    </a>
-
-    <script>
+        // ⚠️ မိမိတို့၏ Firebase Config ဖြင့် အစားထိုးပါ
         const firebaseConfig = {
-            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
-            authDomain: "smart-restaurant-85871.firebaseapp.com",
-            projectId: "smart-restaurant-85871",
-            storageBucket: "smart-restaurant-85871.firebasestorage.app",
-            messagingSenderId: "909399970300",
-            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
 
-        // Get Table Number from URL (e.g. index.html?table=5)
-        const urlParams = new URLSearchParams(window.location.search);
-        const tableNumber = urlParams.get('table') || "1";
-        document.getElementById('tableNoBadge').innerText = tableNumber;
-        document.getElementById('viewCartBtn').href = `cart.html?table=${tableNumber}`;
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-        let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
-        updateCartBar();
+        // Cart Count Update
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('cartCount').innerText = cart.length;
+        }
+        updateCartCount();
 
-        // Real-Time Menu Sync from Firestore
-        db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-            const menuGrid = document.getElementById('menuGrid');
-            menuGrid.innerHTML = "";
-
-            if (snapshot.empty) {
-                menuGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #777;">No menu items available right now.</p>`;
-                return;
+        // Menu Data ဖတ်ခြင်း
+        const foodsRef = ref(db, 'foods');
+        onValue(foodsRef, (snapshot) => {
+            const container = document.getElementById('foodContainer');
+            container.innerHTML = '';
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                Object.keys(data).forEach(id => {
+                    const food = data[id];
+                    const card = document.createElement('div');
+                    card.className = 'food-card';
+                    card.innerHTML = `
+                        <img src="${food.image}" onerror="this.src='https://via.placeholder.com/150'">
+                        <h3>${food.name}</h3>
+                        <p style="color:#666; font-size:12px;">${food.category}</p>
+                        <div class="price">$${parseFloat(food.price).toFixed(2)}</div>
+                        <button class="add-cart-btn" onclick="addToCart('${id}', '${food.name}', ${food.price})">Add to Cart</button>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">No food items available.</p>';
             }
-
-            snapshot.forEach(doc => {
-                const item = doc.data();
-                const defaultImg = "https://via.placeholder.com/150?text=Food";
-
-                menuGrid.innerHTML += `
-                    <div class="menu-card">
-                        <img src="${item.image || defaultImg}" alt="${item.name}" onerror="this.src='${defaultImg}'">
-                        <div class="menu-details">
-                            <div class="menu-title">${item.name}</div>
-                            <div class="menu-price">${Number(item.price).toLocaleString()} MMK</div>
-                            <button class="add-btn" onclick="addToCart('${item.name}', ${item.price})">+ Add</button>
-                        </div>
-                    </div>
-                `;
-            });
         });
 
-        function addToCart(name, price) {
-            const existingIndex = cart.findIndex(i => i.name === name);
-            if (existingIndex > -1) {
-                cart[existingIndex].quantity += 1;
-            } else {
-                cart.push({ name, price, quantity: 1 });
-            }
-            localStorage.setItem('restaurant_cart', JSON.stringify(cart));
-            updateCartBar();
-        }
-
-        function updateCartBar() {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-            document.getElementById('cartCount').innerText = totalItems;
-            document.getElementById('cartTotal').innerText = `${totalPrice.toLocaleString()} MMK →`;
-        }
+        // Add to Cart
+        window.addToCart = (id, name, price) => {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push({ id, name, price });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            alert(`${name} added to cart!`);
+        };
     </script>
 </body>
 </html>
