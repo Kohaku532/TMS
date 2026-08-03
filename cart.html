@@ -3,116 +3,452 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart - Food Ordering</title>
+    <title>Your Cart - SmartDine</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
     <style>
-        * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #f9f9f9; padding: 20px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 700px; background: #fff; border: 2px solid #000; border-radius: 12px; padding: 20px; }
-        .nav-links { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        .nav-links a { text-decoration: none; color: #000; padding: 6px 16px; border: 2px solid #000; border-radius: 20px; font-weight: bold; }
-        .nav-links a.active, .nav-links a:hover { background-color: #000; color: #fff; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border-bottom: 1px solid #ccc; padding: 10px; text-align: left; }
-        .checkout-btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; font-size: 16px; border-radius: 30px; cursor: pointer; font-weight: bold; }
-        .total-box { font-size: 18px; font-weight: bold; text-align: right; margin-bottom: 15px; }
+        :root {
+            --primary: #ff4757;
+            --primary-hover: #ff6b81;
+            --bg: #f8f9fa;
+            --text-dark: #2f3542;
+            --text-light: #747d8c;
+            --card-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg); color: var(--text-dark); padding-bottom: 120px; }
+
+        /* Header */
+        header {
+            background: #ffffff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .back-btn {
+            color: var(--text-dark);
+            text-decoration: none;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover { color: var(--primary); }
+        .header-title { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+
+        /* Container */
+        .container { max-width: 600px; margin: 20px auto; padding: 0 16px; }
+
+        /* Section Card */
+        .cart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+        /* Cart Items List */
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .cart-item:last-child { border-bottom: none; }
+
+        .item-info { flex-grow: 1; padding-right: 15px; }
+        .item-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .item-price { font-size: 14px; color: var(--primary); font-weight: 700; }
+
+        /* Quantity Controls */
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f2f6;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .qty-btn {
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--text-dark);
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-count { font-size: 14px; font-weight: 700; min-width: 18px; text-align: center; }
+
+        .btn-delete {
+            color: #ff4757;
+            background: #ffe0e3;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-delete:hover { background: #ff2e44; color: white; }
+
+        /* Order Details Inputs */
+        .form-group { margin-bottom: 15px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-label { font-size: 13px; font-weight: 600; color: var(--text-light); margin-bottom: 6px; display: block; }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus { border-color: var(--primary); }
+
+        /* Price Calculation Summary */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+
+        .summary-row.total {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .summary-row.total span:last-child { color: var(--primary); }
+
+        /* Floating Bottom Checkout Bar */
+        .checkout-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 16px 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.08);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+        }
+
+        .checkout-inner {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .checkout-total-text { flex-grow: 1; }
+        .checkout-total-text small { font-size: 12px; color: var(--text-light); display: block; }
+        .checkout-total-text strong { font-size: 18px; color: var(--primary); font-weight: 800; }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 47, 87, 0.3);
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover { background: var(--primary-hover); }
+
+        /* Empty Cart View */
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-cart i { font-size: 60px; color: #dcdde1; margin-bottom: 15px; }
+        .empty-cart h3 { font-size: 18px; color: var(--text-dark); margin-bottom: 8px; }
+        .empty-cart p { font-size: 14px; color: var(--text-light); margin-bottom: 20px; }
+
+        .btn-browse {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Header -->
+    <header>
+        <a href="index.html" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Menu သို့ပြန်သွားရန်
+        </a>
+        <div class="header-title">My Order Cart</div>
+        <div style="width: 24px;"></div> <!-- Alignment Spacer -->
+    </header>
+
     <div class="container">
-        <nav class="nav-links">
-            <a href="index.html">Menu</a>
-            <a href="cart.html" class="active">Cart</a>
-            <a href="owner.html">Owner View</a>
-            <a href="admin.html">Admin Panel</a>
-        </nav>
+        <!-- Order Items List Card -->
+        <div class="cart-card">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-utensils" style="color: var(--primary);"></i> ရွေးချယ်ထားသော အစားအသောက်များ</span>
+                <span style="font-size: 12px; color: var(--text-light);" id="itemCountLabel">0 items</span>
+            </div>
+            <div id="cartListContainer">
+                <!-- Cart items will render here dynamically -->
+            </div>
+        </div>
 
-        <h1 style="text-align: center; margin-bottom: 15px;">Your Cart</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Food Item</th>
-                    <th>Price</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="cartTable"></tbody>
-        </table>
+        <!-- Table & Payment Details -->
+        <div class="cart-card" id="detailsCard">
+            <div class="card-header">
+                <span class="card-title"><i class="fa-solid fa-receipt" style="color: var(--primary);"></i> အော်ဒါ အချက်အလက်များ</span>
+            </div>
 
-        <div class="total-box">Total: $<span id="totalAmount">0.00</span></div>
-        <button class="checkout-btn" id="checkoutBtn">Place Order</button>
+            <div class="form-group">
+                <label class="form-label" for="tableNo"><i class="fa-solid fa-chair"></i> စားပွဲခုံအမှတ် (Table No.)</label>
+                <select id="tableNo" class="form-control">
+                    <option value="1">Table 1</option>
+                    <option value="2">Table 2</option>
+                    <option value="3">Table 3</option>
+                    <option value="4">Table 4</option>
+                    <option value="5">Table 5</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="paymentMethod"><i class="fa-solid fa-wallet"></i> ငွေချေစနစ် (Payment Method)</label>
+                <select id="paymentMethod" class="form-control">
+                    <option value="Cash">💵 Cash (ငွေသား)</option>
+                    <option value="KPay / Wave">📱 KPay / WavePay</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Payment Summary Card -->
+        <div class="cart-card" id="summaryCard">
+            <div class="summary-row">
+                <span>ကျသင့်ငွေ (Subtotal)</span>
+                <span id="subTotal">0 MMK</span>
+            </div>
+            <div class="summary-row">
+                <span>ဝန်ဆောင်ခ (Service Charge)</span>
+                <span>0 MMK</span>
+            </div>
+            <div class="summary-row total">
+                <span>စုစုပေါင်း ကျသင့်ငွေ</span>
+                <span id="grandTotal">0 MMK</span>
+            </div>
+        </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <!-- Floating Checkout Footer -->
+    <div class="checkout-bar" id="checkoutBar">
+        <div class="checkout-inner">
+            <div class="checkout-total-text">
+                <small>စုစုပေါင်း ကျသင့်ငွေ</small>
+                <strong id="barGrandTotal">0 MMK</strong>
+            </div>
+            <button class="btn-submit" onclick="submitOrder()"><i class="fa-solid fa-paper-plane"></i> အော်ဒါတင်မည်</button>
+        </div>
+    </div>
 
-        // ⚠️ မိမိတို့၏ Firebase Config ဖြင့် အစားထိုးပါ
+    <script>
+        // Firebase Config
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
+            authDomain: "smart-restaurant-85871.firebaseapp.com",
+            projectId: "smart-restaurant-85871",
+            storageBucket: "smart-restaurant-85871.firebasestorage.app",
+            messagingSenderId: "909399970300",
+            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
         };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        // Fetch Cart from LocalStorage
+        let cart = JSON.parse(localStorage.getItem('restaurant_cart')) || [];
 
-        function renderCart() {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const tbody = document.getElementById('cartTable');
-            let total = 0;
-            tbody.innerHTML = '';
+        // Initial Render
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCartItems();
+        });
+
+        // Render Cart Items
+        function renderCartItems() {
+            const container = document.getElementById('cartListContainer');
+            const itemCountLabel = document.getElementById('itemCountLabel');
+            const detailsCard = document.getElementById('detailsCard');
+            const summaryCard = document.getElementById('summaryCard');
+            const checkoutBar = document.getElementById('checkoutBar');
 
             if (cart.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Cart is empty.</td></tr>';
-            } else {
-                cart.forEach((item, index) => {
-                    total += parseFloat(item.price);
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${item.name}</td>
-                            <td>$${parseFloat(item.price).toFixed(2)}</td>
-                            <td><button onclick="removeItem(${index})">Remove</button></td>
-                        </tr>
-                    `;
-                });
-            }
-            document.getElementById('totalAmount').innerText = total.toFixed(2);
-        }
-
-        window.removeItem = (index) => {
-            let cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cart.splice(index, 1);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            renderCart();
-        };
-
-        document.getElementById('checkoutBtn').addEventListener('click', () => {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            if (cart.length === 0) {
-                alert(" Cart ထဲမှာ ပစ္စည်းမရှိပါ။");
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        <i class="fa-solid fa-basket-shopping"></i>
+                        <h3>အော်ဒါဇယား ကွက်လပ်ဖြစ်နေပါသည်။</h3>
+                        <p>ကျေးဇူးပြု၍ မီနူးစာမျက်နှာသို့ပြန်သွားပြီး အစားအသောက်များ ရွေးချယ်ပါ။</p>
+                        <a href="index.html" class="btn-browse">မီနူးကြည့်ရန်</a>
+                    </div>
+                `;
+                itemCountLabel.innerText = "0 items";
+                detailsCard.style.display = "none";
+                summaryCard.style.display = "none";
+                checkoutBar.style.display = "none";
                 return;
             }
 
-            const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
-            const ordersRef = ref(db, 'orders');
+            detailsCard.style.display = "block";
+            summaryCard.style.display = "block";
+            checkoutBar.style.display = "flex";
 
-            push(ordersRef, {
-                items: cart,
-                totalPrice: total,
-                status: 'Pending',
-                orderDate: new Date().toISOString()
-            }).then(() => {
-                alert("Order တင်ခြင်း အောင်မြင်ပါသည်။");
-                localStorage.removeItem('cart');
-                renderCart();
+            let totalItems = 0;
+            let totalAmount = 0;
+            container.innerHTML = "";
+
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                totalItems += item.quantity;
+                totalAmount += itemTotal;
+
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">${itemTotal.toLocaleString()} MMK</div>
+                        </div>
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
+                            <span class="qty-count">${item.quantity}</span>
+                            <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+                        </div>
+                        <button class="btn-delete" onclick="removeItem('${item.id}')" title="ဖျက်ရန်">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
             });
-        });
 
-        renderCart();
+            itemCountLabel.innerText = `${totalItems} items`;
+            document.getElementById('subTotal').innerText = `${totalAmount.toLocaleString()} MMK`;
+            document.getElementById('grandTotal').innerText = `${totalAmount.toLocaleString()} MMK`;
+            document.getElementById('barGrandTotal').innerText = `${totalAmount.toLocaleString()} MMK`;
+        }
+
+        // Update Item Quantity
+        function updateQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.id !== id);
+                }
+            }
+            saveCartAndRender();
+        }
+
+        // Remove Item Completely
+        function removeItem(id) {
+            cart = cart.filter(i => i.id !== id);
+            saveCartAndRender();
+        }
+
+        // Save State to LocalStorage and Update View
+        function saveCartAndRender() {
+            localStorage.setItem('restaurant_cart', JSON.stringify(cart));
+            renderCartItems();
+        }
+
+        // Submit Order to Firebase
+        async function submitOrder() {
+            if (cart.length === 0) return;
+
+            const tableNo = document.getElementById('tableNo').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            try {
+                await db.collection("orders").add({
+                    table: tableNo,
+                    paymentMethod: paymentMethod,
+                    items: cart,
+                    total: total,
+                    status: "Pending",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("အော်ဒါ အောင်မြင်စွာ တင်ပြီးပါပြီ။ ကျေးဇူးတင်ပါသည်။");
+                
+                // Clear Cart
+                cart = [];
+                localStorage.removeItem('restaurant_cart');
+                
+                // Redirect back to Index
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error("Error submitting order: ", error);
+                alert("အော်ဒါ တင်ရာတွင် အမှားအယွင်းရှိနေပါသည်။");
+            }
+        }
     </script>
 </body>
 </html>
