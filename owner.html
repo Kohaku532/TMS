@@ -3,158 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner View</title>
+    <title>Owner Dashboard - Smart Restaurant</title>
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
     <style>
-        * { box-sizing: border-box; font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #f9f9f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { width: 100%; max-width: 750px; background-color: #ffffff; border: 2px solid #000; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-        .nav-links { display: flex; gap: 10px; justify-content: center; }
-        .nav-links a { text-decoration: none; color: #000; padding: 6px 16px; border: 2px solid #000; border-radius: 20px; font-weight: bold; }
-        .nav-links a.active, .nav-links a:hover { background-color: #000; color: #fff; }
-        .header-box, .income-box { border: 2px solid #000; border-radius: 30px; padding: 12px; text-align: center; font-size: 20px; font-weight: bold; background-color: #fff; }
-        .add-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .add-form input { flex: 1; min-width: 100px; border: 2px solid #000; border-radius: 4px; padding: 8px; font-size: 14px; outline: none; }
-        .add-btn { border: 2px solid #000; border-radius: 20px; padding: 8px 18px; background-color: #fff; font-weight: bold; cursor: pointer; }
-        .food-display { border: 2px solid #000; min-height: 180px; max-height: 250px; overflow-y: auto; padding: 12px; border-radius: 4px; background-color: #fff; }
-        .menu-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .menu-table th, .menu-table td { padding: 8px; border-bottom: 1px solid #ddd; }
-        .menu-table img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
-        .daily-controls { display: flex; gap: 12px; align-items: center; }
-        .daily-income-btn { border: 2px solid #000; padding: 10px 16px; border-radius: 4px; background-color: #fff; font-weight: bold; cursor: pointer; }
-        .date-box { flex: 1; border: 2px solid #000; border-radius: 30px; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
-        .date-box input[type="date"] { border: none; outline: none; font-size: 14px; background: transparent; cursor: pointer; }
-        .daily-order-box { border: 2px solid #000; min-height: 120px; max-height: 200px; overflow-y: auto; border-radius: 4px; padding: 12px; background-color: #fff; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f1f2f6; padding: 20px; }
+        .dashboard { max-width: 850px; margin: 0 auto; }
+        header { background: #2f3542; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+        
+        .revenue-card { background: #2ed573; color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .revenue-card h2 { font-size: 32px; margin-top: 5px; }
+        .date-picker-box { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .date-picker-box input { padding: 6px 10px; border-radius: 6px; border: none; outline: none; font-weight: bold; color: #2f3542; }
+
+        .section-box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .section-title { font-size: 18px; color: #2f3542; margin-bottom: 15px; border-bottom: 2px solid #f1f2f6; padding-bottom: 8px; }
+
+        .add-form { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        .add-form input { flex: 1; min-width: 140px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none; }
+        .btn-add { background: #1e90ff; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        .menu-table { width: 100%; border-collapse: collapse; }
+        .menu-table th, .menu-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
+        .menu-table th { background: #f8f9fa; color: #2f3542; }
+        .item-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+        .btn-delete { background: #ff4757; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+
+        .order-card { background: #f8f9fa; border: 1px solid #eccc68; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; font-weight: bold; }
+        .order-items { margin-bottom: 10px; font-size: 14px; color: #57606f; }
+        .order-footer { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #2f3542; }
+        
+        .time-badge { background: #70a1ff; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+        .payment-badge { background: #ffa502; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; }
+        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; font-weight: bold; }
+        .status-pending { background: #ff7f50; color: white; }
+        .status-finished { background: #2ed573; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <nav class="nav-links">
-            <a href="index.html">Menu</a>
-            <a href="cart.html">Cart</a>
-            <a href="owner.html" class="active">Owner View</a>
-            <a href="admin.html">Admin Panel</a>
-        </nav>
+<div class="dashboard">
+    <header>
+        <h1>Owner Dashboard</h1>
+    </header>
 
-        <div class="header-box">Owner View</div>
-        <div class="income-box" id="totalIncomeDisplay">Total income: $0.00</div>
-
-        <!-- Add Food Form -->
-        <form class="add-form" id="addFoodForm">
-            <input type="text" id="foodName" placeholder="food" required>
-            <input type="number" id="foodPrice" placeholder="price" step="0.01" required>
-            <input type="text" id="foodCategory" placeholder="categori" required>
-            <input type="text" id="foodImage" placeholder="image (URL)">
-            <button type="submit" class="add-btn">+Add</button>
-        </form>
-
-        <!-- Main Display Box -->
-        <div class="food-display">
-            <table class="menu-table">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Food</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                    </tr>
-                </thead>
-                <tbody id="menuTableBody"></tbody>
-            </table>
-        </div>
-
-        <!-- Daily Controls Section -->
-        <div class="daily-controls">
-            <button type="button" class="daily-income-btn" id="dailyIncomeBtn">daily income</button>
-            <div class="date-box">
-                <label for="saleDate">date of sale:</label>
-                <input type="date" id="saleDate">
-            </div>
-        </div>
-
-        <!-- Daily Order Area -->
-        <div class="daily-order-box" id="dailyOrderDisplay">
-            <div style="text-align: center; color: #555;">Loading daily orders...</div>
+    <div class="revenue-card">
+        <small>Total Sales Revenue</small>
+        <h2 id="selectedSales">0 MMK</h2>
+        <div class="date-picker-box">
+            <label for="salesDate"><strong>Select Date:</strong></label>
+            <input type="date" id="salesDate" onchange="filterSalesByDate()">
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <!-- 1. Menu Management -->
+    <div class="section-box">
+        <h2 class="section-title">🍔 Manage Menu Items</h2>
+        <form class="add-form" onsubmit="addMenuItem(event)">
+            <input type="text" id="itemName" placeholder="Item Name (e.g. Fried Rice)" required>
+            <input type="number" id="itemPrice" placeholder="Price (MMK)" required min="0">
+            <input type="url" id="itemImage" placeholder="Image URL (https://...)" required>
+            <button type="submit" class="btn-add">+ Add Item</button>
+        </form>
 
-        // ⚠️ မိမိတို့၏ Firebase Config ဖြင့် အစားထိုးပါ
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+        <table class="menu-table">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">Image</th>
+                    <th>Item Name</th>
+                    <th>Price</th>
+                    <th style="width: 80px; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="menuContainer">
+                <tr><td colspan="4" style="text-align: center; color: #888;">Loading menu items...</td></tr>
+            </tbody>
+        </table>
+    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+    <!-- 2. Customer Orders History -->
+    <div class="section-box">
+        <h2 class="section-title">🛒 All Orders Record (<span id="displayDateLabel">Today</span>)</h2>
+        <div id="ordersContainer">
+            <p style="text-align: center; color: #777;">Loading sales data...</p>
+        </div>
+    </div>
+</div>
 
-        document.getElementById('saleDate').valueAsDate = new Date();
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
+        authDomain: "smart-restaurant-85871.firebaseapp.com",
+        projectId: "smart-restaurant-85871",
+        storageBucket: "smart-restaurant-85871.firebasestorage.app",
+        messagingSenderId: "909399970300",
+        appId: "1:909399970300:web:8da6c6522af7b1a6296279"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        // 1. Food သစ်ထည့်ခြင်း
-        document.getElementById('addFoodForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('foodName').value;
-            const price = parseFloat(document.getElementById('foodPrice').value);
-            const category = document.getElementById('foodCategory').value;
-            const image = document.getElementById('foodImage').value || 'https://via.placeholder.com/40';
+    const ordersContainer = document.getElementById('ordersContainer');
+    const selectedSalesElement = document.getElementById('selectedSales');
+    const menuContainer = document.getElementById('menuContainer');
+    const salesDateInput = document.getElementById('salesDate');
+    const displayDateLabel = document.getElementById('displayDateLabel');
 
-            push(ref(db, 'foods'), { name, price, category, image }).then(() => {
-                document.getElementById('addFoodForm').reset();
+    let allOrders = [];
+
+    // Set default date to Today
+    const today = new Date();
+    salesDateInput.value = today.toISOString().split('T')[0];
+
+    // Read Menu Items Realtime
+    db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        menuContainer.innerHTML = "";
+        if (snapshot.empty) {
+            menuContainer.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888;">No menu items found.</td></tr>`;
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const item = doc.data();
+            const defaultImg = "https://via.placeholder.com/50?text=Food";
+            menuContainer.innerHTML += `
+                <tr>
+                    <td><img src="${item.image || defaultImg}" class="item-img" alt="${item.name}" onerror="this.src='${defaultImg}'"></td>
+                    <td><strong>${item.name}</strong></td>
+                    <td>${Number(item.price).toLocaleString()} MMK</td>
+                    <td style="text-align: center;">
+                        <button class="btn-delete" onclick="deleteMenuItem('${doc.id}')">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+
+    // Add New Menu Item
+    async function addMenuItem(event) {
+        event.preventDefault();
+        const nameInput = document.getElementById('itemName');
+        const priceInput = document.getElementById('itemPrice');
+        const imageInput = document.getElementById('itemImage');
+
+        try {
+            await db.collection("menu").add({
+                name: nameInput.value.trim(),
+                price: Number(priceInput.value),
+                image: imageInput.value.trim(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-        });
 
-        // 2. Food List ပြခြင်း
-        onValue(ref(db, 'foods'), (snapshot) => {
-            const tbody = document.getElementById('menuTableBody');
-            tbody.innerHTML = '';
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                Object.keys(data).forEach((key) => {
-                    const item = data[key];
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><img src="${item.image}" onerror="this.src='https://via.placeholder.com/40'"></td>
-                            <td>${item.name}</td>
-                            <td>${item.category}</td>
-                            <td>$${parseFloat(item.price).toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
+            nameInput.value = ""; priceInput.value = ""; imageInput.value = "";
+        } catch (error) {
+            console.error("Error adding item: ", error);
+        }
+    }
+
+    // Delete Menu Item
+    async function deleteMenuItem(docId) {
+        if (confirm("ဒီ Item ကို တကယ်ဖျက်မှာ သေချာပါသလား?")) {
+            await db.collection("menu").doc(docId).delete();
+        }
+    }
+
+    // Read All Orders Realtime (Includes Finished & Pending Orders)
+    db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+        allOrders = [];
+        snapshot.forEach(doc => {
+            allOrders.push(doc.data());
+        });
+        filterSalesByDate();
+    });
+
+    function filterSalesByDate() {
+        const selectedDateStr = salesDateInput.value;
+        if (!selectedDateStr) return;
+
+        let totalRevenue = 0;
+        ordersContainer.innerHTML = "";
+        displayDateLabel.innerText = selectedDateStr;
+
+        // Filter orders based on chosen date
+        const filteredOrders = allOrders.filter(order => {
+            const createdAt = order.timestamp || order.createdAt;
+            if (createdAt && typeof createdAt.toDate === 'function') {
+                return createdAt.toDate().toLocaleDateString('sv-SE') === selectedDateStr;
             }
+            return false;
         });
 
-        // 3. Orders & Total Income ပြခြင်း
-        onValue(ref(db, 'orders'), (snapshot) => {
-            const orderDisplay = document.getElementById('dailyOrderDisplay');
-            let totalIncome = 0;
-            orderDisplay.innerHTML = '';
+        if (filteredOrders.length === 0) {
+            ordersContainer.innerHTML = `<p style='text-align:center; color: #777;'>No orders found on ${selectedDateStr}.</p>`;
+            selectedSalesElement.innerText = "0 MMK";
+            return;
+        }
 
-            if (snapshot.exists()) {
-                const orders = snapshot.val();
-                Object.keys(orders).forEach((id) => {
-                    const order = orders[id];
-                    totalIncome += parseFloat(order.totalPrice);
-                    orderDisplay.innerHTML += `
-                        <div style="border-bottom: 1px solid #ddd; padding: 6px 0; font-size:14px;">
-                            <b>ID:</b> ...${id.slice(-5)} | 
-                            <b>Amount:</b> $${order.totalPrice.toFixed(2)} | 
-                            <b>Status:</b> ${order.status}
-                        </div>
-                    `;
-                });
-                document.getElementById('totalIncomeDisplay').innerText = `Total income: $${totalIncome.toFixed(2)}`;
-            } else {
-                orderDisplay.innerHTML = '<div style="text-align: center; color: #555;">No orders found</div>';
-            }
+        filteredOrders.forEach(order => {
+            const orderTotal = Number(order.total || 0);
+            const createdAt = order.timestamp || order.createdAt;
+            let orderTime = (createdAt && typeof createdAt.toDate === 'function') 
+                ? createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                : "";
+
+            // Always accumulate revenue regardless of status (Finished or Pending)
+            totalRevenue += orderTotal;
+
+            let itemsText = (order.items && Array.isArray(order.items)) 
+                ? order.items.map(i => `${i.name} (x${i.quantity})`).join(", ") 
+                : "";
+
+            const statusClass = (order.status === 'Finished' || order.status === 'Completed') ? 'status-finished' : 'status-pending';
+            const orderStatus = order.status || 'Pending';
+
+            ordersContainer.innerHTML += `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span>Table ${order.table || 'N/A'} 
+                            <span class="payment-badge">${order.paymentMethod || 'Cash'}</span>
+                            <span class="status-badge ${statusClass}">${orderStatus}</span>
+                        </span>
+                        <span class="time-badge">${orderTime}</span>
+                    </div>
+                    <div class="order-items"><strong>Items:</strong> ${itemsText}</div>
+                    <div class="order-footer">
+                        <span>Amount:</span>
+                        <span style="color: #2ed573;">${orderTotal.toLocaleString()} MMK</span>
+                    </div>
+                </div>
+            `;
         });
-    </script>
+
+        // Display Grand Total Revenue for the selected date
+        selectedSalesElement.innerText = `${totalRevenue.toLocaleString()} MMK`;
+    }
+</script>
+
 </body>
 </html>
