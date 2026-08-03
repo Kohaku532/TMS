@@ -11,13 +11,21 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background: #f1f2f6; padding: 20px; }
-        .dashboard { max-width: 850px; margin: 0 auto; }
+        .dashboard { max-width: 900px; margin: 0 auto; }
         header { background: #2f3542; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
         
-        .revenue-card { background: #2ed573; color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .revenue-card h2 { font-size: 32px; margin-top: 5px; }
-        .date-picker-box { margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .date-picker-box input { padding: 6px 10px; border-radius: 6px; border: none; outline: none; font-weight: bold; color: #2f3542; }
+        /* Stats Dashboard Section */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .stat-card small { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+        .stat-card h2 { font-size: 28px; margin-top: 8px; }
+
+        .card-total { background: linear-gradient(135deg, #1e90ff, #3742fa); }
+        .card-daily { background: linear-gradient(135deg, #2ed573, #26af5f); }
+        .card-sales { background: linear-gradient(135deg, #ffa502, #ff7f50); }
+
+        .date-picker-box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .date-picker-box input { padding: 8px 12px; border-radius: 6px; border: 1px solid #ced6e0; outline: none; font-weight: bold; color: #2f3542; }
 
         .section-box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .section-title { font-size: 18px; color: #2f3542; margin-bottom: 15px; border-bottom: 2px solid #f1f2f6; padding-bottom: 8px; }
@@ -51,12 +59,30 @@
         <h1>Owner Dashboard</h1>
     </header>
 
-    <div class="revenue-card">
-        <small>Total Sales Revenue</small>
-        <h2 id="selectedSales">0 MMK</h2>
-        <div class="date-picker-box">
-            <label for="salesDate"><strong>Select Date:</strong></label>
-            <input type="date" id="salesDate" onchange="filterSalesByDate()">
+    <!-- Date Picker Selection -->
+    <div class="date-picker-box">
+        <label for="salesDate"><strong>📅 Select Date for Daily View:</strong></label>
+        <input type="date" id="salesDate" onchange="filterSalesByDate()">
+    </div>
+
+    <!-- Income & Sales Overview Cards -->
+    <div class="stats-grid">
+        <!-- 1. Overall Total Income -->
+        <div class="stat-card card-total">
+            <small>💰 Total Income (All Time)</small>
+            <h2 id="totalIncome">0 MMK</h2>
+        </div>
+
+        <!-- 2. Daily Income -->
+        <div class="stat-card card-daily">
+            <small>📅 Daily Income</small>
+            <h2 id="dailyIncome">0 MMK</h2>
+        </div>
+
+        <!-- 3. Daily Sales Count -->
+        <div class="stat-card card-sales">
+            <small>🛒 Daily Sales (Orders Count)</small>
+            <h2 id="dailySalesCount">0 Orders</h2>
         </div>
     </div>
 
@@ -87,7 +113,7 @@
 
     <!-- 2. Customer Orders History -->
     <div class="section-box">
-        <h2 class="section-title">🛒 All Orders Record (<span id="displayDateLabel">Today</span>)</h2>
+        <h2 class="section-title">🛒 Orders History (<span id="displayDateLabel">Today</span>)</h2>
         <div id="ordersContainer">
             <p style="text-align: center; color: #777;">Loading sales data...</p>
         </div>
@@ -107,7 +133,9 @@
     const db = firebase.firestore();
 
     const ordersContainer = document.getElementById('ordersContainer');
-    const selectedSalesElement = document.getElementById('selectedSales');
+    const totalIncomeElement = document.getElementById('totalIncome');
+    const dailyIncomeElement = document.getElementById('dailyIncome');
+    const dailySalesCountElement = document.getElementById('dailySalesCount');
     const menuContainer = document.getElementById('menuContainer');
     const salesDateInput = document.getElementById('salesDate');
     const displayDateLabel = document.getElementById('displayDateLabel');
@@ -173,9 +201,21 @@
     // Read All Orders Realtime (Includes Finished & Pending Orders)
     db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         allOrders = [];
+        let grandTotalRevenue = 0;
+
         snapshot.forEach(doc => {
-            allOrders.push(doc.data());
+            const orderData = doc.data();
+            allOrders.push(orderData);
+
+            // Calculate Overall Total Income for all time
+            const orderTotal = Number(orderData.total || 0);
+            grandTotalRevenue += orderTotal;
         });
+
+        // Display Overall Total Income
+        totalIncomeElement.innerText = `${grandTotalRevenue.toLocaleString()} MMK`;
+
+        // Update Daily stats and orders list based on selected date
         filterSalesByDate();
     });
 
@@ -183,11 +223,11 @@
         const selectedDateStr = salesDateInput.value;
         if (!selectedDateStr) return;
 
-        let totalRevenue = 0;
+        let dailyRevenue = 0;
         ordersContainer.innerHTML = "";
         displayDateLabel.innerText = selectedDateStr;
 
-        // Filter orders based on chosen date
+        // Filter orders based on selected date
         const filteredOrders = allOrders.filter(order => {
             const createdAt = order.timestamp || order.createdAt;
             if (createdAt && typeof createdAt.toDate === 'function') {
@@ -196,9 +236,12 @@
             return false;
         });
 
+        // Update Daily Sales Count
+        dailySalesCountElement.innerText = `${filteredOrders.length} Orders`;
+
         if (filteredOrders.length === 0) {
             ordersContainer.innerHTML = `<p style='text-align:center; color: #777;'>No orders found on ${selectedDateStr}.</p>`;
-            selectedSalesElement.innerText = "0 MMK";
+            dailyIncomeElement.innerText = "0 MMK";
             return;
         }
 
@@ -209,8 +252,8 @@
                 ? createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
                 : "";
 
-            // Always accumulate revenue regardless of status (Finished or Pending)
-            totalRevenue += orderTotal;
+            // Accumulate Daily Income
+            dailyRevenue += orderTotal;
 
             let itemsText = (order.items && Array.isArray(order.items)) 
                 ? order.items.map(i => `${i.name} (x${i.quantity})`).join(", ") 
@@ -237,8 +280,8 @@
             `;
         });
 
-        // Display Grand Total Revenue for the selected date
-        selectedSalesElement.innerText = `${totalRevenue.toLocaleString()} MMK`;
+        // Display Daily Income for selected date
+        dailyIncomeElement.innerText = `${dailyRevenue.toLocaleString()} MMK`;
     }
 </script>
 
