@@ -18,6 +18,8 @@
             --text-dark: #2f3542;
             --text-light: #747d8c;
             --card-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            --success: #2ed573;
+            --warning: #ffa502;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -30,14 +32,42 @@
             top: 0;
             z-index: 100;
             box-shadow: 0 2px 15px rgba(0,0,0,0.06);
-            padding: 15px 5%;
+            padding: 12px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .logo { font-size: 24px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .logo i { font-size: 28px; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 26px; }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-tab-btn {
+            background: #f1f2f6;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
 
         .table-select-box {
             background: #f1f2f6;
@@ -65,16 +95,18 @@
                         url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80') center/cover;
             color: white;
             text-align: center;
-            padding: 40px 20px;
+            padding: 35px 20px;
             border-radius: 0 0 25px 25px;
             margin-bottom: 20px;
         }
 
-        .hero h1 { font-size: 30px; margin-bottom: 8px; font-weight: 700; }
+        .hero h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
         .hero p { font-size: 14px; opacity: 0.9; }
 
-        /* Container */
+        /* Main Container & Page Navigation Views */
         .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        .page-view { display: none; }
+        .page-view.active { display: block; }
 
         /* Search & Filter Section */
         .filter-section {
@@ -84,10 +116,7 @@
             gap: 15px;
         }
 
-        .search-box {
-            position: relative;
-            width: 100%;
-        }
+        .search-box { position: relative; width: 100%; }
 
         .search-box input {
             width: 100%;
@@ -120,10 +149,10 @@
             gap: 10px;
             overflow-x: auto;
             padding-bottom: 5px;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
 
-        .category-tabs::-webkit-scrollbar { display: none; } /* Chrome, Safari */
+        .category-tabs::-webkit-scrollbar { display: none; }
 
         .cat-btn {
             background: white;
@@ -348,7 +377,7 @@
 
         .btn-checkout {
             width: 100%;
-            background: #2ed573;
+            background: var(--success);
             color: white;
             border: none;
             padding: 14px;
@@ -358,6 +387,61 @@
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
         }
+
+        /* Order Tracking Page Styles */
+        .order-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            border-left: 6px solid var(--primary);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .order-status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: #ffeaa7; color: #d63031; }
+        .status-preparing { background: #81ecec; color: #00cec9; }
+        .status-completed { background: #55efc4; color: #00b894; }
+
+        .order-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #f1f2f6;
+        }
+
+        .live-qty-btn {
+            background: #e2e8f0;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .live-qty-btn:hover { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
@@ -367,16 +451,26 @@
         <div class="logo">
             <i class="fa-solid fa-utensils"></i> SmartDine
         </div>
-        <div class="table-select-box">
-            <i class="fa-solid fa-chair"></i>
-            <label for="tableNo">Table:</label>
-            <select id="tableNo">
-                <option value="1">Table 1</option>
-                <option value="2">Table 2</option>
-                <option value="3">Table 3</option>
-                <option value="4">Table 4</option>
-                <option value="5">Table 5</option>
-            </select>
+
+        <div class="nav-controls">
+            <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
+                <i class="fa-solid fa-book-open"></i> Menu
+            </button>
+            <button class="nav-tab-btn" id="btnOrdersTab" onclick="switchPage('orders')">
+                <i class="fa-solid fa-clock-rotate-left"></i> My Orders
+            </button>
+
+            <div class="table-select-box">
+                <i class="fa-solid fa-chair"></i>
+                <label for="tableNo">Table:</label>
+                <select id="tableNo" onchange="fetchTableOrders()">
+                    <option value="1">Table 1</option>
+                    <option value="2">Table 2</option>
+                    <option value="3">Table 3</option>
+                    <option value="4">Table 4</option>
+                    <option value="5">Table 5</option>
+                </select>
+            </div>
         </div>
     </header>
 
@@ -389,40 +483,54 @@
     <!-- Main Content Container -->
     <div class="container">
 
-        <!-- Search Bar & Category Filters -->
-        <div class="filter-section">
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Search food or drinks..." oninput="filterMenuItems()">
+        <!-- PAGE 1: MENU VIEW -->
+        <div id="menuView" class="page-view active">
+            <!-- Search Bar & Category Filters -->
+            <div class="filter-section">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Search food or drinks..." oninput="filterMenuItems()">
+                </div>
+
+                <div class="category-tabs">
+                    <button class="cat-btn active" onclick="selectCategory('All', this)">
+                        <i class="fa-solid fa-border-all"></i> All
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('Food', this)">
+                        <i class="fa-solid fa-bowl-rice"></i> Food
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('Drink', this)">
+                        <i class="fa-solid fa-mug-hot"></i> Drink
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('Snack', this)">
+                        <i class="fa-solid fa-cookie-bite"></i> Snack
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('Dessert', this)">
+                        <i class="fa-solid fa-ice-cream"></i> Dessert
+                    </button>
+                </div>
             </div>
 
-            <div class="category-tabs">
-                <button class="cat-btn active" onclick="selectCategory('All', this)">
-                    <i class="fa-solid fa-border-all"></i> All
-                </button>
-                <button class="cat-btn" onclick="selectCategory('Food', this)">
-                    <i class="fa-solid fa-bowl-rice"></i> Food
-                </button>
-                <button class="cat-btn" onclick="selectCategory('Drink', this)">
-                    <i class="fa-solid fa-mug-hot"></i> Drink
-                </button>
-                <button class="cat-btn" onclick="selectCategory('Snack', this)">
-                    <i class="fa-solid fa-cookie-bite"></i> Snack
-                </button>
-                <button class="cat-btn" onclick="selectCategory('Dessert', this)">
-                    <i class="fa-solid fa-ice-cream"></i> Dessert
-                </button>
+            <!-- Menu Grid -->
+            <div class="menu-grid" id="menuGrid">
+                <p style="text-align: center; grid-column: 1/-1; color: var(--text-light);">Loading delicious menu...</p>
             </div>
         </div>
 
-        <!-- Menu Grid -->
-        <div class="menu-grid" id="menuGrid">
-            <p style="text-align: center; grid-column: 1/-1; color: var(--text-light);">Loading delicious menu...</p>
+        <!-- PAGE 2: MY ORDERS & TRACKING VIEW -->
+        <div id="ordersView" class="page-view">
+            <h2 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Active Table Orders
+            </h2>
+            <div id="activeOrdersContainer">
+                <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Loading orders...</p>
+            </div>
         </div>
+
     </div>
 
     <!-- Floating Cart Button -->
-    <div class="cart-float-btn" onclick="toggleCartDrawer(true)">
+    <div class="cart-float-btn" id="cartFloatBtn" onclick="toggleCartDrawer(true)">
         <i class="fa-solid fa-basket-shopping"></i>
         <span>My Order</span>
         <div class="cart-count" id="cartCount">0</div>
@@ -475,6 +583,7 @@
         let allMenuItems = [];
         let selectedCategory = 'All';
         let cart = [];
+        let ordersUnsubscribe = null;
 
         const menuGrid = document.getElementById('menuGrid');
 
@@ -490,13 +599,30 @@
             filterMenuItems();
         });
 
+        // Switch Between Pages (Menu vs Orders)
+        function switchPage(pageName) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+
+            if (pageName === 'menu') {
+                document.getElementById('menuView').classList.add('active');
+                document.getElementById('btnMenuTab').classList.add('active');
+                document.getElementById('cartFloatBtn').style.display = 'flex';
+            } else if (pageName === 'orders') {
+                document.getElementById('ordersView').classList.add('active');
+                document.getElementById('btnOrdersTab').classList.add('active');
+                document.getElementById('cartFloatBtn').style.display = 'none';
+                fetchTableOrders();
+            }
+        }
+
         // Filter and Render Menu Items
         function filterMenuItems() {
             const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
 
             const filtered = allMenuItems.filter(item => {
                 const matchesSearch = item.name.toLowerCase().includes(searchQuery);
-                const itemCategory = item.category || 'Food'; // Default category as 'Food' if unassigned
+                const itemCategory = item.category || 'Food';
                 const matchesCategory = (selectedCategory === 'All') || (itemCategory.toLowerCase() === selectedCategory.toLowerCase());
 
                 return matchesSearch && matchesCategory;
@@ -538,7 +664,6 @@
         function selectCategory(category, btnElement) {
             selectedCategory = category;
             
-            // Highlight Active Tab
             document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
 
@@ -569,7 +694,7 @@
             updateCartUI();
         }
 
-        // Update Item Quantity
+        // Update Item Quantity (In-Cart)
         function updateQty(id, delta) {
             const item = cart.find(i => i.id === id);
             if (item) {
@@ -646,9 +771,118 @@
                 cart = [];
                 updateCartUI();
                 toggleCartDrawer(false);
+                switchPage('orders');
             } catch (error) {
                 console.error("Error ordering: ", error);
                 alert("အော်ဒါ တင်ရာတွင် အမှားအယွင်းရှိနေပါသည်။");
+            }
+        }
+
+        // Fetch Orders for Selected Table in Realtime
+        function fetchTableOrders() {
+            const tableNo = document.getElementById('tableNo').value;
+            const container = document.getElementById('activeOrdersContainer');
+
+            if (ordersUnsubscribe) ordersUnsubscribe();
+
+            ordersUnsubscribe = db.collection("orders")
+                .where("table", "==", tableNo)
+                .orderBy("timestamp", "desc")
+                .onSnapshot(snapshot => {
+                    if (snapshot.empty) {
+                        container.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;"> Table ${tableNo} အတွက် မှာယူထားသော အော်ဒါ မရှိသေးပါ။</p>`;
+                        return;
+                    }
+
+                    container.innerHTML = "";
+                    snapshot.forEach(doc => {
+                        const order = doc.data();
+                        const orderId = doc.id;
+                        const statusClass = order.status ? `status-${order.status.toLowerCase()}` : 'status-pending';
+
+                        let itemsHtml = "";
+                        order.items.forEach((item, index) => {
+                            const itemTotal = item.price * item.quantity;
+                            const isPending = (order.status === "Pending");
+
+                            itemsHtml += `
+                                <div class="order-item-row">
+                                    <div>
+                                        <strong style="font-size: 14px;">${item.name}</strong>
+                                        <div style="font-size: 12px; color: var(--text-light);">${item.price.toLocaleString()} MMK x ${item.quantity} = <strong>${itemTotal.toLocaleString()} MMK</strong></div>
+                                    </div>
+                                    ${isPending ? `
+                                        <div class="qty-controls">
+                                            <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, -1)">-</button>
+                                            <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
+                                            <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, 1)">+</button>
+                                        </div>
+                                    ` : `
+                                        <span style="font-weight: bold; font-size: 14px;">x${item.quantity}</span>
+                                    `}
+                                </div>
+                            `;
+                        });
+
+                        container.innerHTML += `
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <div>
+                                        <strong>Order ID: #${orderId.substring(0, 6)}</strong>
+                                        <div style="font-size: 12px; color: var(--text-light); margin-top: 2px;">Payment: ${order.paymentMethod}</div>
+                                    </div>
+                                    <span class="order-status-badge ${statusClass}">${order.status || 'Pending'}</span>
+                                </div>
+                                <div>${itemsHtml}</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
+                                    <span style="font-weight: bold; font-size: 15px;">Total Amount:</span>
+                                    <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${order.total.toLocaleString()} MMK</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }, error => {
+                    console.error("Error fetching orders: ", error);
+                    container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။ (Index လိုအပ်နေနိုင်ပါသည်)</p>`;
+                });
+        }
+
+        // Live Quantity Adjust for Placed Orders (Only when Status is 'Pending')
+        async function updateLiveOrderQty(orderId, itemIndex, delta) {
+            try {
+                const orderRef = db.collection("orders").doc(orderId);
+                const doc = await orderRef.get();
+
+                if (!doc.exists) return;
+
+                const orderData = doc.data();
+                if (orderData.status !== "Pending") {
+                    alert("မီးဖိုချောင်မှ အစားအသောက် စတင်ပြင်ဆင်နေပြီဖြစ်သောကြောင့် ပြင်ဆင်၍ မရတော့ပါ။");
+                    return;
+                }
+
+                let items = orderData.items;
+                items[itemIndex].quantity += delta;
+
+                if (items[itemIndex].quantity <= 0) {
+                    items.splice(itemIndex, 1);
+                }
+
+                if (items.length === 0) {
+                    await orderRef.delete();
+                    alert("အော်ဒါထဲတွင် အစားအသောက် မရှိတော့သဖြင့် အော်ဒါ ဖျက်လိုက်ပါပြီ။");
+                    return;
+                }
+
+                const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                await orderRef.update({
+                    items: items,
+                    total: newTotal
+                });
+
+            } catch (error) {
+                console.error("Error updating live order: ", error);
+                alert("အော်ဒါ ပြင်ဆင်ရာတွင် အဆင်မပြေပါ၊ ပြန်လည် ကြိုးစားကြည့်ပါ။");
             }
         }
     </script>
