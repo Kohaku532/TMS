@@ -117,4 +117,78 @@
             grandTotalRevenue += orderTotal;
         });
 
-        // Display Overall Total
+        // Display Overall Total Income
+        totalIncomeElement.innerText = `${grandTotalRevenue.toLocaleString()} MMK`;
+
+        // Update Daily stats and orders list based on selected date
+        filterSalesByDate();
+    });
+
+    function filterSalesByDate() {
+        const selectedDateStr = salesDateInput.value;
+        if (!selectedDateStr) return;
+
+        let dailyRevenue = 0;
+        ordersContainer.innerHTML = "";
+        displayDateLabel.innerText = selectedDateStr;
+
+        // Filter orders based on selected date
+        const filteredOrders = allOrders.filter(order => {
+            const createdAt = order.timestamp || order.createdAt;
+            if (createdAt && typeof createdAt.toDate === 'function') {
+                return createdAt.toDate().toLocaleDateString('sv-SE') === selectedDateStr;
+            }
+            return false;
+        });
+
+        // Update Daily Sales Count
+        dailySalesCountElement.innerText = `${filteredOrders.length} Orders`;
+
+        if (filteredOrders.length === 0) {
+            ordersContainer.innerHTML = `<p style='text-align:center; color: #777;'>No orders found on ${selectedDateStr}.</p>`;
+            dailyIncomeElement.innerText = "0 MMK";
+            return;
+        }
+
+        filteredOrders.forEach(order => {
+            const orderTotal = Number(order.total || 0);
+            const createdAt = order.timestamp || order.createdAt;
+            let orderTime = (createdAt && typeof createdAt.toDate === 'function') 
+                ? createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                : "";
+
+            // Accumulate Daily Income
+            dailyRevenue += orderTotal;
+
+            let itemsText = (order.items && Array.isArray(order.items)) 
+                ? order.items.map(i => `${i.name} (x${i.quantity})`).join(", ") 
+                : "";
+
+            const statusClass = (order.status === 'Finished' || order.status === 'Completed') ? 'status-finished' : 'status-pending';
+            const orderStatus = order.status || 'Pending';
+
+            ordersContainer.innerHTML += `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span>Table ${order.table || 'N/A'} 
+                            <span class="payment-badge">${order.paymentMethod || 'Cash'}</span>
+                            <span class="status-badge ${statusClass}">${orderStatus}</span>
+                        </span>
+                        <span class="time-badge">${orderTime}</span>
+                    </div>
+                    <div class="order-items"><strong>Items:</strong> ${itemsText}</div>
+                    <div class="order-footer">
+                        <span>Amount:</span>
+                        <span style="color: #2ed573;">${orderTotal.toLocaleString()} MMK</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Display Daily Income for selected date
+        dailyIncomeElement.innerText = `${dailyRevenue.toLocaleString()} MMK`;
+    }
+</script>
+
+</body>
+</html>
