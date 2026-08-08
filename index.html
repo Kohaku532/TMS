@@ -162,9 +162,15 @@
         /* Menu Grid */
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(2, 1fr));
             gap: 12px;
-            padding :16px;
+            padding: 16px;
+        }
+        @media (min-width: 760px){
+            .menu-grid{
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
         }
 
         .food-card {
