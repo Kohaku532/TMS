@@ -675,14 +675,14 @@
             filterMenuItems();
         });
 
-        // // Listen for Realtime Order Updates to show Receipt Noti & Sound Effect
-        // db.collection("orders")
-        //     .where("table", "==", currentTable)
-        //     .onSnapshot(snapshot => {
-        //         if (isInitialLoad) {
-        //             isInitialLoad = false;
-        //             return;
-        //         }
+        // Listen for Realtime Order Updates to show Receipt Noti & Sound Effect
+        db.collection("orders")
+            .where("table", "==", currentTable)
+            .onSnapshot(snapshot => {
+                if (isInitialLoad) {
+                    isInitialLoad = false;
+                    return;
+                }
 
                 snapshot.docChanges().forEach(change => {
                     if (change.type === "modified") {
@@ -701,21 +701,22 @@
             });
 
         // Switch Between Pages (Menu vs Orders)
-        // function switchPage(pageName) {
-        //     document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-        //     document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+        function switchPage(pageName) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+            // document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
 
-        //     if (pageName === 'menu') {
-        //         document.getElementById('menuView').classList.add('active');
-        //         document.getElementById('btnMenuTab').classList.add('active');
-        //         document.getElementById('cartFloatBtn').style.display = 'flex';
-        //     } else if (pageName === 'orders') {
-        //         document.getElementById('ordersView').classList.add('active');
-        //         document.getElementById('btnOrdersTab').classList.add('active');
-        //         document.getElementById('cartFloatBtn').style.display = 'none';
-        //         fetchTableOrders();
-        //     }
-        // }
+            if (pageName === 'menu') {
+                document.getElementById('menuView').classList.add('active');
+                document.getElementById('btnMenuTab').classList.add('active');
+                document.getElementById('cartFloatBtn').style.display = 'flex';
+             } 
+            //   else if (pageName === 'orders') {
+            //     document.getElementById('ordersView').classList.add('active');
+            //     document.getElementById('btnOrdersTab').classList.add('active');
+            //     document.getElementById('cartFloatBtn').style.display = 'none';
+            //     fetchTableOrders();
+            // }
+        }
 
         // Filter and Render Menu Items
         function filterMenuItems() {
