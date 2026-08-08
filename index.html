@@ -507,6 +507,10 @@
             <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
                 <i class="fa-solid fa-book-open"></i> Menu
             </button>
+            </button>
+            <button class="nav-tab-btn" id="btnOrdersTab" onclick="switchPage('orders')">
+                <i class="fa-solid fa-receipt"></i> Orders
+            </button>
             <div class="table-select-box">
                <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: -</div>
             </div>
@@ -554,14 +558,14 @@
         </div>
 
         <!-- PAGE 2: MY ORDERS & TRACKING VIEW -->
-        <!-- <div id="ordersView" class="page-view">
+        <div id="ordersView" class="page-view">
             <h2 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Active Table Orders
             </h2>
             <div id="activeOrdersContainer">
                 <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Loading orders...</p>
             </div>
-        </div> -->
+        </div>
 
     </div>
 
@@ -710,12 +714,12 @@
                 document.getElementById('btnMenuTab').classList.add('active');
                 document.getElementById('cartFloatBtn').style.display = 'flex';
              } 
-            //   else if (pageName === 'orders') {
-            //     document.getElementById('ordersView').classList.add('active');
-            //     document.getElementById('btnOrdersTab').classList.add('active');
-            //     document.getElementById('cartFloatBtn').style.display = 'none';
-            //     fetchTableOrders();
-            // }
+              else if (pageName === 'orders') {
+                document.getElementById('ordersView').classList.add('active');
+                document.getElementById('btnOrdersTab').classList.add('active');
+                document.getElementById('cartFloatBtn').style.display = 'none';
+                fetchTableOrders();
+            }
         }
 
         // Filter and Render Menu Items
@@ -967,26 +971,26 @@
                             });
                         }
 
-                //         container.innerHTML += `
-                //             <div class="order-card">
-                //                 <div class="order-header">
-                //                     <div>
-                //                         <strong>Order ID: #${orderId.substring(0, 6)}</strong>
-                //                     </div>
-                //                     <span class="order-status-badge ${statusClass}">${order.status || 'Pending'}</span>
-                //                 </div>
-                //                 <div>${itemsHtml}</div>
-                //                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                //                     <span style="font-weight: bold; font-size: 15px;">Total Amount:</span>
-                //                     <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${(order.total || 0).toLocaleString()} MMK</span>
-                //                 </div>
-                //             </div>
-                //         `;
-                //     });
-                // }, error => {
-                //     console.error("Error fetching orders: ", error);
-                //     container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။</p>`;
-                // });
+                        container.innerHTML += `
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <div>
+                                        <strong>Order ID: #${orderId.substring(0, 6)}</strong>
+                                    </div>
+                                    <span class="order-status-badge ${statusClass}">${order.status || 'Pending'}</span>
+                                </div>
+                                <div>${itemsHtml}</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
+                                    <span style="font-weight: bold; font-size: 15px;">Total Amount:</span>
+                                    <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${(order.total || 0).toLocaleString()} MMK</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }, error => {
+                    console.error("Error fetching orders: ", error);
+                    container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။</p>`;
+                });
         }
 
         // Live Quantity Adjust for Placed Orders (Pending status only)
@@ -1018,10 +1022,10 @@
                         updatedItems.splice(itemIndex, 1);
                     }
 
-                    if (updatedItems.length === 0) {
-                        transaction.delete(orderRef);
-                        return;
-                    }
+                    // if (updatedItems.length === 0) {
+                    //     transaction.delete(orderRef);
+                    //     return;
+                    // }
 
                     const newTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
