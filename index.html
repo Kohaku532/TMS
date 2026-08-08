@@ -1,886 +1,856 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Restaurant - Order Online</title>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase Compat SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Restaurant - Order Online</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-    <style>
-        :root {
-            --primary: #ff4757;
-            --primary-hover: #ff6b81;
-            --bg: #82dbf3;
-            --text-dark: #2f3542;
-            --text-light: #747d8c;
-            --card-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            --success: #2ed573;
-            --warning: #ffa502;
-        }
+    <style>
+        :root {
+            --primary: #ff4757;
+            --primary-hover: #ff6b81;
+            --bg: #82dbf3;
+            --text-dark: #2f3542;
+            --text-light: #747d8c;
+            --card-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            --success: #2ed573;
+            --warning: #ffa502;
+        }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: var(--bg); color: var(--text-dark); padding-bottom: 80px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg); color: var(--text-dark); padding-bottom: 80px; }
 
-        header {
-            background: #6bbeef;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
-            padding: 12px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        header {
+            background: #6bbeef;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+            padding: 12px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
 
-        .logo { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .logo i { font-size: 26px; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .logo i { font-size: 26px; }
 
-        .nav-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-        .nav-tab-btn {
-            background: #f1f2f6;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-dark);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
+        .nav-tab-btn {
+            background: #f1f2f6;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
 
-        .nav-tab-btn.active {
-            background: var(--primary);
-            color: white;
-        }
+        .nav-tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
 
-        .table-info { background: var(--light-gray); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        .table-info { background: #f1f2f6; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
 
-        .hero {
-            background: linear-gradient(135deg, rgba(239, 139, 8, 0.9), rgba(255, 107, 129, 0.8)), 
-                        url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80') center/cover;
-            color: white;
-            text-align: center;
-            padding: 35px 20px;
-            border-radius: 0 0 25px 25px;
-            margin-bottom: 20px;
-        }
+        .hero {
+            background: linear-gradient(135deg, rgba(239, 139, 8, 0.9), rgba(255, 107, 129, 0.8)), 
+                        url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80') center/cover;
+            color: white;
+            text-align: center;
+            padding: 35px 20px;
+            border-radius: 0 0 25px 25px;
+            margin-bottom: 20px;
+        }
 
-        .hero h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
-        .hero p { font-size: 14px; opacity: 0.9; }
+        .hero h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
+        .hero p { font-size: 14px; opacity: 0.9; }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
-        .page-view { display: none; }
-        .page-view.active { display: block; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+        .page-view { display: none; }
+        .page-view.active { display: block; }
 
-        .filter-section {
-            margin-bottom: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .filter-section {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
 
-        .search-box { position: relative; width: 100%; }
+        .search-box { position: relative; width: 100%; }
 
-        .search-box input {
-            width: 100%;
-            padding: 12px 16px 12px 45px;
-            border-radius: 30px;
-            border: 1px solid #e2e8f0;
-            background: white;
-            font-size: 15px;
-            outline: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            transition: all 0.2s ease;
-        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            font-size: 15px;
+            outline: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
+        }
 
-        .search-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(255, 47, 87, 0.15);
-        }
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(255, 47, 87, 0.15);
+        }
 
-        .search-box i {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-            font-size: 16px;
-        }
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 16px;
+        }
 
-        .category-tabs {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-            scrollbar-width: none;
-        }
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+        }
 
-        .category-tabs::-webkit-scrollbar { display: none; }
+        .category-tabs::-webkit-scrollbar { display: none; }
 
-        .cat-btn {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .cat-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-        .cat-btn.active, .cat-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(255, 47, 87, 0.25);
-        }
+        .cat-btn.active, .cat-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(255, 47, 87, 0.25);
+        }
 
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 12px;
-        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 12px;
+        }
 
-        @media (min-width: 768px) {
-            .menu-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-            }
-        }
+        @media (min-width: 768px) {
+            .menu-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+        }
 
-        .food-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
+        .food-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
 
-        .food-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-        }
+        .food-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
 
-        .card-img-wrap {
-            width: 100%;
-            height: 130px; 
-            position: relative;
-            overflow: hidden;
-        }
+        .card-img-wrap {
+            width: 100%;
+            height: 130px; 
+            position: relative;
+            overflow: hidden;
+        }
 
-        @media (min-width: 768px) {
-            .card-img-wrap {
-                height: 170px; 
-            }
-        }
+        @media (min-width: 768px) {
+            .card-img-wrap {
+                height: 170px; 
+            }
+        }
 
-        .food-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
+        .food-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
 
-        .food-card:hover .food-img { transform: scale(1.08); }
+        .food-card:hover .food-img { transform: scale(1.08); }
 
-        .card-details {
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            justify-content: space-between;
-        }
+        .card-details {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
 
-        .food-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
-        .food-price { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+        .food-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+        .food-price { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
 
-        @media (min-width: 768px) {
-            .food-title { font-size: 16px; margin-bottom: 6px; }
-            .food-price { font-size: 16px; margin-bottom: 12px; }
-            .card-details { padding: 15px; }
-        }
+        @media (min-width: 768px) {
+            .food-title { font-size: 16px; margin-bottom: 6px; }
+            .food-price { font-size: 16px; margin-bottom: 12px; }
+            .card-details { padding: 15px; }
+        }
 
-        .btn-add-cart {
-            width: 100%;
-            background: #f1f2f6;
-            color: var(--text-dark);
-            border: none;
-            padding: 8px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-        }
+        .btn-add-cart {
+            width: 100%;
+            background: #f1f2f6;
+            color: var(--text-dark);
+            border: none;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
 
-        .btn-add-cart:hover {
-            background: var(--primary);
-            color: white;
-        }
+        .btn-add-cart:hover {
+            background: var(--primary);
+            color: white;
+        }
 
-        /* Floating Cart Trigger */
-        .cart-float-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: var(--primary);
-            color: white;
-            padding: 14px 22px;
-            border-radius: 50px;
-            box-shadow: 0 8px 20px rgba(255, 47, 87, 0.4);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            z-index: 99;
-            transition: transform 0.2s ease;
-        }
+        /* Floating Cart Trigger */
+        .cart-float-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: var(--primary);
+            color: white;
+            padding: 14px 22px;
+            border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(255, 47, 87, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            z-index: 99;
+            transition: transform 0.2s ease;
+        }
 
-        .cart-float-btn:hover { transform: scale(1.05); }
+        .cart-float-btn:hover { transform: scale(1.05); }
 
-        .cart-count {
-            background: white;
-            color: var(--primary);
-            font-weight: 800;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
+        .cart-count {
+            background: white;
+            color: var(--primary);
+            font-weight: 800;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
 
-        /* Side Drawer Cart Panel */
-        .cart-drawer-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+        /* Side Drawer Cart Panel */
+        .cart-drawer-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
 
-        .cart-drawer-overlay.active { display: block; opacity: 1; }
+        .cart-drawer-overlay.active { display: block; opacity: 1; }
 
-        .cart-drawer {
-            position: fixed;
-            top: 0; right: -400px;
-            width: 100%; max-width: 380px; height: 100%;
-            background: white;
-            z-index: 1001;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.15);
-            transition: right 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
+        .cart-drawer {
+            position: fixed;
+            top: 0; right: -400px;
+            width: 100%; max-width: 380px; height: 100%;
+            background: white;
+            z-index: 1001;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
 
-        .cart-drawer.active { right: 0; }
+        .cart-drawer.active { right: 0; }
 
-        .drawer-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .drawer-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        .drawer-close { font-size: 20px; cursor: pointer; color: var(--text-light); }
+        .drawer-close { font-size: 20px; cursor: pointer; color: var(--text-light); }
 
-        .drawer-body {
-            padding: 20px;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
+        .drawer-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
 
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 1px dashed #eee;
-        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #eee;
+        }
 
-        .qty-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f1f2f6;
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f2f6;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
 
-        .qty-btn {
-            border: none;
-            background: transparent;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 2px 6px;
-            color: var(--text-dark);
-        }
+        .qty-btn {
+            border: none;
+            background: transparent;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 2px 6px;
+            color: var(--text-dark);
+        }
 
-        .drawer-footer {
-            padding: 20px;
-            border-top: 1px solid #eee;
-            background: #fafafa;
-        }
+        .drawer-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: #fafafa;
+        }
 
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            font-weight: 800;
-            margin-bottom: 15px;
-        }
+        .btn-checkout {
+            width: 100%;
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
+        }
 
-        .payment-method-box { margin-bottom: 15px; }
+        /* Order Tracking Page Styles */
+        .order-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            border-left: 6px solid var(--primary);
+        }
 
-        .payment-method-box select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            outline: none;
-            font-weight: 600;
-        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
 
-        .btn-checkout {
-            width: 100%;
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
-        }
+        .order-status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
 
-        /* Order Tracking Page Styles */
-        .order-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--card-shadow);
-            border-left: 6px solid var(--primary);
-        }
+        .status-pending { background: #ffeaa7; color: #d63031; }
+        .status-preparing { background: #81ecec; color: #00cec9; }
+        .status-ready { background: #74b9ff; color: #0984e3; }
+        .status-completed { background: #55efc4; color: #00b894; }
 
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 15px;
-        }
+        .order-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #f1f2f6;
+        }
 
-        .order-status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
+        .live-qty-btn {
+            background: #e2e8f0;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
 
-        .status-pending { background: #ffeaa7; color: #d63031; }
-        .status-preparing { background: #81ecec; color: #00cec9; }
-        .status-completed { background: #55efc4; color: #00b894; }
-
-        .order-item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px dashed #f1f2f6;
-        }
-
-        .live-qty-btn {
-            background: #e2e8f0;
-            border: none;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .live-qty-btn:hover { background: var(--primary); color: white; }
-    </style>
+        .live-qty-btn:hover { background: var(--primary); color: white; }
+    </style>
 </head>
 <body>
 
-    <!-- Header / Navbar -->
-    <header>
-        <div class="logo">
-            <i class="fa-solid fa-utensils"></i> Ponyo
-        </div>
+    <!-- Header / Navbar -->
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-utensils"></i> Ponyo
+        </div>
 
-        <div class="nav-controls">
-            <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
-                <i class="fa-solid fa-book-open"></i> Menu
-            </button>
-            <div class="table-select-box">
-               <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: Auto</div>
-            </div>
-        </div>
-    </header>
+        <div class="nav-controls">
+            <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
+                <i class="fa-solid fa-book-open"></i> Menu
+            </button>
+            <button class="nav-tab-btn" id="btnOrdersTab" onclick="switchPage('orders')">
+                <i class="fa-solid fa-receipt"></i> Orders
+            </button>
+            <div class="table-select-box">
+               <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: Auto</div>
+            </div>
+        </div>
+    </header>
 
-    <!-- Hero Section -->
-    <div class="hero">
-        <h1>Delicious Food, Fast Service</h1>
-        <p>Choose your favorite meal and place order directly from your table</p>
-    </div>
+    <!-- Hero Section -->
+    <div class="hero">
+        <h1>Delicious Food, Fast Service</h1>
+        <p>Choose your favorite meal and place order directly from your table</p>
+    </div>
 
-    <!-- Main Content Container -->
-    <div class="container">
+    <!-- Main Content Container -->
+    <div class="container">
 
-        <!-- PAGE 1: MENU VIEW -->
-        <div id="menuView" class="page-view active">
-            <!-- Search Bar & Category Filters -->
-            <div class="filter-section">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="searchInput" placeholder="Search food or drinks..." oninput="filterMenuItems()">
-                </div>
+        <!-- PAGE 1: MENU VIEW -->
+        <div id="menuView" class="page-view active">
+            <!-- Search Bar & Category Filters -->
+            <div class="filter-section">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Search food or drinks..." oninput="filterMenuItems()">
+                </div>
 
-                <div class="category-tabs">
-                    <button class="cat-btn active" onclick="selectCategory('All', this)">
-                        <i class="fa-solid fa-border-all"></i> All
-                    </button>
-                    <button class="cat-btn" onclick="selectCategory('Food', this)">
-                        <i class="fa-solid fa-bowl-rice"></i> Food
-                    </button>
-                    <button class="cat-btn" onclick="selectCategory('Drink', this)">
-                        <i class="fa-solid fa-mug-hot"></i> Drink
-                    </button>
+                <div class="category-tabs">
+                    <button class="cat-btn active" onclick="selectCategory('All', this)">
+                        <i class="fa-solid fa-border-all"></i> All
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('Food', this)">
+                        <i class="fa-solid fa-bowl-rice"></i> Food
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('Drink', this)">
+                        <i class="fa-solid fa-mug-hot"></i> Drink
+                    </button>
+                    <button class="cat-btn" onclick="selectCategory('Dessert', this)">
+                        <i class="fa-solid fa-ice-cream"></i> Dessert
+                    </button>
+                </div>
+            </div>
 
-                    <button class="cat-btn" onclick="selectCategory('Dessert', this)">
-                        <i class="fa-solid fa-ice-cream"></i> Dessert
-                    </button>
-                </div>
-            </div>
+            <!-- Menu Grid -->
+            <div class="menu-grid" id="menuGrid">
+                <p style="text-align: center; grid-column: 1/-1; color: var(--text-light);">Loading delicious menu...</p>
+            </div>
+        </div>
 
-            <!-- Menu Grid -->
-            <div class="menu-grid" id="menuGrid">
-                <p style="text-align: center; grid-column: 1/-1; color: var(--text-light);">Loading delicious menu...</p>
-            </div>
-        </div>
+        <!-- PAGE 2: MY ORDERS & TRACKING VIEW -->
+        <div id="ordersView" class="page-view">
+            <h2 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Active Table Orders
+            </h2>
+            <div id="activeOrdersContainer">
+                <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Loading orders...</p>
+            </div>
+        </div>
 
-        <!-- PAGE 2: MY ORDERS & TRACKING VIEW -->
-        <div id="ordersView" class="page-view">
-            <h2 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Active Table Orders
-            </h2>
-            <div id="activeOrdersContainer">
-                <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Loading orders...</p>
-            </div>
-        </div>
+    </div>
 
-    </div>
+    <!-- Floating Cart Button -->
+    <div class="cart-float-btn" id="cartFloatBtn" onclick="toggleCartDrawer(true)">
+        <i class="fa-solid fa-basket-shopping"></i>
+        <span>My Order</span>
+        <div class="cart-count" id="cartCount">0</div>
+    </div>
 
-    <!-- Floating Cart Button -->
-    <div class="cart-float-btn" id="cartFloatBtn" onclick="toggleCartDrawer(true)">
-        <i class="fa-solid fa-basket-shopping"></i>
-        <span>My Order</span>
-        <div class="cart-count" id="cartCount">0</div>
-    </div>
+    <!-- Slide Cart Drawer Overlay -->
+    <div class="cart-drawer-overlay" id="cartOverlay" onclick="toggleCartDrawer(false)"></div>
 
-    <!-- Slide Cart Drawer Overlay -->
-    <div class="cart-drawer-overlay" id="cartOverlay" onclick="toggleCartDrawer(false)"></div>
+    <!-- Slide Cart Drawer Panel -->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="drawer-header">
+            <h3><i class="fa-solid fa-receipt"></i> Your Order List</h3>
+            <i class="fa-solid fa-xmark drawer-close" onclick="toggleCartDrawer(false)"></i>
+        </div>
 
-    <!-- Slide Cart Drawer Panel -->
-    <div class="cart-drawer" id="cartDrawer">
-        <div class="drawer-header">
-            <h3><i class="fa-solid fa-receipt"></i> Your Order List</h3>
-            <i class="fa-solid fa-xmark drawer-close" onclick="toggleCartDrawer(false)"></i>
-        </div>
+        <div class="drawer-body" id="cartItemsContainer">
+            <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Your basket is empty!</p>
+        </div>
 
-        <div class="drawer-body" id="cartItemsContainer">
-            <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Your basket is empty!</p>
-        </div>
+        <div class="drawer-footer">
+            <button class="btn-checkout" onclick="submitOrder()">Confirm Order</button>
+        </div>
+    </div>
 
-        <div class="drawer-footer">
-            <button class="btn-checkout" onclick="submitOrder()">Confirm Order</button>
-        </div>
-    </div>
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
+            authDomain: "smart-restaurant-85871.firebaseapp.com",
+            projectId: "smart-restaurant-85871",
+            storageBucket: "smart-restaurant-85871.firebasestorage.app",
+            messagingSenderId: "909399970300",
+            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-    <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
-            authDomain: "smart-restaurant-85871.firebaseapp.com",
-            projectId: "smart-restaurant-85871",
-            storageBucket: "smart-restaurant-85871.firebasestorage.app",
-            messagingSenderId: "909399970300",
-            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        let allMenuItems = [];
+        let selectedCategory = 'All';
+        let cart = [];
+        let ordersUnsubscribe = null;
 
-        let allMenuItems = [];
-        let selectedCategory = 'All';
-        let cart = [];
-        let ordersUnsubscribe = null;
+        const menuGrid = document.getElementById('menuGrid');
 
-        const menuGrid = document.getElementById('menuGrid');
+        // Realtime Menu Fetch
+        db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+            allMenuItems = [];
+            snapshot.forEach(doc => {
+                allMenuItems.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+            filterMenuItems();
+        });
 
-        // Realtime Menu Fetch
-        db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-            allMenuItems = [];
-            snapshot.forEach(doc => {
-                allMenuItems.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-            filterMenuItems();
-        });
+        // Switch Between Pages (Menu vs Orders)
+        function switchPage(pageName) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
 
-        // Switch Between Pages (Menu vs Orders)
-        function switchPage(pageName) {
-            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+            if (pageName === 'menu') {
+                document.getElementById('menuView').classList.add('active');
+                document.getElementById('btnMenuTab').classList.add('active');
+                document.getElementById('cartFloatBtn').style.display = 'flex';
+            } else if (pageName === 'orders') {
+                document.getElementById('ordersView').classList.add('active');
+                document.getElementById('btnOrdersTab').classList.add('active');
+                document.getElementById('cartFloatBtn').style.display = 'none';
+                fetchTableOrders();
+            }
+        }
 
-            if (pageName === 'menu') {
-                document.getElementById('menuView').classList.add('active');
-                document.getElementById('btnMenuTab').classList.add('active');
-                document.getElementById('cartFloatBtn').style.display = 'flex';
-            } else if (pageName === 'orders') {
-                document.getElementById('ordersView').classList.add('active');
-                document.getElementById('btnOrdersTab').classList.add('active');
-                document.getElementById('cartFloatBtn').style.display = 'none';
-                fetchTableOrders();
-            }
-        }
+        // Filter and Render Menu Items
+        function filterMenuItems() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
 
-        // Filter and Render Menu Items
-        function filterMenuItems() {
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filtered = allMenuItems.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(searchQuery);
+                const itemCategory = item.category || 'Food';
+                const matchesCategory = (selectedCategory === 'All') || (itemCategory.toLowerCase() === selectedCategory.toLowerCase());
 
-            const filtered = allMenuItems.filter(item => {
-                const matchesSearch = item.name.toLowerCase().includes(searchQuery);
-                const itemCategory = item.category || 'Food';
-                const matchesCategory = (selectedCategory === 'All') || (itemCategory.toLowerCase() === selectedCategory.toLowerCase());
+                return matchesSearch && matchesCategory;
+            });
 
-                return matchesSearch && matchesCategory;
-            });
+            renderMenu(filtered);
+        }
 
-            renderMenu(filtered);
-        }
+        // Render Menu Cards UI
+        function renderMenu(items) {
+            menuGrid.innerHTML = "";
+            if (items.length === 0) {
+                menuGrid.innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: var(--text-light); margin-top: 20px;">No items found matching your search.</p>`;
+                return;
+            }
 
-        // Render Menu Cards UI
-        function renderMenu(items) {
-            menuGrid.innerHTML = "";
-            if (items.length === 0) {
-                menuGrid.innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: var(--text-light); margin-top: 20px;">No items found matching your search.</p>`;
-                return;
-            }
+            items.forEach(item => {
+                const defaultImg = "https://via.placeholder.com/200?text=Food";
+                menuGrid.innerHTML += `
+                    <div class="food-card">
+                        <div class="card-img-wrap">
+                            <img src="${item.image || defaultImg}" class="food-img" alt="${item.name}" onerror="this.src='${defaultImg}'">
+                        </div>
+                        <div class="card-details">
+                            <div>
+                                <div class="food-title">${item.name}</div>
+                                <div class="food-price">${Number(item.price).toLocaleString()} MMK</div>
+                            </div>
+                            <button class="btn-add-cart" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">
+                                <i class="fa-solid fa-plus"></i> Add to Order
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
 
-            items.forEach(item => {
-                const defaultImg = "https://via.placeholder.com/200?text=Food";
-                menuGrid.innerHTML += `
-                    <div class="food-card">
-                        <div class="card-img-wrap">
-                            <img src="${item.image || defaultImg}" class="food-img" alt="${item.name}" onerror="this.src='${defaultImg}'">
-                        </div>
-                        <div class="card-details">
-                            <div>
-                                <div class="food-title">${item.name}</div>
-                                <div class="food-price">${Number(item.price).toLocaleString()} MMK</div>
-                            </div>
-                            <button class="btn-add-cart" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">
-                                <i class="fa-solid fa-plus"></i> Add to Order
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
+        // Category Tab Switcher
+        function selectCategory(category, btnElement) {
+            selectedCategory = category;
+            
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
 
-        // Category Tab Switcher
-        function selectCategory(category, btnElement) {
-            selectedCategory = category;
-            
-            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
+            filterMenuItems();
+        }
 
-            filterMenuItems();
-        }
+        // Cart Drawer Open/Close
+        function toggleCartDrawer(open) {
+            const drawer = document.getElementById('cartDrawer');
+            const overlay = document.getElementById('cartOverlay');
+            if (open) {
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
 
-        // Cart Drawer Open/Close
-        function toggleCartDrawer(open) {
-            const drawer = document.getElementById('cartDrawer');
-            const overlay = document.getElementById('cartOverlay');
-            if (open) {
-                drawer.classList.add('active');
-                overlay.classList.add('active');
-            } else {
-                drawer.classList.remove('active');
-                overlay.classList.remove('active');
-            }
-        }
+        // Add Item to Cart
+        function addToCart(id, name, price) {
+            const existingItem = cart.find(i => i.id === id);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id, name, price, quantity: 1 });
+            }
+            updateCartUI();
+        }
 
-        // Add Item to Cart
-        function addToCart(id, name, price) {
-            const existingItem = cart.find(i => i.id === id);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ id, name, price, quantity: 1 });
-            }
-            updateCartUI();
-        }
+        // Update Item Quantity (In-Cart)
+        function updateQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.id !== id);
+                }
+            }
+            updateCartUI();
+        }
 
-        // Update Item Quantity (In-Cart)
-        function updateQty(id, delta) {
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.quantity += delta;
-                if (item.quantity <= 0) {
-                    cart = cart.filter(i => i.id !== id);
-                }
-            }
-            updateCartUI();
-        }
+        // Update Cart Render
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cartItemsContainer');
+            const cartCount = document.getElementById('cartCount');
 
-        // Update Cart Render
-        function updateCartUI() {
-            const cartItemsContainer = document.getElementById('cartItemsContainer');
-            const cartCount = document.getElementById('cartCount');
+            let totalItems = 0;
+            let grandTotal = 0;
 
-            let totalItems = 0;
-            let grandTotal = 0;
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">Your basket is empty!</p>`;
+            } else {
+                cartItemsContainer.innerHTML = "";
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    totalItems += item.quantity;
+                    grandTotal += itemTotal;
 
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">Your basket is empty!</p>`;
-            } else {
-                cartItemsContainer.innerHTML = "";
-                cart.forEach(item => {
-                    const itemTotal = item.price * item.quantity;
-                    totalItems += item.quantity;
-                    grandTotal += itemTotal;
+                    cartItemsContainer.innerHTML += `
+                        <div class="cart-item">
+                            <div>
+                                <strong style="font-size: 14px;">${item.name}</strong>
+                                <div style="font-size: 12px; color: var(--primary); font-weight: bold; margin-top: 2px;">
+                                    ${itemTotal.toLocaleString()} MMK
+                                </div>
+                            </div>
+                            <div class="qty-controls">
+                                <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
+                                <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
+                                <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
 
-                    cartItemsContainer.innerHTML += `
-                        <div class="cart-item">
-                            <div>
-                                <strong style="font-size: 14px;">${item.name}</strong>
-                                <div style="font-size: 12px; color: var(--primary); font-weight: bold; margin-top: 2px;">
-                                    ${itemTotal.toLocaleString()} MMK
-                                </div>
-                            </div>
-                            <div class="qty-controls">
-                                <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
-                                <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
-                                <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
+            cartCount.innerText = totalItems;
+        }
 
-            cartCount.innerText = totalItems;
-        }
+        // Send Order to Firestore
+        async function submitOrder() {
+            if (cart.length === 0) {
+                alert("ကျေးဇူးပြု၍ အော်ဒါမှာရန် အစားအသောက်တစ်ခုခု ထည့်ပါ။");
+                return;
+            }
 
-        // Send Order to Firestore
-        async function submitOrder() {
-            if (cart.length === 0) {
-                alert("ကျေးဇူးပြု၍ အော်ဒါမှာရန် အစားအသောက်တစ်ခုခု ထည့်ပါ။");
-                return;
-            }
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            try {
+                await db.collection("orders").add({
+                    table: "Auto",
+                    items: cart,
+                    total: total,
+                    status: "Pending",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
-            try {
-                await db.collection("orders").add({
-                    table: "Auto",
-                    items: cart,
-                    total: total,
-                    status: "Pending",
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                alert("အော်ဒါ အောင်မြင်စွာ တင်ပြီးပါပြီ။ ကျေးဇူးတင်ပါသည်။");
+                cart = [];
+                updateCartUI();
+                toggleCartDrawer(false);
+                switchPage('orders');
+            } catch (error) {
+                console.error("Error ordering: ", error);
+                alert("အော်ဒါ တင်ရာတွင် အမှားအယွင်းရှိနေပါသည်။");
+            }
+        }
 
-                alert("အော်ဒါ အောင်မြင်စွာ တင်ပြီးပါပြီ။ ကျေးဇူးတင်ပါသည်။");
-                cart = [];
-                updateCartUI();
-                toggleCartDrawer(false);
-                switchPage('orders');
-            } catch (error) {
-                console.error("Error ordering: ", error);
-                alert("အော်ဒါ တင်ရာတွင် အမှားအယွင်းရှိနေပါသည်။");
-            }
-        }
+        // Notification handler function
+        function showReadyNotification(orderId) {
+            alert(`သင့်အော်ဒါ ID #${orderId.substring(0, 6)} အဆင်သင့်ဖြစ်ပါပြီ။`);
+        }
 
-        // Fetch Orders for Selected Table in Realtime
-        function fetchTableOrders() {
-            const container = document.getElementById('activeOrdersContainer');
+        // Fetch Orders for Selected Table in Realtime
+        function fetchTableOrders() {
+            const container = document.getElementById('activeOrdersContainer');
 
-            if (ordersUnsubscribe) ordersUnsubscribe();
+            if (ordersUnsubscribe) ordersUnsubscribe();
 
-            ordersUnsubscribe = db.collection("orders")
-                .orderBy("timestamp", "desc")
-                .onSnapshot(snapshot => {
-                    if (snapshot.empty) {
-                        container.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">မှာယူထားသော အော်ဒါ မရှိသေးပါ။</p>`;
-                        return;
-                    }
+            ordersUnsubscribe = db.collection("orders")
+                .orderBy("timestamp", "desc")
+                .onSnapshot(snapshot => {
+                    if (snapshot.empty) {
+                        container.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">မှာယူထားသော အော်ဒါ မရှိသေးပါ။</p>`;
+                        return;
+                    }
 
-                    container.innerHTML = "";
-                    snapshot.forEach(doc => {
-                        const order = doc.data();
-                        const orderId = doc.id;
-                        const statusClass = order.status ? `status-${order.status.toLowerCase()}` : 'status-pending';
+                    container.innerHTML = "";
 
-                        let itemsHtml = "";
-                        order.items.forEach((item, index) => {
-                            const itemTotal = item.price * item.quantity;
-                            const isPending = (order.status === "Pending");
+                    snapshot.docChanges().forEach(change => {
+                        const order = change.doc.data();
+                        const orderId = change.doc.id;
 
-                            itemsHtml += `
-                                <div class="order-item-row">
-                                    <div>
-                                        <strong style="font-size: 14px;">${item.name}</strong>
-                                        <div style="font-size: 12px; color: var(--text-light);">${item.price.toLocaleString()} MMK x ${item.quantity} = <strong>${itemTotal.toLocaleString()} MMK</strong></div>
-                                    </div>
-                                    ${isPending ? `
-                                        <div class="qty-controls">
-                                            <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, -1)">-</button>
-                                            <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
-                                            <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, 1)">+</button>
-                                        </div>
-                                    ` : `
-                                        <span style="font-weight: bold; font-size: 14px;">x${item.quantity}</span>
-                                    `}
-                                </div>
-                            `;
-                        });
+                        if (change.type === "modified") {
+                            if (order.status === "Completed" || order.status === "Ready") {
+                                showReadyNotification(orderId);
+                            }
+                        }
+                    });
 
-                        container.innerHTML += `
-                            <div class="order-card">
-                                <div class="order-header">
-                                    <div>
-                                        <strong>Order ID: #${orderId.substring(0, 6)}</strong>
-                                    </div>
-                                    <span class="order-status-badge ${statusClass}">${order.status || 'Pending'}</span>
-                                </div>
-                                <div>${itemsHtml}</div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                                    <span style="font-weight: bold; font-size: 15px;">Total Amount:</span>
-                                    <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${order.total.toLocaleString()} MMK</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }, error => {
-                    console.error("Error fetching orders: ", error);
-                    container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။</p>`;
-                });
-        }
+                    snapshot.forEach(doc => {
+                        const order = doc.data();
+                        const orderId = doc.id;
+                        const statusClass = order.status ? `status-${order.status.toLowerCase()}` : 'status-pending';
 
-        // Live Quantity Adjust for Placed Orders
-        async function updateLiveOrderQty(orderId, itemIndex, delta) {
-            try {
-                const orderRef = db.collection("orders").doc(orderId);
-                const doc = await orderRef.get();
+                        let itemsHtml = "";
+                        if (order.items && Array.isArray(order.items)) {
+                            order.items.forEach((item, index) => {
+                                const itemTotal = item.price * item.quantity;
+                                const isPending = (order.status === "Pending");
 
-                if (!doc.exists) return;
+                                itemsHtml += `
+                                    <div class="order-item-row">
+                                        <div>
+                                            <strong style="font-size: 14px;">${item.name}</strong>
+                                            <div style="font-size: 12px; color: var(--text-light);">${item.price.toLocaleString()} MMK x ${item.quantity} = <strong>${itemTotal.toLocaleString()} MMK</strong></div>
+                                        </div>
+                                        ${isPending ? `
+                                            <div class="qty-controls">
+                                                <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, -1)">-</button>
+                                                <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
+                                                <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, 1)">+</button>
+                                            </div>
+                                        ` : `
+                                            <span style="font-weight: bold; font-size: 14px;">x${item.quantity}</span>
+                                        `}
+                                    </div>
+                                `;
+                            });
+                        }
 
-                const orderData = doc.data();
-                if (orderData.status !== "Pending") {
-                    alert("မီးဖိုချောင်မှ အစားအသောက် စတင်ပြင်ဆင်နေပြီဖြစ်သောကြောင့် ပြင်ဆင်၍ မရတော့ပါ။");
-                    return;
-                }
+                        container.innerHTML += `
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <div>
+                                        <strong>Order ID: #${orderId.substring(0, 6)}</strong>
+                                    </div>
+                                    <span class="order-status-badge ${statusClass}">${order.status || 'Pending'}</span>
+                                </div>
+                                <div>${itemsHtml}</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
+                                    <span style="font-weight: bold; font-size: 15px;">Total Amount:</span>
+                                    <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${(order.total || 0).toLocaleString()} MMK</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }, error => {
+                    console.error("Error fetching orders: ", error);
+                    container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။</p>`;
+                });
+        }
 
-                let items = orderData.items;
-                items[itemIndex].quantity += delta;
+        // Live Quantity Adjust for Placed Orders
+        async function updateLiveOrderQty(orderId, itemIndex, delta) {
+            try {
+                const orderRef = db.collection("orders").doc(orderId);
+                const doc = await orderRef.get();
 
-                if (items[itemIndex].quantity <= 0) {
-                    items.splice(itemIndex, 1);
-                }
+                if (!doc.exists) return;
 
-                if (items.length === 0) {
-                    await orderRef.delete();
-                    alert("အော်ဒါထဲတွင် အစားအသောက် မရှိတော့သဖြင့် အော်ဒါ ဖျက်လိုက်ပါပြီ။");
-                    return;
-                }
+                const orderData = doc.data();
+                if (orderData.status !== "Pending") {
+                    alert("မီးဖိုချောင်မှ အစားအသောက် စတင်ပြင်ဆင်နေပြီဖြစ်သောကြောင့် ပြင်ဆင်၍ မရတော့ပါ။");
+                    return;
+                }
 
-                const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                await orderRef.update({
-                    items: items,
-                    total: newTotal
-                });
+                let items = orderData.items;
+                items[itemIndex].quantity += delta;
 
-            } catch (error) {
-                console.error("Error updating live order: ", error);
-                alert("အော်ဒါ ပြင်ဆင်ရာတွင် အဆင်မပြေပါ၊ ပြန်လည် ကြိုးစားကြည့်ပါ။");
-            }
-        }
-        // သုံးစွဲသူ ဖုန်းမှာ တိုက်ရိုက် Alert ကျလာစေရန် real-time order listener
-let trackedOrderIds = new Set(); // ယခင် အော်ဒါ狀態များကို မှတ်ထားရန်
+                if (items[itemIndex].quantity <= 0) {
+                    items.splice(itemIndex, 1);
+                }
 
-function fetchTableOrders() {
-    const container = document.getElementById('activeOrdersContainer');
+                if (items.length === 0) {
+                    await orderRef.delete();
+                    alert("အော်ဒါထဲတွင် အစားအသောက် မရှိတော့သဖြင့် အော်ဒါ ဖျက်လိုက်ပါပြီ။");
+                    return;
+                }
 
-    if (ordersUnsubscribe) ordersUnsubscribe();
+                const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                await orderRef.update({
+                    items: items,
+                    total: newTotal
+                });
 
-    ordersUnsubscribe = db.collection("orders")
-        .orderBy("timestamp", "desc")
-        .onSnapshot(snapshot => {
-            if (snapshot.empty) {
-                container.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">မှာယူထားသော အော်ဒါ မရှိသေးပါ။</p>`;
-                return;
-            }
-
-            container.innerHTML = "";
-
-            snapshot.docChanges().forEach(change => {
-                const order = change.doc.data();
-                const orderId = change.doc.id;
-
-                // Admin ဘက်က Status ကို 'Completed' သို့မဟုတ် 'Ready' ပြောင်းလိုက်ရင် Notification ကျမည်
-                if (change.type === "modified") {
-                    if (order.status === "Completed" || order.status === "Ready") {
-                        // Alert / Notification ပေါ်ပေးခြင်း
-                        showReadyNotification(orderId);
-                    }
-                }
-            });
-
-            // Order Card များကို UI တွင် Render လုပ်ခြင်း
-            snapshot.forEach(doc => {
-                const order = doc.data();
-                const orderId = doc.id;
-                const statusClass = order.status ? `status-${order.status.toLowerCase()}` : 's
+            } catch (error) {
+                console.error("Error updating live order: ", error);
+                alert("အော်ဒါ ပြင်ဆင်ရာတွင် အဆင်မပြေပါ၊ ပြန်လည် ကြိုးစားကြည့်ပါ။");
+            }
+        }
+    </script>
+</body>
+</html>
