@@ -14,7 +14,7 @@
         :root {
             --primary: #ff4757;
             --primary-hover: #ff6b81;
-            --bg: #f8f9fa;
+            --bg: #82dbf3;
             --text-dark: #2f3542;
             --text-light: #747d8c;
             --card-shadow: 0 10px 25px rgba(0,0,0,0.05);
@@ -27,7 +27,7 @@
 
         /* Header / Navbar */
         header {
-            background: #ffffff;
+            background: #7abfe7;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -69,29 +69,11 @@
             color: white;
         }
 
-        .table-select-box {
-            background: #f1f2f6;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .table-select-box select {
-            border: none;
-            background: transparent;
-            font-weight: bold;
-            color: var(--primary);
-            outline: none;
-            cursor: pointer;
-        }
+       .table-info { background: var(--light-gray); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
 
         /* Hero Banner */
         .hero {
-            background: linear-gradient(135deg, rgba(255, 71, 87, 0.9), rgba(255, 107, 129, 0.8)), 
+            background: linear-gradient(135deg, rgba(239, 139, 8, 0.9), rgba(255, 107, 129, 0.8)), 
                         url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80') center/cover;
             color: white;
             text-align: center;
@@ -102,6 +84,45 @@
 
         .hero h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
         .hero p { font-size: 14px; opacity: 0.9; }
+
+        *, *::before, *::after {
+      box-sizing: border-box; /* Padding ကြောင့် ဖုန်းမှာ မလျှံထွက်စေရန် */
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 12px; /* ဖုန်းမှာ ဘေးအစွန်းမကပ်အောင် padding ကို ၁၂ သို့ အနည်းငယ်လျှော့ထားသည် */
+      width: 100%;
+    }
+
+    /* ဖုန်းရော PC မှာပါ 2 Columns အသေပေါ်မည့် Grid */
+    .two-column-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* အမြဲတမ်း 2 Columns ခွဲမည် */
+      gap: 10px;                             /* ဖုန်းမှာ ကြားအကွာအဝေး အဆင်ပြေအောင် 10px ထားသည် */
+      margin: 20px 0;
+    }
+
+    /* Item Box များ Styling */
+    .card {
+      background: #ffffff;
+      padding: 12px;                        /* ဖုန်းမှာ စာမကျပ်အောင် padding ကို ၁၂ အထိလျှော့ထားသည် */
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      border: 1px solid #e0e0e0;
+      word-break: break-word;              /* စာသားရှည်ရင် ဘောင်ကျော်မထွက်စေရန် */
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 16px;                     /* ဖုန်းမှာ အဆင်ပြေမည့် စာလုံးအရွယ်အစား */
+    }
+
+    .card p {
+      margin-bottom: 0;
+      font-size: 14px;
+      color: #666;
+    }
 
         /* Main Container & Page Navigation Views */
         .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
@@ -449,27 +470,15 @@
     <!-- Header / Navbar -->
     <header>
         <div class="logo">
-            <i class="fa-solid fa-utensils"></i> SmartDine
+            <i class="fa-solid fa-utensils"></i> Ponyo
         </div>
 
         <div class="nav-controls">
             <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
                 <i class="fa-solid fa-book-open"></i> Menu
             </button>
-            <button class="nav-tab-btn" id="btnOrdersTab" onclick="switchPage('orders')">
-                <i class="fa-solid fa-clock-rotate-left"></i> My Orders
-            </button>
-
             <div class="table-select-box">
-                <i class="fa-solid fa-chair"></i>
-                <label for="tableNo">Table:</label>
-                <select id="tableNo" onchange="fetchTableOrders()">
-                    <option value="1">Table 1</option>
-                    <option value="2">Table 2</option>
-                    <option value="3">Table 3</option>
-                    <option value="4">Table 4</option>
-                    <option value="5">Table 5</option>
-                </select>
+               <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: Auto</div>
             </div>
         </div>
     </header>
@@ -502,9 +511,7 @@
                     <button class="cat-btn" onclick="selectCategory('Drink', this)">
                         <i class="fa-solid fa-mug-hot"></i> Drink
                     </button>
-                    <button class="cat-btn" onclick="selectCategory('Snack', this)">
-                        <i class="fa-solid fa-cookie-bite"></i> Snack
-                    </button>
+
                     <button class="cat-btn" onclick="selectCategory('Dessert', this)">
                         <i class="fa-solid fa-ice-cream"></i> Dessert
                     </button>
@@ -550,19 +557,20 @@
             <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Your basket is empty!</p>
         </div>
 
-        <div class="drawer-footer">
+        <!-- <div class="drawer-footer">
             <div class="payment-method-box">
                 <label style="font-size: 13px; font-weight: 600; color: #57606f; display: block; margin-bottom: 5px;">Payment Method</label>
                 <select id="paymentMethod">
+                    <option value="choose your payment">choose your payment</option>
                     <option value="Cash">💵 Cash (ငွေသား)</option>
                     <option value="KPay / Wave">📱 KPay / WavePay</option>
                 </select>
-            </div>
+            </div> -->
 
-            <div class="total-row">
+            <!-- <div class="total-row">
                 <span>Total Amount:</span>
                 <span id="cartTotal" style="color: var(--primary);">0 MMK</span>
-            </div>
+            </div> -->
             <button class="btn-checkout" onclick="submitOrder()">Confirm Order</button>
         </div>
     </div>
