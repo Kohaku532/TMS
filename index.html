@@ -956,6 +956,18 @@ function showReadyNotification(orderId) {
 if ("Notification" in window && Notification.permission !== "granted") {
     Notification.requestPermission();
 }
+        function getTableNumber(){
+            const urlParams=new URLSssearchParams(window.location.search);
+            const tableParam=urlParams.get('table');
+            return tableParam ? tableParam :"1";
+        }
+        let currentTable=getTableNumber();
+        document.addEventListener("DOMCcontentLoaded",() =>{
+            const tableDisplay=document.getElementById('tableDisplay');
+            if (tableDisplay){
+                tableDisplay.innerHTML=`<i class="fa-solid fa-chaira"></i> Table: ${currentTable}`;
+            }
+        });
     </script>
 </body>
 </html>
