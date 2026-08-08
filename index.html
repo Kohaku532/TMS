@@ -956,18 +956,16 @@ function showReadyNotification(orderId) {
 if ("Notification" in window && Notification.permission !== "granted") {
     Notification.requestPermission();
 }
-        function getTableNumber(){
-            const urlParams=new URLSssearchParams(window.location.search);
-            const tableParam=urlParams.get('table');
-            return tableParam ? tableParam :"1";
-        }
-        let currentTable=getTableNumber();
-        document.addEventListener("DOMCcontentLoaded",() =>{
-            const tableDisplay=document.getElementById('tableDisplay');
-            if (tableDisplay){
-                tableDisplay.innerHTML=`<i class="fa-solid fa-chaira"></i> Table: ${currentTable}`;
-            }
-        });
+       let selectedTable = "01"; // Default စားပွဲနံပါတ်
+
+// URL Query String မှ Table Number ရယူခြင်း
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('table')) {
+    selectedTable = urlParams.get('table');
+}
+
+// Header ထဲက UI မှာ စားပွဲနံပါတ် သွားပြင်ခြင်း
+document.getElementById('tableDisplay').innerHTML = `<i class="fa-solid fa-chair"></i> Table: ${selectedTable}`;
     </script>
 </body>
 </html>
