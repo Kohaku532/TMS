@@ -966,6 +966,14 @@ if (urlParams.has('table')) {
 
 // Header ထဲက UI မှာ စားပွဲနံပါတ် သွားပြင်ခြင်း
 document.getElementById('tableDisplay').innerHTML = `<i class="fa-solid fa-chair"></i> Table: ${selectedTable}`;
+        const orderData = {
+    table: selectedTable, // စားပွဲနံပါတ် Firestore ထဲ သိမ်းရန်
+    items: cart,
+    total: total,
+    status: "Pending",
+    fcmToken: fcmToken || null,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+};
     </script>
 </body>
 </html>
