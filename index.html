@@ -25,7 +25,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg); color: var(--text-dark); padding-bottom: 80px; }
 
-        /* Header / Navbar */
         header {
             background: #6bbeef;
             position: sticky;
@@ -69,10 +68,8 @@
             color: white;
         }
 
-        .table-info { background: var(--light-gray); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        .table-info { background: #f1f2f6; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
 
-
-        /* Hero Banner */
         .hero {
             background: linear-gradient(135deg, rgba(239, 139, 8, 0.9), rgba(255, 107, 129, 0.8)), 
                         url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80') center/cover;
@@ -86,12 +83,10 @@
         .hero h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
         .hero p { font-size: 14px; opacity: 0.9; }
 
-        /* Main Container & Page Navigation Views */
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
         .page-view { display: none; }
         .page-view.active { display: block; }
 
-        /* Search & Filter Section */
         .filter-section {
             margin-bottom: 25px;
             display: flex;
@@ -160,14 +155,12 @@
             box-shadow: 0 4px 12px rgba(255, 47, 87, 0.25);
         }
 
-        /* ===== Responsive Menu Grid ===== */
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* ဖုန်းတွင် ဘေးတိုက် ၂ ခုပေါ်မည် */
+            grid-template-columns: repeat(2, 1fr); 
             gap: 12px;
         }
 
-        /* Laptop / Desktop Screens (768px နှင့် အထက်တွင် ၄ ခုပေါ်မည်) */
         @media (min-width: 768px) {
             .menu-grid {
                 grid-template-columns: repeat(4, 1fr);
@@ -192,14 +185,14 @@
 
         .card-img-wrap {
             width: 100%;
-            height: 130px; /* ဖုန်းအတွက် ပုံအမြင့် */
+            height: 130px; 
             position: relative;
             overflow: hidden;
         }
 
         @media (min-width: 768px) {
             .card-img-wrap {
-                height: 170px; /* Laptop အတွက် ပုံအမြင့် */
+                height: 170px; 
             }
         }
 
@@ -360,25 +353,6 @@
             background: #fafafa;
         }
 
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            font-weight: 800;
-            margin-bottom: 15px;
-        }
-
-        .payment-method-box { margin-bottom: 15px; }
-
-        .payment-method-box select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            outline: none;
-            font-weight: 600;
-        }
-
         .btn-checkout {
             width: 100%;
             background: var(--success);
@@ -421,6 +395,7 @@
 
         .status-pending { background: #ffeaa7; color: #d63031; }
         .status-preparing { background: #81ecec; color: #00cec9; }
+        .status-ready { background: #74b9ff; color: #0984e3; }
         .status-completed { background: #55efc4; color: #00b894; }
 
         .order-item-row {
@@ -460,6 +435,9 @@
             <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
                 <i class="fa-solid fa-book-open"></i> Menu
             </button>
+            <button class="nav-tab-btn" id="btnOrdersTab" onclick="switchPage('orders')">
+                <i class="fa-solid fa-receipt"></i> Orders
+            </button>
             <div class="table-select-box">
                <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: Auto</div>
             </div>
@@ -494,7 +472,6 @@
                     <button class="cat-btn" onclick="selectCategory('Drink', this)">
                         <i class="fa-solid fa-mug-hot"></i> Drink
                     </button>
-
                     <button class="cat-btn" onclick="selectCategory('Dessert', this)">
                         <i class="fa-solid fa-ice-cream"></i> Dessert
                     </button>
@@ -751,6 +728,11 @@
             }
         }
 
+        // Notification handler function
+        function showReadyNotification(orderId) {
+            alert(`သင့်အော်ဒါ ID #${orderId.substring(0, 6)} အဆင်သင့်ဖြစ်ပါပြီ။`);
+        }
+
         // Fetch Orders for Selected Table in Realtime
         function fetchTableOrders() {
             const container = document.getElementById('activeOrdersContainer');
@@ -766,34 +748,48 @@
                     }
 
                     container.innerHTML = "";
+
+                    snapshot.docChanges().forEach(change => {
+                        const order = change.doc.data();
+                        const orderId = change.doc.id;
+
+                        if (change.type === "modified") {
+                            if (order.status === "Completed" || order.status === "Ready") {
+                                showReadyNotification(orderId);
+                            }
+                        }
+                    });
+
                     snapshot.forEach(doc => {
                         const order = doc.data();
                         const orderId = doc.id;
                         const statusClass = order.status ? `status-${order.status.toLowerCase()}` : 'status-pending';
 
                         let itemsHtml = "";
-                        order.items.forEach((item, index) => {
-                            const itemTotal = item.price * item.quantity;
-                            const isPending = (order.status === "Pending");
+                        if (order.items && Array.isArray(order.items)) {
+                            order.items.forEach((item, index) => {
+                                const itemTotal = item.price * item.quantity;
+                                const isPending = (order.status === "Pending");
 
-                            itemsHtml += `
-                                <div class="order-item-row">
-                                    <div>
-                                        <strong style="font-size: 14px;">${item.name}</strong>
-                                        <div style="font-size: 12px; color: var(--text-light);">${item.price.toLocaleString()} MMK x ${item.quantity} = <strong>${itemTotal.toLocaleString()} MMK</strong></div>
-                                    </div>
-                                    ${isPending ? `
-                                        <div class="qty-controls">
-                                            <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, -1)">-</button>
-                                            <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
-                                            <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, 1)">+</button>
+                                itemsHtml += `
+                                    <div class="order-item-row">
+                                        <div>
+                                            <strong style="font-size: 14px;">${item.name}</strong>
+                                            <div style="font-size: 12px; color: var(--text-light);">${item.price.toLocaleString()} MMK x ${item.quantity} = <strong>${itemTotal.toLocaleString()} MMK</strong></div>
                                         </div>
-                                    ` : `
-                                        <span style="font-weight: bold; font-size: 14px;">x${item.quantity}</span>
-                                    `}
-                                </div>
-                            `;
-                        });
+                                        ${isPending ? `
+                                            <div class="qty-controls">
+                                                <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, -1)">-</button>
+                                                <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
+                                                <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, 1)">+</button>
+                                            </div>
+                                        ` : `
+                                            <span style="font-weight: bold; font-size: 14px;">x${item.quantity}</span>
+                                        `}
+                                    </div>
+                                `;
+                            });
+                        }
 
                         container.innerHTML += `
                             <div class="order-card">
@@ -806,7 +802,7 @@
                                 <div>${itemsHtml}</div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
                                     <span style="font-weight: bold; font-size: 15px;">Total Amount:</span>
-                                    <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${order.total.toLocaleString()} MMK</span>
+                                    <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${(order.total || 0).toLocaleString()} MMK</span>
                                 </div>
                             </div>
                         `;
@@ -855,125 +851,6 @@
                 alert("အော်ဒါ ပြင်ဆင်ရာတွင် အဆင်မပြေပါ၊ ပြန်လည် ကြိုးစားကြည့်ပါ။");
             }
         }
-        // သုံးစွဲသူ ဖုန်းမှာ တိုက်ရိုက် Alert ကျလာစေရန် real-time order listener
-let trackedOrderIds = new Set(); // ယခင် အော်ဒါ狀態များကို မှတ်ထားရန်
-
-function fetchTableOrders() {
-    const container = document.getElementById('activeOrdersContainer');
-
-    if (ordersUnsubscribe) ordersUnsubscribe();
-
-    ordersUnsubscribe = db.collection("orders")
-        .orderBy("timestamp", "desc")
-        .onSnapshot(snapshot => {
-            if (snapshot.empty) {
-                container.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">မှာယူထားသော အော်ဒါ မရှိသေးပါ။</p>`;
-                return;
-            }
-
-            container.innerHTML = "";
-
-            snapshot.docChanges().forEach(change => {
-                const order = change.doc.data();
-                const orderId = change.doc.id;
-
-                // Admin ဘက်က Status ကို 'Completed' သို့မဟုတ် 'Ready' ပြောင်းလိုက်ရင် Notification ကျမည်
-                if (change.type === "modified") {
-                    if (order.status === "Completed" || order.status === "Ready") {
-                        // Alert / Notification ပေါ်ပေးခြင်း
-                        showReadyNotification(orderId);
-                    }
-                }
-            });
-
-            // Order Card များကို UI တွင် Render လုပ်ခြင်း
-            snapshot.forEach(doc => {
-                const order = doc.data();
-                const orderId = doc.id;
-                const statusClass = order.status ? `status-${order.status.toLowerCase()}` : 'status-pending';
-
-                let itemsHtml = "";
-                order.items.forEach((item, index) => {
-                    const itemTotal = item.price * item.quantity;
-                    const isPending = (order.status === "Pending");
-
-                    itemsHtml += `
-                        <div class="order-item-row">
-                            <div>
-                                <strong style="font-size: 14px;">${item.name}</strong>
-                                <div style="font-size: 12px; color: var(--text-light);">${item.price.toLocaleString()} MMK x ${item.quantity} = <strong>${itemTotal.toLocaleString()} MMK</strong></div>
-                            </div>
-                            ${isPending ? `
-                                <div class="qty-controls">
-                                    <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, -1)">-</button>
-                                    <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
-                                    <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, 1)">+</button>
-                                </div>
-                            ` : `
-                                <span style="font-weight: bold; font-size: 14px;">x${item.quantity}</span>
-                            `}
-                        </div>
-                    `;
-                });
-
-                container.innerHTML += `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <div>
-                                <strong>Order ID: #${orderId.substring(0, 6)}</strong>
-                            </div>
-                            <span class="order-status-badge ${statusClass}">${order.status || 'Pending'}</span>
-                        </div>
-                        <div>${itemsHtml}</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                            <span style="font-weight: bold; font-size: 15px;">Total Amount:</span>
-                            <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${order.total.toLocaleString()} MMK</span>
-                        </div>
-                    </div>
-                `;
-            });
-        }, error => {
-            console.error("Error fetching orders: ", error);
-            container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။</p>`;
-        });
-}
-
-// Notification Alert ပြသပေးသည့် Function
-function showReadyNotification(orderId) {
-    // Browser alert ပေါ်စေရန်
-    alert(`🎉 Your order (#${orderId.substring(0, 6)}) is ready! Please enjoy your meal.`);
-
-    // Browser Notification Support ရှိလျှင် System Notification လည်း ပို့ပေးမည်
-    if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("Smart Restaurant", {
-            body: `Your order (#${orderId.substring(0, 6)}) is ready!`,
-            icon: "https://cdn-icons-png.flaticon.com/512/3170/3170733.png"
-        });
-    }
-}
-
-// App စတင်ဖွင့်ချိန်တွင် Notification ခွင့်ပြုချက်တောင်းခံရန်
-if ("Notification" in window && Notification.permission !== "granted") {
-    Notification.requestPermission();
-}
-       let selectedTable = "01"; // Default စားပွဲနံပါတ်
-
-// URL Query String မှ Table Number ရယူခြင်း
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has('table')) {
-    selectedTable = urlParams.get('table');
-}
-
-// Header ထဲက UI မှာ စားပွဲနံပါတ် သွားပြင်ခြင်း
-document.getElementById('tableDisplay').innerHTML = `<i class="fa-solid fa-chair"></i> Table: ${selectedTable}`;
-        const orderData = {
-    table: selectedTable, // စားပွဲနံပါတ် Firestore ထဲ သိမ်းရန်
-    items: cart,
-    total: total,
-    status: "Pending",
-    fcmToken: fcmToken || null,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-};
     </script>
 </body>
 </html>
