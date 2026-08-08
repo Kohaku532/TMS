@@ -84,49 +84,10 @@
 
         .hero h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
         .hero p { font-size: 14px; opacity: 0.9; }
-
-        *, *::before, *::after {
-      box-sizing: border-box; /* Padding ကြောင့် ဖုန်းမှာ မလျှံထွက်စေရန် */
-    }
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 12px; /* ဖုန်းမှာ ဘေးအစွန်းမကပ်အောင် padding ကို ၁၂ သို့ အနည်းငယ်လျှော့ထားသည် */
-      width: 100%;
-    }
-
-    /* ဖုန်းရော PC မှာပါ 2 Columns အသေပေါ်မည့် Grid */
-    .two-column-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr); /* အမြဲတမ်း 2 Columns ခွဲမည် */
-      gap: 10px;                             /* ဖုန်းမှာ ကြားအကွာအဝေး အဆင်ပြေအောင် 10px ထားသည် */
-      margin: 20px 0;
-    }
-
-    /* Item Box များ Styling */
-    .card {
-      background: #ffffff;
-      padding: 12px;                        /* ဖုန်းမှာ စာမကျပ်အောင် padding ကို ၁၂ အထိလျှော့ထားသည် */
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      border: 1px solid #e0e0e0;
-      word-break: break-word;              /* စာသားရှည်ရင် ဘောင်ကျော်မထွက်စေရန် */
-    }
-
-    .card h3 {
-      margin-top: 0;
-      font-size: 16px;                     /* ဖုန်းမှာ အဆင်ပြေမည့် စာလုံးအရွယ်အစား */
-    }
-
-    .card p {
-      margin-bottom: 0;
-      font-size: 14px;
-      color: #666;
-    }
-
+        
         /* Main Container & Page Navigation Views */
-        /* .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; } */
-        .page-view { display: none; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        .page-view { display: flex; }
         .page-view.active { display: block; }
 
         /* Search & Filter Section */
