@@ -507,7 +507,6 @@
             <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
                 <i class="fa-solid fa-book-open"></i> Menu
             </button>
-            </button>
             <button class="nav-tab-btn" id="btnOrdersTab" onclick="switchPage('orders')">
                 <i class="fa-solid fa-receipt"></i> Orders
             </button>
@@ -707,14 +706,13 @@
         // Switch Between Pages (Menu vs Orders)
         function switchPage(pageName) {
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-            // document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
 
             if (pageName === 'menu') {
                 document.getElementById('menuView').classList.add('active');
                 document.getElementById('btnMenuTab').classList.add('active');
                 document.getElementById('cartFloatBtn').style.display = 'flex';
-             } 
-              else if (pageName === 'orders') {
+            } else if (pageName === 'orders') {
                 document.getElementById('ordersView').classList.add('active');
                 document.getElementById('btnOrdersTab').classList.add('active');
                 document.getElementById('cartFloatBtn').style.display = 'none';
@@ -1022,10 +1020,10 @@
                         updatedItems.splice(itemIndex, 1);
                     }
 
-                    // if (updatedItems.length === 0) {
-                    //     transaction.delete(orderRef);
-                    //     return;
-                    // }
+                    if (updatedItems.length === 0) {
+                        transaction.delete(orderRef);
+                        return;
+                    }
 
                     const newTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
