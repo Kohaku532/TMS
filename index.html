@@ -494,6 +494,9 @@
 </head>
 <body>
 
+    <!-- Notification Sound (HTML Audio Element) -->
+    <audio id="notiSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
     <!-- Header / Navbar -->
     <header>
         <div class="logo">
@@ -652,6 +655,17 @@
 
         const menuGrid = document.getElementById('menuGrid');
 
+        // Function to Play Notification Sound Effect
+        function playNotiSound() {
+            const audio = document.getElementById('notiSound');
+            if (audio) {
+                audio.currentTime = 0; // Rewind to start
+                audio.play().catch(error => {
+                    console.log("Audio playback blocked by browser policies until user interacts:", error);
+                });
+            }
+        }
+
         // Realtime Menu Fetch
         db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
             allMenuItems = [];
@@ -664,7 +678,7 @@
             filterMenuItems();
         });
 
-        // Listen for Realtime Order Updates to show Receipt Noti
+        // Listen for Realtime Order Updates to show Receipt Noti & Sound Effect
         db.collection("orders")
             .where("table", "==", currentTable)
             .onSnapshot(snapshot => {
@@ -680,6 +694,9 @@
                         const status = orderData.status;
 
                         if (status === "Ready" || status === "Completed") {
+                            // Play Bell Sound Effect
+                            playNotiSound();
+                            // Show Receipt Popup
                             showReceiptModal(orderId, orderData);
                         }
                     }
@@ -1022,4 +1039,4 @@
         }
     </script>
 </body>
-</html>‌ေ
+</html>
