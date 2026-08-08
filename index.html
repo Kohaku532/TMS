@@ -48,7 +48,7 @@
             gap: 12px;
         }
 
-        .nav-tab-btn {
+        /* .nav-tab-btn {
             background: #f1f2f6;
             border: none;
             padding: 8px 14px;
@@ -61,7 +61,7 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
-        }
+        } */
 
         .nav-tab-btn.active {
             background: var(--primary);
@@ -495,7 +495,7 @@
 <body>
 
     <!-- Notification Sound (HTML Audio Element) -->
-    <audio id="notiSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    <audio id="notiSound" src="https://pixabay.com/users/freesound_community-46691455/" preload="auto"></audio>
 
     <!-- Header / Navbar -->
     <header>
@@ -506,9 +506,6 @@
         <div class="nav-controls">
             <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
                 <i class="fa-solid fa-book-open"></i> Menu
-            </button>
-            <button class="nav-tab-btn" id="btnOrdersTab" onclick="switchPage('orders')">
-                <i class="fa-solid fa-receipt"></i> Orders
             </button>
             <div class="table-select-box">
                <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: -</div>
