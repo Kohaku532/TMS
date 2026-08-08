@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Restaurant - Order Online</title>
-    <!-- FontAwesome for Icons -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -68,7 +68,7 @@
             color: white;
         }
 
-        .table-info { background: #f1f2f6; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        .table-info { background: #ffffff; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
 
         .hero {
             background: linear-gradient(135deg, rgba(239, 139, 8, 0.9), rgba(255, 107, 129, 0.8)), 
@@ -191,9 +191,7 @@
         }
 
         @media (min-width: 768px) {
-            .card-img-wrap {
-                height: 170px; 
-            }
+            .card-img-wrap { height: 170px; }
         }
 
         .food-img {
@@ -215,12 +213,6 @@
 
         .food-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
         .food-price { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
-
-        @media (min-width: 768px) {
-            .food-title { font-size: 16px; margin-bottom: 6px; }
-            .food-price { font-size: 16px; margin-bottom: 12px; }
-            .card-details { padding: 15px; }
-        }
 
         .btn-add-cart {
             width: 100%;
@@ -421,6 +413,83 @@
         }
 
         .live-qty-btn:hover { background: var(--primary); color: white; }
+
+        /* RECEIPT MODAL STYLES */
+        .receipt-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .receipt-modal-overlay.active { display: flex; }
+
+        .receipt-card {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: popupScale 0.3s ease-out forwards;
+            position: relative;
+        }
+
+        @keyframes popupScale {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .receipt-icon {
+            width: 60px;
+            height: 60px;
+            background: #eccc68;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 15px auto;
+            box-shadow: 0 4px 15px rgba(236, 204, 104, 0.4);
+        }
+
+        .receipt-card.completed .receipt-icon {
+            background: var(--success);
+            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
+        }
+
+        .receipt-title { text-align: center; font-size: 20px; font-weight: 800; color: var(--text-dark); }
+        .receipt-subtitle { text-align: center; font-size: 13px; color: var(--text-light); margin-bottom: 20px; }
+
+        .receipt-divider { border-top: 2px dashed #e2e8f0; margin: 15px 0; }
+
+        .receipt-details-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-light); }
+        .receipt-items-list { margin: 15px 0; max-height: 180px; overflow-y: auto; }
+        .receipt-item-line { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; }
+
+        .receipt-total-row { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 800; color: var(--primary); margin-top: 10px; }
+
+        .btn-close-receipt {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+
+        .btn-close-receipt:hover { background: var(--primary-hover); }
     </style>
 </head>
 <body>
@@ -439,7 +508,7 @@
                 <i class="fa-solid fa-receipt"></i> Orders
             </button>
             <div class="table-select-box">
-               <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: Auto</div>
+               <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: -</div>
             </div>
         </div>
     </header>
@@ -522,6 +591,41 @@
         </div>
     </div>
 
+    <!-- RECEIPT / INVOICE MODAL POPUP -->
+    <div class="receipt-modal-overlay" id="receiptModal">
+        <div class="receipt-card" id="receiptCard">
+            <div class="receipt-icon" id="receiptIcon">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <div class="receipt-title" id="receiptStatusTitle">Order Ready!</div>
+            <div class="receipt-subtitle" id="receiptStatusSubtitle">သင့်အော်ဒါ အဆင်သင့်ဖြစ်ပါပြီ။</div>
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-details-row">
+                <span>Order Ref:</span>
+                <strong id="receiptOrderId">#000000</strong>
+            </div>
+            <div class="receipt-details-row">
+                <span>Table:</span>
+                <strong id="receiptTableNum">Table -</strong>
+            </div>
+
+            <div class="receipt-items-list" id="receiptItemsList">
+                <!-- Dynamic Items -->
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-total-row">
+                <span>Total Amount</span>
+                <span id="receiptTotal">0 MMK</span>
+            </div>
+
+            <button class="btn-close-receipt" onclick="closeReceiptModal()">ကျေးဇူးတင်ပါသည်။</button>
+        </div>
+    </div>
+
     <script>
         // Firebase Config
         const firebaseConfig = {
@@ -535,10 +639,16 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Detect Table Number from Query Parameter (e.g., index.html?table=5)
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentTable = urlParams.get('table') || '1';
+        document.getElementById('tableDisplay').innerHTML = `<i class="fa-solid fa-chair"></i> Table: ${currentTable}`;
+
         let allMenuItems = [];
         let selectedCategory = 'All';
         let cart = [];
         let ordersUnsubscribe = null;
+        let isInitialLoad = true;
 
         const menuGrid = document.getElementById('menuGrid');
 
@@ -553,6 +663,28 @@
             });
             filterMenuItems();
         });
+
+        // Listen for Realtime Order Updates to show Receipt Noti
+        db.collection("orders")
+            .where("table", "==", currentTable)
+            .onSnapshot(snapshot => {
+                if (isInitialLoad) {
+                    isInitialLoad = false;
+                    return;
+                }
+
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === "modified") {
+                        const orderData = change.doc.data();
+                        const orderId = change.doc.id;
+                        const status = orderData.status;
+
+                        if (status === "Ready" || status === "Completed") {
+                            showReceiptModal(orderId, orderData);
+                        }
+                    }
+                });
+            });
 
         // Switch Between Pages (Menu vs Orders)
         function switchPage(pageName) {
@@ -710,7 +842,7 @@
 
             try {
                 await db.collection("orders").add({
-                    table: "Auto",
+                    table: currentTable,
                     items: cart,
                     total: total,
                     status: "Pending",
@@ -728,9 +860,48 @@
             }
         }
 
-        // Notification handler function
-        function showReadyNotification(orderId) {
-            alert(`သင့်အော်ဒါ ID #${orderId.substring(0, 6)} အဆင်သင့်ဖြစ်ပါပြီ။`);
+        // Show Receipt Modal Popup Notification
+        function showReceiptModal(orderId, orderData) {
+            const modal = document.getElementById('receiptModal');
+            const card = document.getElementById('receiptCard');
+            const icon = document.getElementById('receiptIcon');
+            const title = document.getElementById('receiptStatusTitle');
+            const subtitle = document.getElementById('receiptStatusSubtitle');
+
+            document.getElementById('receiptOrderId').innerText = `#${orderId.substring(0, 6)}`;
+            document.getElementById('receiptTableNum').innerText = `Table ${orderData.table}`;
+            document.getElementById('receiptTotal').innerText = `${(orderData.total || 0).toLocaleString()} MMK`;
+
+            let itemsHtml = "";
+            if (orderData.items && Array.isArray(orderData.items)) {
+                orderData.items.forEach(item => {
+                    itemsHtml += `
+                        <div class="receipt-item-line">
+                            <span>${item.name} x${item.quantity}</span>
+                            <strong>${(item.price * item.quantity).toLocaleString()} MMK</strong>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('receiptItemsList').innerHTML = itemsHtml;
+
+            if (orderData.status === "Completed") {
+                card.classList.add('completed');
+                icon.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
+                title.innerText = "Order Completed!";
+                subtitle.innerText = "ကျေးဇူးတင်ပါသည်။ သင့်အော်ဒါ ပြီးမြောက်ပါပြီ။";
+            } else {
+                card.classList.remove('completed');
+                icon.innerHTML = `<i class="fa-solid fa-bell"></i>`;
+                title.innerText = "Order Ready!";
+                subtitle.innerText = "သင့်အော်ဒါ အဆင်သင့်ဖြစ်ပါပြီ၊ သုံးဆောင်နိုင်ပါပြီ။";
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').classList.remove('active');
         }
 
         // Fetch Orders for Selected Table in Realtime
@@ -740,6 +911,7 @@
             if (ordersUnsubscribe) ordersUnsubscribe();
 
             ordersUnsubscribe = db.collection("orders")
+                .where("table", "==", currentTable)
                 .orderBy("timestamp", "desc")
                 .onSnapshot(snapshot => {
                     if (snapshot.empty) {
@@ -748,17 +920,6 @@
                     }
 
                     container.innerHTML = "";
-
-                    snapshot.docChanges().forEach(change => {
-                        const order = change.doc.data();
-                        const orderId = change.doc.id;
-
-                        if (change.type === "modified") {
-                            if (order.status === "Completed" || order.status === "Ready") {
-                                showReadyNotification(orderId);
-                            }
-                        }
-                    });
 
                     snapshot.forEach(doc => {
                         const order = doc.data();
@@ -813,44 +974,52 @@
                 });
         }
 
-        // Live Quantity Adjust for Placed Orders
+        // Live Quantity Adjust for Placed Orders (Pending status only)
         async function updateLiveOrderQty(orderId, itemIndex, delta) {
+            const orderRef = db.collection("orders").doc(orderId);
+
             try {
-                const orderRef = db.collection("orders").doc(orderId);
-                const doc = await orderRef.get();
+                await db.runTransaction(async (transaction) => {
+                    const doc = await transaction.get(orderRef);
+                    if (!doc.exists) {
+                        throw new Error("Order does not exist.");
+                    }
 
-                if (!doc.exists) return;
+                    const orderData = doc.data();
 
-                const orderData = doc.data();
-                if (orderData.status !== "Pending") {
-                    alert("မီးဖိုချောင်မှ အစားအသောက် စတင်ပြင်ဆင်နေပြီဖြစ်သောကြောင့် ပြင်ဆင်၍ မရတော့ပါ။");
-                    return;
-                }
+                    if (orderData.status && orderData.status.toLowerCase() !== "pending") {
+                        alert("မီးဖိုချောင်မှ အစားအသောက် စတင်ပြင်ဆင်နေပြီဖြစ်သောကြောင့် ပြင်ဆင်၍ မရတော့ပါ။");
+                        return;
+                    }
 
-                let items = orderData.items;
-                items[itemIndex].quantity += delta;
+                    let updatedItems = [...orderData.items];
+                    const targetItem = updatedItems[itemIndex];
 
-                if (items[itemIndex].quantity <= 0) {
-                    items.splice(itemIndex, 1);
-                }
+                    if (!targetItem) return;
 
-                if (items.length === 0) {
-                    await orderRef.delete();
-                    alert("အော်ဒါထဲတွင် အစားအသောက် မရှိတော့သဖြင့် အော်ဒါ ဖျက်လိုက်ပါပြီ။");
-                    return;
-                }
+                    targetItem.quantity += delta;
 
-                const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                await orderRef.update({
-                    items: items,
-                    total: newTotal
+                    if (targetItem.quantity <= 0) {
+                        updatedItems.splice(itemIndex, 1);
+                    }
+
+                    if (updatedItems.length === 0) {
+                        transaction.delete(orderRef);
+                        return;
+                    }
+
+                    const newTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                    transaction.update(orderRef, {
+                        items: updatedItems,
+                        total: newTotal
+                    });
                 });
-
             } catch (error) {
-                console.error("Error updating live order: ", error);
-                alert("အော်ဒါ ပြင်ဆင်ရာတွင် အဆင်မပြေပါ၊ ပြန်လည် ကြိုးစားကြည့်ပါ။");
+                console.error("Error updating live order quantity:", error);
+                alert("အော်ဒါ ပြင်ဆင်ရာတွင် အမှားအယွင်းရှိနေပါသည်။");
             }
         }
     </script>
 </body>
-</html>
+</html>‌ေ
