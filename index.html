@@ -27,7 +27,7 @@
 
         /* Header / Navbar */
         header {
-            background: #7abfe7;
+            background: #6bbeef;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -69,7 +69,7 @@
             color: white;
         }
 
-       .table-info { background: var(--light-gray); padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        .table-info { background: #f1f2f6; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
 
         /* Hero Banner */
         .hero {
@@ -84,10 +84,10 @@
 
         .hero h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
         .hero p { font-size: 14px; opacity: 0.9; }
-        
+
         /* Main Container & Page Navigation Views */
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-        .page-view { display: flex; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
+        .page-view { display: none; }
         .page-view.active { display: block; }
 
         /* Search & Filter Section */
@@ -159,15 +159,16 @@
             box-shadow: 0 4px 12px rgba(255, 47, 87, 0.25);
         }
 
-        /* Menu Grid */
+        /* ===== Responsive Menu Grid ===== */
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr));
+            grid-template-columns: repeat(2, 1fr); /* ဖုန်းတွင် ဘေးတိုက် ၂ ခုပေါ်မည် */
             gap: 12px;
-            padding: 16px;
         }
-        @media (min-width: 760px){
-            .menu-grid{
+
+        /* Laptop / Desktop Screens (768px နှင့် အထက်တွင် ၄ ခုပေါ်မည်) */
+        @media (min-width: 768px) {
+            .menu-grid {
                 grid-template-columns: repeat(4, 1fr);
                 gap: 20px;
             }
@@ -190,9 +191,15 @@
 
         .card-img-wrap {
             width: 100%;
-            height: 160px;
+            height: 130px; /* ဖုန်းအတွက် ပုံအမြင့် */
             position: relative;
             overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+            .card-img-wrap {
+                height: 170px; /* Laptop အတွက် ပုံအမြင့် */
+            }
         }
 
         .food-img {
@@ -205,30 +212,37 @@
         .food-card:hover .food-img { transform: scale(1.08); }
 
         .card-details {
-            padding: 15px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
             justify-content: space-between;
         }
 
-        .food-title { font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
-        .food-price { font-size: 16px; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
+        .food-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+        .food-price { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+
+        @media (min-width: 768px) {
+            .food-title { font-size: 16px; margin-bottom: 6px; }
+            .food-price { font-size: 16px; margin-bottom: 12px; }
+            .card-details { padding: 15px; }
+        }
 
         .btn-add-cart {
             width: 100%;
             background: #f1f2f6;
             color: var(--text-dark);
             border: none;
-            padding: 10px;
+            padding: 8px;
             border-radius: 10px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .btn-add-cart:hover {
@@ -525,20 +539,7 @@
             <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Your basket is empty!</p>
         </div>
 
-        <!-- <div class="drawer-footer">
-            <div class="payment-method-box">
-                <label style="font-size: 13px; font-weight: 600; color: #57606f; display: block; margin-bottom: 5px;">Payment Method</label>
-                <select id="paymentMethod">
-                    <option value="choose your payment">choose your payment</option>
-                    <option value="Cash">💵 Cash (ငွေသား)</option>
-                    <option value="KPay / Wave">📱 KPay / WavePay</option>
-                </select>
-            </div> -->
-
-            <!-- <div class="total-row">
-                <span>Total Amount:</span>
-                <span id="cartTotal" style="color: var(--primary);">0 MMK</span>
-            </div> -->
+        <div class="drawer-footer">
             <button class="btn-checkout" onclick="submitOrder()">Confirm Order</button>
         </div>
     </div>
@@ -686,7 +687,6 @@
         function updateCartUI() {
             const cartItemsContainer = document.getElementById('cartItemsContainer');
             const cartCount = document.getElementById('cartCount');
-            const cartTotal = document.getElementById('cartTotal');
 
             let totalItems = 0;
             let grandTotal = 0;
@@ -719,7 +719,6 @@
             }
 
             cartCount.innerText = totalItems;
-            cartTotal.innerText = `${grandTotal.toLocaleString()} MMK`;
         }
 
         // Send Order to Firestore
@@ -729,14 +728,11 @@
                 return;
             }
 
-            const tableNo = document.getElementById('tableNo').value;
-            const paymentMethod = document.getElementById('paymentMethod').value;
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
             try {
                 await db.collection("orders").add({
-                    table: tableNo,
-                    paymentMethod: paymentMethod,
+                    table: "Auto",
                     items: cart,
                     total: total,
                     status: "Pending",
@@ -756,17 +752,15 @@
 
         // Fetch Orders for Selected Table in Realtime
         function fetchTableOrders() {
-            const tableNo = document.getElementById('tableNo').value;
             const container = document.getElementById('activeOrdersContainer');
 
             if (ordersUnsubscribe) ordersUnsubscribe();
 
             ordersUnsubscribe = db.collection("orders")
-                .where("table", "==", tableNo)
                 .orderBy("timestamp", "desc")
                 .onSnapshot(snapshot => {
                     if (snapshot.empty) {
-                        container.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;"> Table ${tableNo} အတွက် မှာယူထားသော အော်ဒါ မရှိသေးပါ။</p>`;
+                        container.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">မှာယူထားသော အော်ဒါ မရှိသေးပါ။</p>`;
                         return;
                     }
 
@@ -805,7 +799,6 @@
                                 <div class="order-header">
                                     <div>
                                         <strong>Order ID: #${orderId.substring(0, 6)}</strong>
-                                        <div style="font-size: 12px; color: var(--text-light); margin-top: 2px;">Payment: ${order.paymentMethod}</div>
                                     </div>
                                     <span class="order-status-badge ${statusClass}">${order.status || 'Pending'}</span>
                                 </div>
@@ -819,11 +812,11 @@
                     });
                 }, error => {
                     console.error("Error fetching orders: ", error);
-                    container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။ (Index လိုအပ်နေနိုင်ပါသည်)</p>`;
+                    container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။</p>`;
                 });
         }
 
-        // Live Quantity Adjust for Placed Orders (Only when Status is 'Pending')
+        // Live Quantity Adjust for Placed Orders
         async function updateLiveOrderQty(orderId, itemIndex, delta) {
             try {
                 const orderRef = db.collection("orders").doc(orderId);
