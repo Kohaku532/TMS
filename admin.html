@@ -1,535 +1,492 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Live Orders & Menu Management</title>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --primary: #ff5722;
-            --bg-color: #5cddf7;
-            --card-bg:#22e54f;
-            --text-dark: #333333;
-            --text-light: #777777;
-            --border-color: #e0e0e0;
-            --pending-color: #ff9800;
-            --cooking-color: #2196f3;
-            --completed-color: #4caf50;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Ponyo</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    <style>
+        :root {
+            --primary: #ff4757;
+            --primary-hover: #ff6b81;
+            --bg: skyblue;
+            --card-bg: #ffffff;
+            --text-dark: #2f3542;
+            --text-light: #747d8c;
+            --border: #e2e8f0;
+            --success: #2ed573;
+            --warning: #ffa502;
+        }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-dark);
-            padding: 20px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: var(--bg); color: var(--text-dark); padding-bottom: 50px; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        /* Navigation Header */
+        header {
+            background: #ffffff;
+            padding: 16px 5%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--border-color);
-        }
+        .brand { font-size: 20px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .admin-badge { background: #ffe0e3; color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
 
-        header h1 {
-            font-size: 24px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .container { max-width: 1200px; margin: 25px auto; padding: 0 20px; }
 
-        /* Navigation Tabs */
-        .nav-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
+        /* Stats Dashboard Bar */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
 
-        .nav-tab-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #555;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-        .nav-tab-btn.active {
-            color: #ffffff;
-            background-color: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 4px 8px rgba(255, 87, 34, 0.25);
-        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(255, 47, 87, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
 
-        /* Analytics Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+        .stat-info h4 { font-size: 13px; color: var(--text-light); text-transform: uppercase; font-weight: 600; }
+        .stat-info p { font-size: 20px; font-weight: 800; color: var(--text-dark); margin-top: 2px; }
 
-        .stat-card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+        /* Layout Grid: Left (Add & Manage Menu), Right (Live Orders) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 25px;
+        }
 
-        .stat-card .info h3 {
-            font-size: 14px;
-            color: var(--text-light);
-            margin-bottom: 5px;
-        }
+        @media (max-width: 900px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
 
-        .stat-card .info p {
-            font-size: 22px;
-            font-weight: bold;
-        }
+        /* Card Sections */
+        .panel-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
+        }
 
-        .stat-card .icon {
-            font-size: 32px;
-            color: var(--primary);
-            opacity: 0.8;
-        }
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-        /* Section Visibility & Titles */
-        .tab-content {
-            display: none;
-        }
+        /* Form Controls */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-light); margin-bottom: 6px; }
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus { border-color: var(--primary); }
 
-        .tab-content.active {
-            display: block;
-        }
+        .btn-primary {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
 
-        .section-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        /* Live Orders Cards */
+        .orders-list { display: flex; flex-direction: column; gap: 15px; }
 
-        /* Live Orders Grid */
-        .orders-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
-        }
+        .order-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
 
-        .order-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-            border-left: 5px solid var(--pending-color);
-            transition: transform 0.2s ease;
-        }
+        .order-card.pending { border-left: 5px solid var(--warning); }
+        .order-card.cooking { border-left: 5px solid #70a1ff; }
+        .order-card.completed { border-left: 5px solid var(--success); }
 
-        .order-card:hover {
-            transform: translateY(-3px);
-        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--border);
+        }
 
-        .order-card.cooking {
-            border-left-color: var(--cooking-color);
-        }
+        .table-badge {
+            background: var(--text-dark);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
 
-        .order-card.completed {
-            border-left-color: var(--completed-color);
-        }
+        .order-time { font-size: 12px; color: var(--text-light); }
 
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
+        .order-items-table { width: 100%; margin: 10px 0; border-collapse: collapse; }
+        .order-items-table td { padding: 4px 0; font-size: 14px; }
+        .order-items-table td:last-child { text-align: right; font-weight: 600; }
 
-        .table-badge {
-            background-color: var(--primary);
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-        }
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
 
-        .order-time {
-            font-size: 12px;
-            color: var(--text-light);
-        }
+        .status-select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+        }
 
-        .order-items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-        }
+        /* Existing Menu List */
+        .menu-manage-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
 
-        .order-items-table td {
-            padding: 6px 0;
-            font-size: 14px;
-            border-bottom: 1px dashed #eee;
-        }
+        .menu-manage-item:last-child { border-bottom: none; }
+        .menu-thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; }
+        .menu-info { flex-grow: 1; padding: 0 12px; }
+        .menu-info strong { display: block; font-size: 14px; }
+        .menu-info small { color: var(--text-light); font-size: 12px; }
 
-        .order-items-table td:last-child {
-            text-align: right;
-            font-weight: 500;
-        }
-
-        .order-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .status-select {
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            font-size: 13px;
-            outline: none;
-            cursor: pointer;
-            background-color: #fff;
-        }
-
-        /* Add New Item Form Styling */
-        .form-card {
-            background-color: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-dark);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary);
-        }
-
-        .btn-submit {
-            width: 100%;
-            background-color: var(--primary);
-            color: #fff;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 20px;
-        }
-
-        .btn-submit:hover {
-            opacity: 0.9;
-        }
-    </style>
-
-    <!-- Firebase SDK (v8 Compat) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+        .btn-del-menu {
+            color: var(--primary);
+            background: #ffe0e3;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .btn-del-menu:hover { background: var(--primary); color: white; }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1><i class="fa-solid fa-utensils"></i> Order Management Admin</h1>
-            <span style="font-size: 14px; color: var(--text-light);">Realtime Dashboard</span>
-        </header>
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <i class="fa-solid fa-user-shield"></i> Kitchen admin
+        </div>
+        <div>
+            <span class="admin-badge"><i class="fa-solid fa-circle" style="color: #2ed573; font-size: 8px;"></i> System Live</span>
+            <a href="index.html" style="margin-left: 15px; text-decoration: none; font-size: 13px; font-weight: 600; color: var(--text-light);">Customer View ➔</a>
+        </div>
+    </header>
 
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab-btn active" id="btnOrdersTab" onclick="switchPage('orders')">
-                <i class="fa-solid fa-receipt"></i> Orders
-            </button>
-            <button class="nav-tab-btn" id="btnAddItemTab" onclick="switchPage('addItem')">
-                <i class="fa-solid fa-plus-circle"></i> Add New Item
-            </button>
-        </div>
+    <div class="container">
+        <!-- Top Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="stat-info">
+                    <h4>Total Orders</h4>
+                    <p id="statTotalOrders">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(255, 165, 2, 0.1); color: var(--warning);"><i class="fa-solid fa-clock"></i></div>
+                <div class="stat-info">
+                    <h4>Pending Orders</h4>
+                    <p id="statPendingOrders">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: rgba(46, 213, 115, 0.1); color: var(--success);"><i class="fa-solid fa-money-bill-wave"></i></div>
+                <div class="stat-info">
+                    <h4>Total Revenue</h4>
+                    <p id="statRevenue">0 MMK</p>
+                </div>
+            </div>
+        </div>
 
-        <!-- PAGE 1: ORDERS DASHBOARD -->
-        <div id="ordersPage" class="tab-content active">
-            <!-- Analytics Overview -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="info">
-                        <h3>စုစုပေါင်း အော်ဒါ</h3>
-                        <p id="totalOrdersCount">0</p>
-                    </div>
-                    <div class="icon"><i class="fa-solid fa-receipt"></i></div>
-                </div>
-                <div class="stat-card">
-                    <div class="info">
-                        <h3>စောင့်ဆိုင်းဆဲ အော်ဒါ (Pending)</h3>
-                        <p id="pendingOrdersCount">0</p>
-                    </div>
-                    <div class="icon" style="color: var(--pending-color);"><i class="fa-solid fa-hourglass-half"></i></div>
-                </div>
-                <div class="stat-card">
-                    <div class="info">
-                        <h3>စုစုပေါင်း ဝင်ငွေ</h3>
-                        <p id="totalRevenueAmount">0 MMK</p>
-                    </div>
-                    <div class="icon" style="color: var(--completed-color);"><i class="fa-solid fa-money-bill-wave"></i></div>
-                </div>
-            </div>
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            
+            <!-- Left Side: Add Menu & Existing Menu List -->
+            <div>
+                <!-- Add New Menu Card -->
+                <div class="panel-card">
+                    <div class="panel-title"><i class="fa-solid fa-plus-circle" style="color: var(--primary);"></i> မီနူးအသစ် ထည့်သွင်းရန်</div>
+                    <form id="addMenuForm">
+                        <div class="form-group">
+                            <label for="itemName">အစားအသောက် နာမည်</label>
+                            <input type="text" id="itemName" class="form-control" placeholder="ဥပမာ - ကြက်ကြော် ခေါက်ဆွဲ" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemPrice">ဈေးနှုန်း (MMK)</label>
+                            <input type="number" id="itemPrice" class="form-control" placeholder="3500" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemCategory">အမျိုးအစား (Category)</label>
+                            <select id="itemCategory" class="form-control">
+                                <option value="Food">Food (အဓိက အစားအစာ)</option>
+                                <option value="Drink">Drink (အအေး/သောက်စရာ)</option>
+                                <option value="Dessert">Dessert (အချိုပွဲ)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="itemImage">ဓာတ်ပုံ URL (Image Link)</label>
+                            <input type="url" id="itemImage" class="form-control" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <button type="submit" class="btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> မီနူးသိမ်းဆည်းမည်</button>
+                    </form>
+                </div>
 
-            <!-- Live Orders Container -->
-            <h2 class="section-title"><i class="fa-solid fa-bell"></i> လက်ရှိ ပြင်ဆင်ရန် အော်ဒါများ</h2>
-            <div id="liveOrdersList" class="orders-grid">
-                <p style="text-align: center; color: var(--text-light); grid-column: 1/-1;">အော်ဒါများ ရယူနေပါသည်...</p>
-            </div>
-        </div>
+                <!-- Manage Existing Menu -->
+                <div class="panel-card">
+                    <div class="panel-title"><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> ရှိပြီးသား မီနူးများ</div>
+                    <div id="adminMenuList">
+                        <p style="text-align: center; color: var(--text-light); font-size: 13px;">Loading menu items...</p>
+                    </div>
+                </div>
+            </div>
 
-        <!-- PAGE 2: ADD NEW ITEM FORM -->
-        <div id="addItemPage" class="tab-content">
-            <h2 class="section-title" style="justify-content: center; margin-bottom: 20px;">
-                <i class="fa-solid fa-utensils"></i> Menu Item အသစ်ထည့်သွင်းရန်
-            </h2>
-            <div class="form-card">
-                <form id="addItemForm" onsubmit="handleAddItem(event)">
-                    <div class="form-group">
-                        <label for="itemName">Item Name (အမည်)</label>
-                        <input type="text" id="itemName" class="form-control" placeholder="ဥပမာ - ကြက်သား" required>
-                    </div>
+            <!-- Right Side: Realtime Live Orders List -->
+            <div>
+                <div class="panel-card">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-bell-concierge" style="color: var(--primary);"></i> 
+                        Realtime Live Orders
+                    </div>
+                    <div id="liveOrdersList" class="orders-list">
+                        <p style="text-align: center; color: var(--text-light);">No orders placed yet...</p>
+                    </div>
+                </div>
+            </div>
 
-                    <div class="form-group">
-                        <label for="itemPrice">Price (ဈေးနှုန်း - MMK)</label>
-                        <input type="number" id="itemPrice" class="form-control" placeholder="ဥပမာ - 3500" required>
-                    </div>
+        </div>
+    </div>
 
-                    <div class="form-group">
-                        <label for="itemCategory">Category</label>
-                        <select id="itemCategory" class="form-control" required>
-                            <option value="Food">Food</option>
-                            <option value="Drink">Drink</option>
-                            <option value="Dessert">Dessert</option>
-                        </select>
-                    </div>
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
+            authDomain: "smart-restaurant-85871.firebaseapp.com",
+            projectId: "smart-restaurant-85871",
+            storageBucket: "smart-restaurant-85871.firebasestorage.app",
+            messagingSenderId: "909399970300",
+            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-                    <div class="form-group">
-                        <label for="itemImage">Image URL</label>
-                        <input type="url" id="itemImage" class="form-control" placeholder="ဥပမာ - https://example.com/image.jpg" required>
-                    </div>
-                    <button type="submit" class="btn-submit">
-                        <i class="fa-solid fa-plus"></i> Item အသစ် သိမ်းဆည်းမည်
-                    </button>
-                </form>
-            </div>
-        </div>
+        // 1. Add New Menu Item
+        document.getElementById('addMenuForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('itemName').value;
+            const price = Number(document.getElementById('itemPrice').value);
+            const category = document.getElementById('itemCategory').value;
+            const image = document.getElementById('itemImage').value;
 
-    </div>
+            try {
+                await db.collection("menu").add({
+                    name: name,
+                    price: price,
+                    category: category,
+                    image: image || "https://via.placeholder.com/200?text=Food",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
-    <script>
-        // 1. Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+                alert("မီနူးအသစ် အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ။");
+                document.getElementById('addMenuForm').reset();
+            } catch (error) {
+                console.error("Error adding menu: ", error);
+                alert("မီနူးထည့်သွင်းရာတွင် အမှားအယွင်းရှိနေပါသည်။");
+            }
+        });
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // 2. Fetch & Render Existing Menu Items for Admin
+        db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+            const adminMenuList = document.getElementById('adminMenuList');
+            if (snapshot.empty) {
+                adminMenuList.innerHTML = `<p style="text-align: center; color: var(--text-light); font-size: 13px;">No menu items found.</p>`;
+                return;
+            }
 
-        // 2. Tab Navigation Function
-        function switchPage(pageName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+            adminMenuList.innerHTML = "";
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                const defaultImg = "https://via.placeholder.com/200?text=Food";
+                adminMenuList.innerHTML += `
+                    <div class="menu-manage-item">
+                        <img src="${item.image || defaultImg}" class="menu-thumb" onerror="this.src='${defaultImg}'">
+                        <div class="menu-info">
+                            <strong>${item.name}</strong>
+                            <small>${Number(item.price).toLocaleString()} MMK • <span style="color:var(--primary);">${item.category || 'Food'}</span></small>
+                        </div>
+                        <button class="btn-del-menu" onclick="deleteMenuItem('${doc.id}')" title="ဖျက်ပါ">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        });
 
-            if (pageName === 'orders') {
-                document.getElementById('ordersPage').classList.add('active');
-                document.getElementById('btnOrdersTab').classList.add('active');
-            } else if (pageName === 'addItem') {
-                document.getElementById('addItemPage').classList.add('active');
-                document.getElementById('btnAddItemTab').classList.add('active');
-            }
-        }
+        // Delete Menu Item
+        async function deleteMenuItem(id) {
+            if (confirm("ဤမီနူးကို ဖျက်ရန် သေချာပါသလား?")) {
+                try {
+                    await db.collection("menu").doc(id).delete();
+                } catch (error) {
+                    console.error("Error deleting menu: ", error);
+                }
+            }
+        }
 
-        // 3. Add New Item to Firestore
-        function handleAddItem(e) {
-            e.preventDefault();
+        // 3. Fetch Realtime Orders & Update Dashboard Analytics
+        db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+            const liveOrdersList = document.getElementById('liveOrdersList');
+            
+            let totalOrders = 0;
+            let pendingOrders = 0;
+            let totalRevenue = 0;
 
-            const name = document.getElementById('itemName').value;
-            const price = Number(document.getElementById('itemPrice').value);
-            const category = document.getElementById('itemCategory').value;
-            const image = document.getElementById('itemimage').value;
+            if (snapshot.empty) {
+                liveOrdersList.innerHTML = `<p style="text-align: center; color: var(--text-light);">လက်ရှိ ရောက်ရှိလာသော အော်ဒါများ မရှိသေးပါ...</p>`;
+                updateStats(0, 0, 0);
+                return;
+            }
 
-            db.collection("items").add({
-                name: name,
-                price: price,
-                category: category,
-                status: image,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => {
-                alert("Menu Item အသစ် အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ။");
-                document.getElementById('addItemForm').reset();
-            })
-            .catch(error => {
-                console.error("Error adding item: ", error);
-                alert("Item ထည့်သွင်းရာတွင် အမှားအယွင်းရှိပါသည်");
-            });
-        }
+            liveOrdersList.innerHTML = "";
+            snapshot.forEach(doc => {
+                const order = doc.data();
+                totalOrders++;
+                if (order.status === 'Pending') pendingOrders++;
+                totalRevenue += (order.total || 0);
 
-        // 4. Update Dashboard Analytics
-        function updateStats(totalOrders, pendingOrders, totalRevenue) {
-            document.getElementById('totalOrdersCount').innerText = totalOrders;
-            document.getElementById('pendingOrdersCount').innerText = pendingOrders;
-            document.getElementById('totalRevenueAmount').innerText = `${totalRevenue.toLocaleString()} MMK`;
-        }
+                const orderStatusClass = (order.status || 'Pending').toLowerCase();
+                const formattedTime = order.timestamp ? new Date(order.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now';
 
-        // 5. Update Order Status
-        function updateOrderStatus(orderId, newStatus) {
-            db.collection("orders").doc(orderId).update({
-                status: newStatus
-            }).then(() => {
-                console.log(`Order ${orderId} updated to ${newStatus}`);
-            }).catch(error => {
-                console.error("Error updating status: ", error);
-                alert("Status ပြောင်းလဲရာတွင် အမှားအယွင်းရှိပါသည်");
-            });
-        }
+                let itemsHtml = '';
+                if (order.items && Array.isArray(order.items)) {
+                    order.items.forEach(i => {
+                        itemsHtml += `
+                            <tr>
+                                <td>${i.name} x ${i.quantity}</td>
+                                <td>${(i.price * i.quantity).toLocaleString()} MMK</td>
+                            </tr>
+                        `;
+                    });
+                }
 
-        // 6. Fetch Realtime Orders
-        db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-            const liveOrdersList = document.getElementById('liveOrdersList');
-            
-            let totalOrders = 0;
-            let pendingOrders = 0;
-            let totalRevenue = 0;
-            let activeOrdersCount = 0;
+                liveOrdersList.innerHTML += `
+                    <div class="order-card ${orderStatusClass}">
+                        <div class="order-header">
+                            <span class="table-badge">Table ${order.table}</span>
+                            <span class="order-time"><i class="fa-regular fa-clock"></i> ${formattedTime}</span>
+                        </div>
 
-            if (snapshot.empty) {
-                liveOrdersList.innerHTML = `<p style="text-align: center; color: var(--text-light); grid-column: 1/-1;">လက်ရှိ ရောက်ရှိလာသော အော်ဒါများ မရှိသေးပါ...</p>`;
-                updateStats(0, 0, 0);
-                return;
-            }
+                        <table class="order-items-table">
+                            ${itemsHtml}
+                        </table>
 
-            liveOrdersList.innerHTML = "";
+                        <div style="font-size: 12px; color: var(--text-light); margin-bottom: 5px;">
+                            Payment: <strong>${order.paymentMethod || 'Cash'}</strong>
+                        </div>
 
-            snapshot.forEach(doc => {
-                const order = doc.data();
-                
-                totalOrders++;
-                if (order.status === 'Pending') pendingOrders++;
-                totalRevenue += (order.total || 0);
+                        <div class="order-footer">
+                            <div>
+                                <small style="display:block; color:var(--text-light); font-size:11px;">စုစုပေါင်း</small>
+                                <strong style="color:var(--primary); font-size:16px;">${Number(order.total).toLocaleString()} MMK</strong>
+                            </div>
+                            <div>
+                                <select class="status-select" onchange="updateOrderStatus('${doc.id}', this.value)">
+                                    <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                                    <option value="Cooking" ${order.status === 'Cooking' ? 'selected' : ''}>🍳 Cooking</option>
+                                    <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
 
-                if (order.status === 'Completed') {
-                    return;
-                }
+            updateStats(totalOrders, pendingOrders, totalRevenue);
+        });
 
-                activeOrdersCount++;
+        // Update Stats Numbers UI
+        function updateStats(total, pending, revenue) {
+            document.getElementById('statTotalOrders').innerText = total;
+            document.getElementById('statPendingOrders').innerText = pending;
+            document.getElementById('statRevenue').innerText = `${revenue.toLocaleString()} MMK`;
+        }
 
-                const orderStatusClass = (order.status || 'Pending').toLowerCase();
-                const formattedTime = order.timestamp ? new Date(order.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now';
-
-                let itemsHtml = '';
-                if (order.items && Array.isArray(order.items)) {
-                    order.items.forEach(i => {
-                        itemsHtml += `
-                            <tr>
-                                <td>${i.name} x ${i.quantity}</td>
-                                <td>${(i.price * i.quantity).toLocaleString()} MMK</td>
-                            </tr>
-                        `;
-                    });
-                }
-
-                liveOrdersList.innerHTML += `
-                    <div class="order-card ${orderStatusClass}">
-                        <div class="order-header">
-                            <span class="table-badge">Table ${order.table}</span>
-                            <span class="order-time"><i class="fa-regular fa-clock"></i> ${formattedTime}</span>
-                        </div>
-
-                        <table class="order-items-table">
-                            ${itemsHtml}
-                        </table>
-
-                        <div style="font-size: 12px; color: var(--text-light); margin-bottom: 8px;">
-                            Payment: <strong>${order.paymentMethod || 'Cash'}</strong>
-                        </div>
-
-                        <div class="order-footer">
-                            <div>
-                                <small style="display:block; color:var(--text-light); font-size:11px;">စုစုပေါင်း</small>
-                                <strong style="color:var(--primary); font-size:16px;">${Number(order.total).toLocaleString()} MMK</strong>
-                            </div>
-                            <div>
-                                <select class="status-select" onchange="updateOrderStatus('${doc.id}', this.value)">
-                                    <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
-                                    <option value="Cooking" ${order.status === 'Cooking' ? 'selected' : ''}>🍳 Cooking</option>
-                                    <option value="Completed" ${order.status === 'Completed' ? 'selected' : ''}>✅ Completed</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            if (activeOrdersCount === 0) {
-                liveOrdersList.innerHTML = `<p style="text-align: center; color: var(--text-light); grid-column: 1/-1;">လက်ရှိ ပြင်ဆင်ရန် အော်ဒါများ မရှိသေးပါ...</p>`;
-            }
-
-            updateStats(totalOrders, pendingOrders, totalRevenue);
-        });
-    </script>
+        // Update Order Status in Firestore
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                await db.collection("orders").doc(orderId).update({
+                    status: newStatus
+                });
+            } catch (error) {
+                console.error("Error updating order status: ", error);
+                alert("အော်ဒါ အခြေအနေ ပြောင်းလဲရာတွင် အမှားအယွင်းရှိနေပါသည်။");
+            }
+        }
+    </script>
 </body>
 </html>
