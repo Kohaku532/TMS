@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Live Orders</title>
+    <title>Admin Dashboard - Live Orders & Menu Management</title>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
             --primary: #ff5722;
-            --bg-color: #f4f6f9;
-            --card-bg: #ffffff;
+            --bg-color: #5cddf7;
+            --card-bg:#22e54f;
             --text-dark: #333333;
             --text-light: #777777;
             --border-color: #e0e0e0;
@@ -42,7 +42,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid var(--border-color);
         }
@@ -53,6 +53,35 @@
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .nav-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #555;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tab-btn.active {
+            color: #ffffff;
+            background-color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 4px 8px rgba(255, 87, 34, 0.25);
         }
 
         /* Analytics Cards */
@@ -90,7 +119,15 @@
             opacity: 0.8;
         }
 
-        /* Live Orders Section */
+        /* Section Visibility & Titles */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .section-title {
             font-size: 18px;
             margin-bottom: 15px;
@@ -99,13 +136,13 @@
             gap: 8px;
         }
 
+        /* Live Orders Grid */
         .orders-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
         }
 
-        /* Order Card Style */
         .order-card {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -183,6 +220,62 @@
             cursor: pointer;
             background-color: #fff;
         }
+
+        /* Add New Item Form Styling */
+        .form-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--primary);
+            color: #fff;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
     </style>
 
     <!-- Firebase SDK (v8 Compat) -->
@@ -197,40 +290,91 @@
             <span style="font-size: 14px; color: var(--text-light);">Realtime Dashboard</span>
         </header>
 
-        <!-- Analytics Overview -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="info">
-                    <h3>စုစုပေါင်း အော်ဒါ</h3>
-                    <p id="totalOrdersCount">0</p>
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab-btn active" id="btnOrdersTab" onclick="switchPage('orders')">
+                <i class="fa-solid fa-receipt"></i> Orders
+            </button>
+            <button class="nav-tab-btn" id="btnAddItemTab" onclick="switchPage('addItem')">
+                <i class="fa-solid fa-plus-circle"></i> Add New Item
+            </button>
+        </div>
+
+        <!-- PAGE 1: ORDERS DASHBOARD -->
+        <div id="ordersPage" class="tab-content active">
+            <!-- Analytics Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="info">
+                        <h3>စုစုပေါင်း အော်ဒါ</h3>
+                        <p id="totalOrdersCount">0</p>
+                    </div>
+                    <div class="icon"><i class="fa-solid fa-receipt"></i></div>
                 </div>
-                <div class="icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="stat-card">
+                    <div class="info">
+                        <h3>စောင့်ဆိုင်းဆဲ အော်ဒါ (Pending)</h3>
+                        <p id="pendingOrdersCount">0</p>
+                    </div>
+                    <div class="icon" style="color: var(--pending-color);"><i class="fa-solid fa-hourglass-half"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="info">
+                        <h3>စုစုပေါင်း ဝင်ငွေ</h3>
+                        <p id="totalRevenueAmount">0 MMK</p>
+                    </div>
+                    <div class="icon" style="color: var(--completed-color);"><i class="fa-solid fa-money-bill-wave"></i></div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="info">
-                    <h3>စောင့်ဆိုင်းဆဲ အော်ဒါ (Pending)</h3>
-                    <p id="pendingOrdersCount">0</p>
-                </div>
-                <div class="icon" style="color: var(--pending-color);"><i class="fa-solid fa-hourglass-half"></i></div>
-            </div>
-            <div class="stat-card">
-                <div class="info">
-                    <h3>စုစုပေါင်း ဝင်ငွေ</h3>
-                    <p id="totalRevenueAmount">0 MMK</p>
-                </div>
-                <div class="icon" style="color: var(--completed-color);"><i class="fa-solid fa-money-bill-wave"></i></div>
+
+            <!-- Live Orders Container -->
+            <h2 class="section-title"><i class="fa-solid fa-bell"></i> လက်ရှိ ပြင်ဆင်ရန် အော်ဒါများ</h2>
+            <div id="liveOrdersList" class="orders-grid">
+                <p style="text-align: center; color: var(--text-light); grid-column: 1/-1;">အော်ဒါများ ရယူနေပါသည်...</p>
             </div>
         </div>
 
-        <!-- Live Orders Container -->
-        <h2 class="section-title"><i class="fa-solid fa-bell"></i> လက်ရှိ ပြင်ဆင်ရန် အော်ဒါများ</h2>
-        <div id="liveOrdersList" class="orders-grid">
-            <p style="text-align: center; color: var(--text-light); grid-column: 1/-1;">အော်ဒါများ ရယူနေပါသည်...</p>
+        <!-- PAGE 2: ADD NEW ITEM FORM -->
+        <div id="addItemPage" class="tab-content">
+            <h2 class="section-title" style="justify-content: center; margin-bottom: 20px;">
+                <i class="fa-solid fa-utensils"></i> Menu Item အသစ်ထည့်သွင်းရန်
+            </h2>
+            <div class="form-card">
+                <form id="addItemForm" onsubmit="handleAddItem(event)">
+                    <div class="form-group">
+                        <label for="itemName">Item Name (အမည်)</label>
+                        <input type="text" id="itemName" class="form-control" placeholder="ဥပမာ - ကြက်သား" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="itemPrice">Price (ဈေးနှုန်း - MMK)</label>
+                        <input type="number" id="itemPrice" class="form-control" placeholder="ဥပမာ - 3500" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="itemCategory">Category</label>
+                        <select id="itemCategory" class="form-control" required>
+                            <option value="Food">Food</option>
+                            <option value="Drink">Drink</option>
+                            <option value="Dessert">Dessert</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="itemImage">Image URL</label>
+                        <input type="url" id="itemImage" class="form-control" placeholder="ဥပမာ - https://example.com/image.jpg" required>
+                    </div>
+                    <button type="submit" class="btn-submit">
+                        <i class="fa-solid fa-plus"></i> Item အသစ် သိမ်းဆည်းမည်
+                    </button>
+                </form>
+            </div>
         </div>
+
     </div>
 
     <script>
-        // 1. Firebase Configuration (သင့် Project ရဲ့ Configuration ဖြင့် အစားထိုးပါ)
+        // 1. Firebase Configuration
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -244,14 +388,54 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 2. Stats များကို UI တွင် Update လုပ်ပေးသော Function
+        // 2. Tab Navigation Function
+        function switchPage(pageName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+
+            if (pageName === 'orders') {
+                document.getElementById('ordersPage').classList.add('active');
+                document.getElementById('btnOrdersTab').classList.add('active');
+            } else if (pageName === 'addItem') {
+                document.getElementById('addItemPage').classList.add('active');
+                document.getElementById('btnAddItemTab').classList.add('active');
+            }
+        }
+
+        // 3. Add New Item to Firestore
+        function handleAddItem(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('itemName').value;
+            const price = Number(document.getElementById('itemPrice').value);
+            const category = document.getElementById('itemCategory').value;
+            const image = document.getElementById('itemimage').value;
+
+            db.collection("items").add({
+                name: name,
+                price: price,
+                category: category,
+                status: image,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                alert("Menu Item အသစ် အောင်မြင်စွာ ထည့်သွင်းပြီးပါပြီ။");
+                document.getElementById('addItemForm').reset();
+            })
+            .catch(error => {
+                console.error("Error adding item: ", error);
+                alert("Item ထည့်သွင်းရာတွင် အမှားအယွင်းရှိပါသည်");
+            });
+        }
+
+        // 4. Update Dashboard Analytics
         function updateStats(totalOrders, pendingOrders, totalRevenue) {
             document.getElementById('totalOrdersCount').innerText = totalOrders;
             document.getElementById('pendingOrdersCount').innerText = pendingOrders;
             document.getElementById('totalRevenueAmount').innerText = `${totalRevenue.toLocaleString()} MMK`;
         }
 
-        // 3. Status ပြောင်းလဲရန် Function
+        // 5. Update Order Status
         function updateOrderStatus(orderId, newStatus) {
             db.collection("orders").doc(orderId).update({
                 status: newStatus
@@ -263,7 +447,7 @@
             });
         }
 
-        // 4. Fetch Realtime Orders & Update Dashboard
+        // 6. Fetch Realtime Orders
         db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
             const liveOrdersList = document.getElementById('liveOrdersList');
             
@@ -283,12 +467,10 @@
             snapshot.forEach(doc => {
                 const order = doc.data();
                 
-                // Analytics စာရင်းအတွက် အော်ဒါအားလုံးကို တွက်ချက်မည် (Completed ပါဝင်သည်)
                 totalOrders++;
                 if (order.status === 'Pending') pendingOrders++;
                 totalRevenue += (order.total || 0);
 
-                // Completed ဖြစ်သွားပါက Live Orders UI List တွင် မပြဘဲ ကျော်သွားမည်
                 if (order.status === 'Completed') {
                     return;
                 }
@@ -342,12 +524,10 @@
                 `;
             });
 
-            // Live Order မရှိပါက ပြသမည့် စာတမ်း
             if (activeOrdersCount === 0) {
                 liveOrdersList.innerHTML = `<p style="text-align: center; color: var(--text-light); grid-column: 1/-1;">လက်ရှိ ပြင်ဆင်ရန် အော်ဒါများ မရှိသေးပါ...</p>`;
             }
 
-            // Stat Cards အချက်အလက်များ Update လုပ်မည်
             updateStats(totalOrders, pendingOrders, totalRevenue);
         });
     </script>
