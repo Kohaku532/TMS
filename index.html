@@ -18,11 +18,13 @@
             --card-shadow: 0 10px 25px rgba(0,0,0,0.05);
             --success: #2ed573;
             --warning: #ffa502;
+            --member-color: #8e44ad;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: var(--bg); color: var(--text-dark); padding-bottom: 80px; }
+        body { background: var(--bg); color: var(--text-dark); padding-bottom: 90px; }
 
+        /* Header */
         header {
             background: #6bbeef;
             position: sticky;
@@ -38,18 +40,12 @@
         }
 
         .logo { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
-        .logo i { font-size: 26px; }
-
-        .nav-controls {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .nav-controls { display: flex; align-items: center; gap: 10px; }
 
         .nav-tab-btn {
-            background: #f1f2f6;
+            background: #ffffff;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 13px;
             font-weight: 700;
@@ -58,42 +54,52 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        .nav-tab-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
+        .pay-bill-nav-btn { background: var(--success); color: white; }
         .table-info { background: #ffffff; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        .member-badge-hdr { background: var(--member-color); color: white; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 12px; display: none; align-items: center; gap: 5px; }
 
+        /* Hero Banner */
         .hero {
-            background: linear-gradient(135deg, #ff4757, rgba(255, 107, 129, 0.8)), 
-                        url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80') center/cover;
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
             color: white;
             text-align: center;
-            padding: 35px 20px;
+            padding: 30px 20px;
             border-radius: 0 0 25px 25px;
             margin-bottom: 20px;
         }
 
-        .hero h1 { font-size: 28px; margin-bottom: 8px; font-weight: 700; }
+        .hero h1 { font-size: 26px; margin-bottom: 5px; }
         .hero p { font-size: 14px; opacity: 0.9; }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
-        .page-view { display: none; }
-        .page-view.active { display: block; }
 
-        .filter-section {
-            margin-bottom: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        /* Order Ready Banner Notification */
+        .status-alert-banner {
+            background: #2ed573;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3);
+            animation: pulse 1.5s infinite;
         }
 
-        .search-box { position: relative; width: 100%; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.01); }
+            100% { transform: scale(1); }
+        }
 
+        /* Filter Section */
+        .filter-section { margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .search-box { position: relative; width: 100%; }
         .search-box input {
             width: 100%;
             padding: 12px 16px 12px 45px;
@@ -102,1103 +108,659 @@
             background: white;
             font-size: 15px;
             outline: none;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            transition: all 0.2s ease;
         }
+        .search-box i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-light); }
 
-        .search-box input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(255, 47, 87, 0.15);
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-            font-size: 16px;
-        }
-
-        .category-tabs {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-            scrollbar-width: none;
-        }
-
+        .category-tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .category-tabs::-webkit-scrollbar { display: none; }
-
         .cat-btn {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            background: white; border: 1px solid #e2e8f0; padding: 8px 18px; border-radius: 20px;
+            font-size: 14px; font-weight: 600; color: var(--text-dark); cursor: pointer; white-space: nowrap;
         }
+        .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .cat-btn.active, .cat-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(255, 47, 87, 0.25);
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 12px;
-        }
-
-        @media (min-width: 768px) {
-            .menu-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-            }
-        }
+        /* Menu Grid */
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        @media (min-width: 768px) { .menu-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; } }
 
         .food-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
+            background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--card-shadow);
+            display: flex; flex-direction: column; position: relative; transition: 0.3s;
+        }
+        .food-card:hover { transform: translateY(-5px); }
+
+        .card-img-wrap { width: 100%; height: 140px; position: relative; overflow: hidden; }
+        .food-img { width: 100%; height: 100%; object-fit: cover; }
+
+        .top-rating-badge {
+            position: absolute; top: 10px; left: 10px; background: var(--warning); color: white;
+            font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 12px;
         }
 
-        .food-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-        }
+        .card-details { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
+        .food-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+        
+        .rating-wrapper { margin-bottom: 8px; }
+        .rating-stars { color: #f1c40f; font-size: 13px; cursor: pointer; display: inline-block; }
+        .rating-count { font-size: 11px; color: var(--text-light); margin-left: 4px; }
 
-        .card-img-wrap {
-            width: 100%;
-            height: 130px; 
-            position: relative;
-            overflow: hidden;
-        }
-
-        @media (min-width: 768px) {
-            .card-img-wrap { height: 170px; }
-        }
-
-        .food-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-
-        .food-card:hover .food-img { transform: scale(1.08); }
-
-        .card-details {
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            justify-content: space-between;
-        }
-
-        .food-title { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
-        .food-price { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+        .food-price { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
 
         .btn-add-cart {
-            width: 100%;
-            background: #f1f2f6;
-            color: var(--text-dark);
-            border: none;
-            padding: 8px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
+            width: 100%; background: #f1f2f6; color: var(--text-dark); border: none; padding: 8px;
+            border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
         }
+        .btn-add-cart:hover { background: var(--primary); color: white; }
 
-        .btn-add-cart:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Floating Cart Trigger */
+        /* Floating Cart Button */
         .cart-float-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: var(--primary);
-            color: white;
-            padding: 14px 22px;
-            border-radius: 50px;
-            box-shadow: 0 8px 20px rgba(255, 47, 87, 0.4);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            z-index: 99;
-            transition: transform 0.2s ease;
+            position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white;
+            padding: 14px 22px; border-radius: 50px; box-shadow: 0 8px 20px rgba(255, 47, 87, 0.4);
+            display: flex; align-items: center; gap: 12px; cursor: pointer; z-index: 99;
         }
+        .cart-count { background: white; color: var(--primary); font-weight: 800; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
-        .cart-float-btn:hover { transform: scale(1.05); }
-
-        .cart-count {
-            background: white;
-            color: var(--primary);
-            font-weight: 800;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-
-        /* Side Drawer Cart Panel */
-        .cart-drawer-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .cart-drawer-overlay.active { display: block; opacity: 1; }
-
-        .cart-drawer {
-            position: fixed;
-            top: 0; right: -400px;
-            width: 100%; max-width: 380px; height: 100%;
-            background: white;
-            z-index: 1001;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.15);
-            transition: right 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
+        /* Side Cart Drawer */
+        .cart-drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
+        .cart-drawer-overlay.active { display: block; }
+        .cart-drawer { position: fixed; top: 0; right: -400px; width: 100%; max-width: 380px; height: 100%; background: white; z-index: 1001; transition: 0.3s ease; display: flex; flex-direction: column; }
         .cart-drawer.active { right: 0; }
+        .drawer-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .drawer-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .drawer-footer { padding: 20px; border-top: 1px solid #eee; background: #fafafa; }
+        .btn-checkout { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; }
 
-        .drawer-header {
-            padding: 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1100; backdrop-filter: blur(4px); }
+        .modal-card { background: white; border-radius: 20px; width: 90%; max-width: 420px; padding: 25px; max-height: 90vh; overflow-y: auto; position: relative; text-align: center; }
+        .modal-close { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; color: var(--text-light); }
+        
+        /* Receipt UI */
+        .receipt-box { background: #fdfdfd; border: 1px dashed #ccc; padding: 15px; border-radius: 10px; margin: 15px 0; font-family: monospace; font-size: 13px; text-align: left; }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .receipt-line { border-bottom: 1px dashed #bbb; margin: 10px 0; }
 
-        .drawer-close { font-size: 20px; cursor: pointer; color: var(--text-light); }
-
-        .drawer-body {
-            padding: 20px;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 1px dashed #eee;
-        }
-
-        .qty-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f1f2f6;
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
-
-        .qty-btn {
-            border: none;
-            background: transparent;
-            font-weight: bold;
-            cursor: pointer;
-            padding: 2px 6px;
-            color: var(--text-dark);
-        }
-
-        .drawer-footer {
-            padding: 20px;
-            border-top: 1px solid #eee;
-            background: #fafafa;
-        }
-
-        .btn-checkout {
-            width: 100%;
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
-        }
-
-        /* Order Tracking Page Styles */
-        .order-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--card-shadow);
-            border-left: 6px solid var(--primary);
-        }
-
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 15px;
-        }
-
-        .order-status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .status-pending { background: #ffeaa7; color: #d63031; }
-        .status-preparing { background: #81ecec; color: #00cec9; }
-        .status-ready { background: #74b9ff; color: #0984e3; }
-        .status-completed { background: #55efc4; color: #00b894; }
-
-        .order-item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px dashed #f1f2f6;
-        }
-
-        .live-qty-btn {
-            background: #e2e8f0;
-            border: none;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .live-qty-btn:hover { background: var(--primary); color: white; }
-
-        /* RECEIPT MODAL STYLES */
-        .receipt-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .receipt-modal-overlay.active { display: flex; }
-
-        .receipt-card {
-            background: white;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 400px;
-            padding: 25px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            animation: popupScale 0.3s ease-out forwards;
-            position: relative;
-        }
-
-        @keyframes popupScale {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .receipt-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin: 0 auto 15px auto;
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-        }
-
-        .receipt-card.completed .receipt-icon {
-            background: var(--success);
-            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.4);
-        }
-
-        .receipt-title { text-align: center; font-size: 20px; font-weight: 800; color: var(--text-dark); }
-        .receipt-subtitle { text-align: center; font-size: 13px; color: var(--text-light); margin-bottom: 20px; }
-
-        .receipt-divider { border-top: 2px dashed #e2e8f0; margin: 15px 0; }
-
-        .receipt-details-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-light); }
-        .receipt-items-list { margin: 15px 0; max-height: 180px; overflow-y: auto; }
-        .receipt-item-line { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; border-bottom: 1px dashed #f1f2f6; }
-
-        .receipt-total-row { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 800; color: var(--primary); margin-top: 10px; }
-
-        .btn-close-receipt {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.2s;
-        }
-
-        .btn-close-receipt:hover { background: var(--primary-hover); }
-
-        /* Pay Method Buttons */
-        .pay-method-btn {
-            flex: 1;
-            padding: 8px 4px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            background: white;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: var(--text-dark);
-        }
-
-        .pay-method-btn.active, .pay-method-btn:hover {
-            border-color: var(--primary);
-            background: #fff0f3;
-            color: var(--primary);
-        }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .btn-action { background: var(--success); color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-secondary { background: #e2e8f0; color: var(--text-dark); border: none; width: 100%; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 8px; }
     </style>
 </head>
 <body>
 
-    <audio id="notiSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
     <header>
-        <div class="logo">
-            <i class="fa-solid fa-utensils"></i> Ponyo
-        </div>
-
+        <div class="logo"><i class="fa-solid fa-utensils"></i> Smart Menu</div>
         <div class="nav-controls">
-            <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
-                <i class="fa-solid fa-book-open"></i> Menu
-            </button>
-            <button class="nav-tab-btn" id="btnPayBillTab" onclick="openBillReceiptModal()">
-                <i class="fa-solid fa-file-invoice-dollar"></i> Pay Bill
-            </button>
-            <div class="table-select-box">
-               <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: -</div>
-            </div>
+            <div class="member-badge-hdr" id="member-hdr-badge"><i class="fa-solid fa-crown"></i> Member (50% OFF)</div>
+            <button class="nav-tab-btn pay-bill-nav-btn" onclick="openPayBillModal()"><i class="fa-solid fa-receipt"></i> Pay Bill</button>
+            <div class="table-info" id="table-display">Table #1</div>
         </div>
     </header>
 
     <div class="hero">
-        <h1>Delicious Food, Fast Service</h1>
-        <p>Choose your favorite meal and place order directly from your table</p>
+        <h1>Welcome to Smart Dining</h1>
+        <p>Order your favorite meals directly from your table</p>
     </div>
 
     <div class="container">
+        
+        <div class="status-alert-banner" id="ready-banner">
+            <span><i class="fa-solid fa-circle-check"></i> Your order is ready! ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။</span>
+            <button class="nav-tab-btn" onclick="openPayBillModal()" style="font-size:12px; padding:4px 10px;">Pay Bill Now</button>
+        </div>
 
-        <div id="menuView" class="page-view active">
-            <div class="filter-section">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="searchInput" placeholder="Search food or drinks..." oninput="filterMenuItems()">
-                </div>
-
-                <div class="category-tabs">
-                    <button class="cat-btn active" onclick="selectCategory('All', this)">
-                        <i class="fa-solid fa-border-all"></i> All
-                    </button>
-                    <button class="cat-btn" onclick="selectCategory('Food', this)">
-                        <i class="fa-solid fa-bowl-rice"></i> Food
-                    </button>
-                    <button class="cat-btn" onclick="selectCategory('Drink', this)">
-                        <i class="fa-solid fa-mug-hot"></i> Drink
-                    </button>
-                    <button class="cat-btn" onclick="selectCategory('Dessert', this)">
-                        <i class="fa-solid fa-ice-cream"></i> Dessert
-                    </button>
-                </div>
+        <div class="filter-section">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-input" placeholder="Search menu items..." onkeyup="renderMenuGrid()">
             </div>
 
-            <div class="menu-grid" id="menuGrid">
-                <p style="text-align: center; grid-column: 1/-1; color: var(--text-light);">Loading delicious menu...</p>
+            <div class="category-tabs">
+                <button class="cat-btn active" onclick="setCategory('All', this)">All</button>
+                <button class="cat-btn" onclick="setCategory('Food', this)">Food</button>
+                <button class="cat-btn" onclick="setCategory('Drink', this)">Drinks</button>
+                <button class="cat-btn" onclick="setCategory('Dessert', this)">Desserts</button>
             </div>
         </div>
 
-        <div id="ordersView" class="page-view">
-            <h2 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Active Table Orders
-            </h2>
-            <div id="activeOrdersContainer">
-                <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Loading orders...</p>
-            </div>
+        <div class="menu-grid" id="menu-grid">
+            <p style="grid-column: 1/-1; text-align: center; color: var(--text-light);">Loading items from Admin...</p>
         </div>
-
     </div>
 
-    <div class="cart-float-btn" id="cartFloatBtn" onclick="toggleCartDrawer(true)">
-        <i class="fa-solid fa-basket-shopping"></i>
-        <span>My Order</span>
-        <div class="cart-count" id="cartCount">0</div>
+    <div class="cart-float-btn" onclick="openCartDrawer()">
+        <i class="fa-solid fa-basket-shopping" style="font-size: 20px;"></i>
+        <div class="cart-count" id="cart-count">0</div>
+        <span style="font-weight: 700; font-size: 14px;" id="cart-total-price">0 MMK</span>
     </div>
 
-    <div class="cart-drawer-overlay" id="cartOverlay" onclick="toggleCartDrawer(false)"></div>
+    <div class="cart-drawer-overlay" id="cart-overlay" onclick="closeCartDrawer()"></div>
 
-    <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-drawer" id="cart-drawer">
         <div class="drawer-header">
-            <h3><i class="fa-solid fa-receipt"></i> Your Order List</h3>
-            <i class="fa-solid fa-xmark drawer-close" onclick="toggleCartDrawer(false)"></i>
+            <h3><i class="fa-solid fa-cart-shopping"></i> Your Order Cart</h3>
+            <i class="fa-solid fa-xmark modal-close" onclick="closeCartDrawer()"></i>
         </div>
 
-        <div class="drawer-body" id="cartItemsContainer">
-            <p style="text-align: center; color: var(--text-light); margin-top: 30px;">Your basket is empty!</p>
-        </div>
+        <div class="drawer-body" id="cart-items-container"></div>
 
         <div class="drawer-footer">
-            <button class="btn-checkout" onclick="submitOrder()">Confirm Order</button>
+            <div id="cart-summary-box" style="margin-bottom:12px; font-size:14px;"></div>
+            <button class="btn-checkout" onclick="placeOrder()"><i class="fa-solid fa-paper-plane"></i> Place Order</button>
         </div>
     </div>
 
-    <div class="receipt-modal-overlay" id="payBillModal">
-        <div class="receipt-card">
-            <div style="text-align: right; margin-bottom: -10px;">
-                <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 18px; color: var(--text-light);" onclick="closePayBillModal()"></i>
+    <div class="modal-overlay" id="initial-member-modal" style="display: flex;">
+        <div class="modal-card">
+            <div style="font-size: 40px; color: var(--member-color); margin-bottom: 10px;">
+                <i class="fa-solid fa-crown"></i>
             </div>
-            <div class="receipt-icon">
-                <i class="fa-solid fa-receipt"></i>
-            </div>
-            <div class="receipt-title">Table Bill Invoice</div>
-            <div class="receipt-subtitle">ကျသင့်ငွေ စာရင်းရှင်းလွှာ</div>
+            <h2 style="margin-bottom: 8px;">Welcome to Smart Menu</h2>
+            <p style="font-size: 13px; color: var(--text-light); margin-bottom: 20px;">
+                သင်သည် မန်ဘာ (Member) ဝင်ထားသူဖြစ်ပါသလား? မန်ဘာများအတွက် <b>50% Discount</b> ခံစားခွင့်ရရှိပါမည်။
+            </p>
 
-            <div class="receipt-divider"></div>
-
-            <div class="receipt-details-row">
-                <span>Table Number:</span>
-                <strong id="billTableNum">Table -</strong>
-            </div>
-            <div class="receipt-details-row">
-                <span>Date & Time:</span>
-                <strong id="billDateTime">-</strong>
+            <div id="check-options-view">
+                <button class="btn-action" style="background: var(--member-color);" onclick="showMemberLoginForm()">
+                    <i class="fa-solid fa-id-card"></i> Member ဖြစ်ပါတယ် (Login)
+                </button>
+                <button class="btn-secondary" onclick="continueAsRegular()">
+                    ရိုးရိုး Customer အဖြစ် ဆက်သွားမည်
+                </button>
             </div>
 
-            <div class="receipt-items-list" id="billItemsList">
+            <div id="member-login-view" style="display: none; margin-top: 15px;">
+                <div class="form-group">
+                    <label>Member Phone Number သို့မဟုတ် Email</label>
+                    <input type="text" id="member-credential-input" placeholder="09xxxxxxxxx သို့မဟုတ် email@gmail.com">
                 </div>
-
-            <div class="receipt-divider"></div>
-
-            <div class="receipt-total-row">
-                <span>Grand Total</span>
-                <span id="billGrandTotal" style="color: var(--primary);">0 MMK</span>
+                <button class="btn-action" style="background: var(--member-color);" onclick="verifyMemberCredentials()">
+                    <i class="fa-solid fa-check-circle"></i> Verify Member
+                </button>
+                <button class="btn-secondary" onclick="backToCheckOptions()">နောက်သို့</button>
             </div>
-
-            <div style="margin-top: 15px; text-align: left;">
-                <label style="font-size: 13px; font-weight: 700; color: var(--text-dark); display: block; margin-bottom: 8px;">
-                    <i class="fa-solid fa-wallet"></i> Select Payment Method:
-                </label>
-                <div style="display: flex; gap: 8px; justify-content: space-between;">
-                    <button type="button" class="pay-method-btn active" onclick="selectPayMethod('KBZPay', this)">KBZPay</button>
-                    <button type="button" class="pay-method-btn" onclick="selectPayMethod('WavePay', this)">WavePay</button>
-                    <button type="button" class="pay-method-btn" onclick="selectPayMethod('Cash', this)">Cash</button>
-                </div>
-            </div>
-
-            <button class="btn-checkout" style="margin-top: 20px;" id="btnConfirmPayment" onclick="processTablePayment()">
-                <i class="fa-solid fa-credit-card"></i> Pay Now
-            </button>
         </div>
     </div>
 
-    <div class="receipt-modal-overlay" id="receiptModal">
-        <div class="receipt-card" id="receiptCard">
-            <div class="receipt-icon" id="receiptIcon">
-                <i class="fa-solid fa-bell"></i>
-            </div>
-            <div class="receipt-title" id="receiptStatusTitle">Order Ready!</div>
-            <div class="receipt-subtitle" id="receiptStatusSubtitle">သင့်အော်ဒါ အဆင်သင့်ဖြစ်ပါပြီ။</div>
+    <div class="modal-overlay" id="bill-modal">
+        <div class="modal-card">
+            <i class="fa-solid fa-xmark modal-close" onclick="closePayBillModal()"></i>
+            <h3><i class="fa-solid fa-receipt"></i> Payment Bill Receipt</h3>
+            
+            <div class="receipt-box" id="receipt-details"></div>
 
-            <div class="receipt-divider"></div>
-
-            <div class="receipt-details-row">
-                <span>Order Ref:</span>
-                <strong id="receiptOrderId">#000000</strong>
-            </div>
-            <div class="receipt-details-row">
-                <span>Table:</span>
-                <strong id="receiptTableNum">Table -</strong>
+            <div class="form-group">
+                <label>Select Payment Method:</label>
+                <select id="payment-method">
+                    <option value="KBZPay">KBZPay</option>
+                    <option value="WavePay">WavePay</option>
+                    <option value="Cash">Cash at Table</option>
+                </select>
             </div>
 
-            <div class="receipt-items-list" id="receiptItemsList">
+            <button class="btn-action" onclick="confirmPayment()"><i class="fa-solid fa-check"></i> Complete Payment</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="member-modal">
+        <div class="modal-card">
+            <i class="fa-solid fa-xmark modal-close" onclick="closeMemberModal()"></i>
+            <h3 style="color:var(--warning);"><i class="fa-solid fa-crown"></i> Membership Offer</h3>
+            <p style="font-size:13px; margin-bottom:15px; color:var(--text-light);">
+                သင့်၏ ဝယ်ယူမှုသည် ၁ သိန်းကျပ်ကျော်လွန်ပါသဖြင့် Member အဖြစ် အခမဲ့ စာရင်းသွင်းနိုင်ပါသည်။
+            </p>
+
+            <form onsubmit="registerMember(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="mem-name" required placeholder="Name">
                 </div>
-
-            <div class="receipt-divider"></div>
-
-            <div class="receipt-total-row">
-                <span>Total Amount</span>
-                <span id="receiptTotal">0 MMK</span>
-            </div>
-
-            <button class="btn-close-receipt" onclick="closeReceiptModal()">ကျေးဇူးတင်ပါသည်။</button>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="mem-email" required placeholder="example@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="mem-password" required placeholder="******">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="mem-phone" required placeholder="09xxxxxxxxx">
+                </div>
+                <button type="submit" class="btn-action" style="background:var(--primary);"><i class="fa-solid fa-user-plus"></i> Register Member</button>
+            </form>
         </div>
     </div>
 
     <script>
-        // Firebase Config
+        // Firebase Config Setup (သင့် Firebase Keys များဖြင့် အစားထိုးပါ)
         const firebaseConfig = {
-            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
-            authDomain: "smart-restaurant-85871.firebaseapp.com",
-            projectId: "smart-restaurant-85871",
-            storageBucket: "smart-restaurant-85871.firebasestorage.app",
-            messagingSenderId: "909399970300",
-            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-        firebase.initializeApp(firebaseConfig);
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Detect Table Number from Query Parameter (e.g., index.html?table=5)
+        // System State Variables
         const urlParams = new URLSearchParams(window.location.search);
-        const currentTable = urlParams.get('table') || '1';
-        document.getElementById('tableDisplay').innerHTML = `<i class="fa-solid fa-chair"></i> Table: ${currentTable}`;
+        const tableId = urlParams.get('table') || '1';
+        document.getElementById('table-display').innerText = `Table #${tableId}`;
 
-        let allMenuItems = [];
-        let selectedCategory = 'All';
+        let menuItems = [];
         let cart = [];
-        let ordersUnsubscribe = null;
-        let isInitialLoad = true;
-        let selectedPaymentMethod = 'KBZPay';
+        let activeOrderId = null;
+        let selectedCategory = 'All';
 
-        const menuGrid = document.getElementById('menuGrid');
+        // Membership State
+        let isMember = false;
+        let discountRate = 0; // 0.5 (50%) for members
+        let currentMemberData = null;
 
-        // Function to Play Notification Sound Effect
-        function playNotiSound() {
-            const audio = document.getElementById('notiSound');
-            if (audio) {
-                audio.currentTime = 0;
-                audio.play().catch(error => {
-                    console.log("Audio playback blocked by browser policies until user interacts:", error);
-                });
-            }
+        // Modal View Switchers for Initial Member Check
+        function showMemberLoginForm() {
+            document.getElementById('check-options-view').style.display = 'none';
+            document.getElementById('member-login-view').style.display = 'block';
         }
 
-        // Realtime Menu Fetch
-        db.collection("menu").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-            allMenuItems = [];
-            snapshot.forEach(doc => {
-                allMenuItems.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-            filterMenuItems();
-        });
-
-        // Listen for Realtime Order Updates to show Receipt Noti & Sound Effect
-        db.collection("orders")
-            .where("table", "==", currentTable)
-            .onSnapshot(snapshot => {
-                if (isInitialLoad) {
-                    isInitialLoad = false;
-                    return;
-                }
-
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === "modified") {
-                        const orderData = change.doc.data();
-                        const orderId = change.doc.id;
-                        const status = orderData.status;
-
-                        if (status === "Ready" || status === "Completed") {
-                            playNotiSound();
-                            showReceiptModal(orderId, orderData);
-                        }
-                    }
-                });
-            });
-
-        // Switch Between Pages
-        function switchPage(pageName) {
-            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
-
-            if (pageName === 'menu') {
-                document.getElementById('menuView').classList.add('active');
-                document.getElementById('btnMenuTab').classList.add('active');
-                document.getElementById('cartFloatBtn').style.display = 'flex';
-            } else if (pageName === 'orders') {
-                document.getElementById('ordersView').classList.add('active');
-                document.getElementById('cartFloatBtn').style.display = 'none';
-                fetchTableOrders();
-            }
+        function backToCheckOptions() {
+            document.getElementById('check-options-view').style.display = 'block';
+            document.getElementById('member-login-view').style.display = 'none';
         }
 
-        // Select Payment Method Option
-        function selectPayMethod(method, element) {
-            selectedPaymentMethod = method;
-            document.querySelectorAll('.pay-method-btn').forEach(btn => btn.classList.remove('active'));
-            element.classList.add('active');
+        // ရိုးရိုး Customer အဖြစ် ဝင်ရောက်ခြင်း
+        function continueAsRegular() {
+            isMember = false;
+            discountRate = 0;
+            document.getElementById('initial-member-modal').style.display = 'none';
         }
 
-        // Open Pay Bill Receipt Modal & Aggregate Table Bill
-        async function openBillReceiptModal() {
-            const modal = document.getElementById('payBillModal');
-            const itemsContainer = document.getElementById('billItemsList');
-            const totalDisplay = document.getElementById('billGrandTotal');
-            const tableDisplay = document.getElementById('billTableNum');
-            const dateDisplay = document.getElementById('billDateTime');
-
-            tableDisplay.innerText = `Table ${currentTable}`;
-            dateDisplay.innerText = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
-            itemsContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); margin: 20px 0;">အော်ဒါများ ရယူနေပါသည်...</p>`;
+        // Member စစ်ဆေးခြင်း (Phone သို့မဟုတ် Email ဖြင့် Firestore တွင် စစ်သည်)
+        async function verifyMemberCredentials() {
+            const inputVal = document.getElementById('member-credential-input').value.trim();
+            if (!inputVal) return alert("ကျေးဇူးပြု၍ ဖုန်းနံပါတ် သို့မဟုတ် Email ထည့်သွင်းပါ။");
 
             try {
-                const snapshot = await db.collection("orders")
-                    .where("table", "==", currentTable)
-                    .where("status", "in", ["Pending", "Preparing", "Ready"])
-                    .get();
+                // Email သို့မဟုတ် Phone ဖြင့် Firestore `members` collection တွင် ရှာဖွေခြင်း
+                const phoneQuery = await db.collection("members").where("phone", "==", inputVal).get();
+                const emailQuery = await db.collection("members").where("email", "==", inputVal).get();
 
-                if (snapshot.empty) {
-                    itemsContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); margin: 20px 0;">ရှင်းရန် အော်ဒါဘေလ် မရှိသေးပါ။</p>`;
-                    totalDisplay.innerText = `0 MMK`;
-                    document.getElementById('btnConfirmPayment').style.display = 'none';
-                    modal.classList.add('active');
-                    return;
+                if (!phoneQuery.empty || !emailQuery.empty) {
+                    const docData = !phoneQuery.empty ? phoneQuery.docs[0].data() : emailQuery.docs[0].data();
+                    isMember = true;
+                    discountRate = 0.5; // 50% Discount
+                    currentMemberData = docData;
+
+                    document.getElementById('member-hdr-badge').style.display = 'flex';
+                    document.getElementById('initial-member-modal').style.display = 'none';
+                    alert(`မင်္ဂလာပါ ${docData.name || 'Member'} လူကြီးမင်း။ သင့်အတွက် 50% Discount လျှော့စျေး အလိုအလျောက် သက်ရောက်ပေးထားပါသည်။`);
+                    updateCartUI();
+                } else {
+                    alert("မန်ဘာစာရင်းတွင် ရှာမတွေ့ပါ။ ဖုန်းနံပါတ် သို့မဟုတ် Email ကို ပြန်လည်စစ်ဆေးပါ သို့မဟုတ် ရိုးရိုး Customer အဖြစ် ဝင်ရောက်ပါ။");
                 }
+            } catch (error) {
+                console.error("Error verifying member:", error);
+                alert("Member စစ်ဆေးရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
+            }
+        }
 
-                document.getElementById('btnConfirmPayment').style.display = 'block';
-                let mergedItems = {};
-                let grandTotal = 0;
-
+        // Admin မှ Menu Items များကို ဖတ်ယူခြင်း
+        function listenToMenuFromAdmin() {
+            db.collection("menu_items").onSnapshot(snapshot => {
+                menuItems = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (data.items && Array.isArray(data.items)) {
-                        data.items.forEach(item => {
-                            if (mergedItems[item.name]) {
-                                mergedItems[item.name].quantity += item.quantity;
-                                mergedItems[item.name].total += (item.price * item.quantity);
-                            } else {
-                                mergedItems[item.name] = {
-                                    price: item.price,
-                                    quantity: item.quantity,
-                                    total: item.price * item.quantity
-                                };
-                            }
-                            grandTotal += (item.price * item.quantity);
-                        });
-                    }
-                });
-
-                let html = '';
-                Object.keys(mergedItems).forEach(itemName => {
-                    const item = mergedItems[itemName];
-                    html += `
-                        <div class="receipt-item-line">
-                            <span>${itemName} x${item.quantity}</span>
-                            <strong>${item.total.toLocaleString()} MMK</strong>
-                        </div>
-                    `;
-                });
-
-                itemsContainer.innerHTML = html;
-                totalDisplay.innerText = `${grandTotal.toLocaleString()} MMK`;
-                modal.classList.add('active');
-
-            } catch (error) {
-                console.error("Error fetching bill: ", error);
-                alert("ဘေလ်စာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။");
-            }
-        }
-
-        // Close Pay Bill Modal
-        function closePayBillModal() {
-            document.getElementById('payBillModal').classList.remove('active');
-        }
-
-        // Process Table Payment
-        async function processTablePayment() {
-            if (!confirm(`${selectedPaymentMethod} ဖြင့် ငွေပေးချေမှုကို အတည်ပြုပါသလား?`)) return;
-
-            try {
-                const snapshot = await db.collection("orders")
-                    .where("table", "==", currentTable)
-                    .where("status", "in", ["Pending", "Preparing", "Ready"])
-                    .get();
-
-                const batch = db.batch();
-                snapshot.forEach(doc => {
-                    batch.update(doc.ref, {
-                        status: "Completed",
-                        paymentMethod: selectedPaymentMethod,
-                        paidAt: firebase.firestore.FieldValue.serverTimestamp()
+                    menuItems.push({
+                        id: doc.id,
+                        name: data.name || "Untitled",
+                        category: data.category || "Food",
+                        price: data.price || 0,
+                        rating: data.rating || 0,
+                        ratingCount: data.ratingCount || 0,
+                        image: data.image || "https://via.placeholder.com/200"
                     });
                 });
 
-                await batch.commit();
-
-                alert("ငွေပေးချေမှု အောင်မြင်စွာ ပြီးမြောက်ပါပြီ။ ကျေးဇူးတင်ပါသည်။!");
-                closePayBillModal();
-            } catch (error) {
-                console.error("Error processing payment: ", error);
-                alert("ငွေပေးချေမှု ပြုလုပ်ရာတွင် အမှားအယွင်းရှိခဲ့ပါသည်။");
-            }
+                sortAndRenderMenu();
+            });
         }
 
-        // Filter and Render Menu Items
-        function filterMenuItems() {
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+        function sortAndRenderMenu() {
+            menuItems.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            renderMenuGrid();
+        }
 
-            const filtered = allMenuItems.filter(item => {
-                const matchesSearch = item.name.toLowerCase().includes(searchQuery);
-                const itemCategory = item.category || 'Food';
-                const matchesCategory = (selectedCategory === 'All') || (itemCategory.toLowerCase() === selectedCategory.toLowerCase());
+        function renderMenuGrid() {
+            const grid = document.getElementById('menu-grid');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            grid.innerHTML = "";
 
-                return matchesSearch && matchesCategory;
+            const filtered = menuItems.filter(item => {
+                const matchCat = (selectedCategory === 'All') || (item.category && item.category.toLowerCase() === selectedCategory.toLowerCase());
+                const matchSearch = item.name.toLowerCase().includes(searchVal);
+                return matchCat && matchSearch;
             });
 
-            renderMenu(filtered);
-        }
-
-        // Render Menu Cards UI
-        function renderMenu(items) {
-            menuGrid.innerHTML = "";
-            if (items.length === 0) {
-                menuGrid.innerHTML = `<p style="text-align: center; grid-column: 1/-1; color: var(--text-light); margin-top: 20px;">No items found matching your search.</p>`;
+            if (filtered.length === 0) {
+                grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--text-light);">Menu မရှိသေးပါ သို့မဟုတ် မတွေ့ရှိပါ။</p>`;
                 return;
             }
 
-            items.forEach(item => {
-                const defaultImg = "https://via.placeholder.com/200?text=Food";
-                menuGrid.innerHTML += `
+            filtered.forEach((item, index) => {
+                const rating = item.rating || 0;
+                const isTopRated = (index === 0 && selectedCategory === 'All' && rating > 0);
+
+                grid.innerHTML += `
                     <div class="food-card">
                         <div class="card-img-wrap">
-                            <img src="${item.image || defaultImg}" class="food-img" alt="${item.name}" onerror="this.src='${defaultImg}'">
+                            ${isTopRated ? '<div class="top-rating-badge"><i class="fa-solid fa-star"></i> Top Rated</div>' : ''}
+                            <img src="${item.image}" class="food-img" alt="${item.name}">
                         </div>
                         <div class="card-details">
                             <div>
                                 <div class="food-title">${item.name}</div>
-                                <div class="food-price">${Number(item.price).toLocaleString()} MMK</div>
+                                <div class="rating-wrapper">
+                                    <div class="rating-stars" onclick="customerGiveRating('${item.id}', ${rating}, ${item.ratingCount || 0})">
+                                        ${renderStars(rating)}
+                                    </div>
+                                    <span class="rating-count">(${rating.toFixed(1)})</span>
+                                </div>
                             </div>
-                            <button class="btn-add-cart" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">
-                                <i class="fa-solid fa-plus"></i> Add to Order
-                            </button>
+                            <div>
+                                <div class="food-price">${item.price.toLocaleString()} MMK</div>
+                                <button class="btn-add-cart" onclick="addToCart('${item.id}')"><i class="fa-solid fa-plus"></i> Add</button>
+                            </div>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // Category Tab Switcher
-        function selectCategory(category, btnElement) {
-            selectedCategory = category;
-            
-            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-
-            filterMenuItems();
-        }
-
-        // Cart Drawer Open/Close
-        function toggleCartDrawer(open) {
-            const drawer = document.getElementById('cartDrawer');
-            const overlay = document.getElementById('cartOverlay');
-            if (open) {
-                drawer.classList.add('active');
-                overlay.classList.add('active');
-            } else {
-                drawer.classList.remove('active');
-                overlay.classList.remove('active');
+        function renderStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += `<i class="fa-${i <= Math.round(rating) ? 'solid' : 'regular'} fa-star"></i>`;
             }
+            return stars;
         }
 
-        // Add Item to Cart
-        function addToCart(id, name, price) {
-            const existingItem = cart.find(i => i.id === id);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ id, name, price, quantity: 1 });
-            }
-            updateCartUI();
-        }
+        // Rating ပေးခြင်း
+        async function customerGiveRating(itemId, currentRating, ratingCount) {
+            const userRating = prompt("သင့်၏ Rating ကို (1 မှ 5 အထိ) ထည့်သွင်းပေးပါ:", "5");
+            if (userRating && !isNaN(userRating) && userRating >= 1 && userRating <= 5) {
+                const val = parseFloat(userRating);
+                const newCount = ratingCount + 1;
+                const newAvgRating = parseFloat((((currentRating * ratingCount) + val) / newCount).toFixed(1));
 
-        // Update Item Quantity (In-Cart)
-        function updateQty(id, delta) {
-            const item = cart.find(i => i.id === id);
-            if (item) {
-                item.quantity += delta;
-                if (item.quantity <= 0) {
-                    cart = cart.filter(i => i.id !== id);
+                try {
+                    await db.collection("menu_items").doc(itemId).update({
+                        rating: newAvgRating,
+                        ratingCount: newCount
+                    });
+                    alert("Rating ပေးမှုကို ကျေးဇူးတင်ပါသည်။");
+                } catch(e) {
+                    console.error("Error updating rating:", e);
                 }
             }
+        }
+
+        function setCategory(cat, btn) {
+            selectedCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMenuGrid();
+        }
+
+        // Cart Logic with 50% Member Discount Calculation
+        function addToCart(itemId) {
+            const item = menuItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            const exist = cart.find(i => i.id === itemId);
+            if (exist) {
+                exist.quantity += 1;
+            } else {
+                cart.push({ ...item, quantity: 1 });
+            }
             updateCartUI();
         }
 
-        // Update Cart Render
         function updateCartUI() {
-            const cartItemsContainer = document.getElementById('cartItemsContainer');
-            const cartCount = document.getElementById('cartCount');
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discountAmount = isMember ? (subtotal * discountRate) : 0;
+            const finalTotal = subtotal - discountAmount;
 
-            let totalItems = 0;
-            let grandTotal = 0;
+            document.getElementById('cart-count').innerText = count;
+            document.getElementById('cart-total-price').innerText = `${finalTotal.toLocaleString()} MMK`;
 
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">Your basket is empty!</p>`;
+            const summaryBox = document.getElementById('cart-summary-box');
+            if (isMember && subtotal > 0) {
+                summaryBox.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; text-decoration:line-through; color:#888;">
+                        <span>Subtotal:</span><span>${subtotal.toLocaleString()} MMK</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; color:var(--member-color); font-weight:bold;">
+                        <span>Member Discount (50%):</span><span>-${discountAmount.toLocaleString()} MMK</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:16px; margin-top:5px;">
+                        <span>Total Payable:</span><span style="color:var(--primary);">${finalTotal.toLocaleString()} MMK</span>
+                    </div>
+                `;
             } else {
-                cartItemsContainer.innerHTML = "";
-                cart.forEach(item => {
-                    const itemTotal = item.price * item.quantity;
-                    totalItems += item.quantity;
-                    grandTotal += itemTotal;
-
-                    cartItemsContainer.innerHTML += `
-                        <div class="cart-item">
-                            <div>
-                                <strong style="font-size: 14px;">${item.name}</strong>
-                                <div style="font-size: 12px; color: var(--primary); font-weight: bold; margin-top: 2px;">
-                                    ${itemTotal.toLocaleString()} MMK
-                                </div>
-                            </div>
-                            <div class="qty-controls">
-                                <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
-                                <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
-                                <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
-                            </div>
-                        </div>
-                    `;
-                });
+                summaryBox.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:16px;">
+                        <span>Total Amount:</span>
+                        <span style="color:var(--primary);">${finalTotal.toLocaleString()} MMK</span>
+                    </div>
+                `;
             }
 
-            cartCount.innerText = totalItems;
-        }
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = "";
 
-        // Send Order to Firestore
-        async function submitOrder() {
             if (cart.length === 0) {
-                alert("ကျေးဇူးပြု၍ အော်ဒါမှာရန် အစားအသောက်တစ်ခုခု ထည့်ပါ။");
+                container.innerHTML = `<p style="text-align:center; color:var(--text-light); margin-top:30px;">Order Cart တွင် ပစ္စည်းမရှိသေးပါ</p>`;
                 return;
             }
 
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-            try {
-                await db.collection("orders").add({
-                    table: currentTable,
-                    items: cart,
-                    total: total,
-                    status: "Pending",
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                alert("အော်ဒါ အောင်မြင်စွာ တင်ပြီးပါပြီ။ ကျေးဇူးတင်ပါသည်။");
-                cart = [];
-                updateCartUI();
-                toggleCartDrawer(false);
-            } catch (error) {
-                console.error("Error ordering: ", error);
-                alert("အော်ဒါ တင်ရာတွင် အမှားအယွင်းရှိနေပါသည်။");
-            }
-        }
-
-        // Show Receipt Modal Popup Notification
-        function showReceiptModal(orderId, orderData) {
-            const modal = document.getElementById('receiptModal');
-            const card = document.getElementById('receiptCard');
-            const icon = document.getElementById('receiptIcon');
-            const title = document.getElementById('receiptStatusTitle');
-            const subtitle = document.getElementById('receiptStatusSubtitle');
-
-            document.getElementById('receiptOrderId').innerText = `#${orderId.substring(0, 6)}`;
-            document.getElementById('receiptTableNum').innerText = `Table ${orderData.table}`;
-            document.getElementById('receiptTotal').innerText = `${(orderData.total || 0).toLocaleString()} MMK`;
-
-            let itemsHtml = "";
-            if (orderData.items && Array.isArray(orderData.items)) {
-                orderData.items.forEach(item => {
-                    itemsHtml += `
-                        <div class="receipt-item-line">
-                            <span>${item.name} x${item.quantity}</span>
-                            <strong>${(item.price * item.quantity).toLocaleString()} MMK</strong>
+            cart.forEach(item => {
+                container.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:10px; border-bottom:1px dashed #eee;">
+                        <div>
+                            <div style="font-weight:bold; font-size:14px;">${item.name}</div>
+                            <div style="font-size:12px; color:var(--primary);">${(item.price * item.quantity).toLocaleString()} MMK</div>
                         </div>
-                    `;
-                });
+                        <div style="display:flex; align-items:center; gap:8px; background:#f1f2f6; padding:4px 8px; border-radius:6px;">
+                            <button style="border:none; background:transparent; font-weight:bold; cursor:pointer;" onclick="changeQty('${item.id}', -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button style="border:none; background:transparent; font-weight:bold; cursor:pointer;" onclick="changeQty('${item.id}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function changeQty(itemId, delta) {
+            const item = cart.find(i => i.id === itemId);
+            if (!item) return;
+            item.quantity += delta;
+            if (item.quantity <= 0) {
+                cart = cart.filter(i => i.id !== itemId);
             }
-            document.getElementById('receiptItemsList').innerHTML = itemsHtml;
-
-            if (orderData.status === "Completed") {
-                card.classList.add('completed');
-                icon.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
-                title.innerText = "Order Completed!";
-                subtitle.innerText = "ကျေးဇူးတင်ပါသည်။ သင့်အော်ဒါ ပြီးမြောက်ပါပြီ။";
-            } else {
-                card.classList.remove('completed');
-                icon.innerHTML = `<i class="fa-solid fa-bell"></i>`;
-                title.innerText = "Order Ready!";
-                subtitle.innerText = "သင့်အော်ဒါ အဆင်သင့်ဖြစ်ပါပြီ၊ သုံးဆောင်နိုင်ပါပြီ။";
-            }
-
-            modal.classList.add('active');
+            updateCartUI();
         }
 
-        function closeReceiptModal() {
-            document.getElementById('receiptModal').classList.remove('active');
+        function openCartDrawer() {
+            document.getElementById('cart-overlay').classList.add('active');
+            document.getElementById('cart-drawer').classList.add('active');
         }
 
-        // Fetch Orders for Selected Table in Realtime
-        function fetchTableOrders() {
-            const container = document.getElementById('activeOrdersContainer');
-
-            if (ordersUnsubscribe) ordersUnsubscribe();
-
-            ordersUnsubscribe = db.collection("orders")
-                .where("table", "==", currentTable)
-                .orderBy("timestamp", "desc")
-                .onSnapshot(snapshot => {
-                    if (snapshot.empty) {
-                        container.innerHTML = `<p style="text-align: center; color: var(--text-light); margin-top: 30px;">မှာယူထားသော အော်ဒါ မရှိသေးပါ။</p>`;
-                        return;
-                    }
-
-                    container.innerHTML = "";
-
-                    snapshot.forEach(doc => {
-                        const order = doc.data();
-                        const orderId = doc.id;
-                        const statusClass = order.status ? `status-${order.status.toLowerCase()}` : 'status-pending';
-
-                        let itemsHtml = "";
-                        if (order.items && Array.isArray(order.items)) {
-                            order.items.forEach((item, index) => {
-                                const itemTotal = item.price * item.quantity;
-                                const isPending = (order.status === "Pending");
-
-                                itemsHtml += `
-                                    <div class="order-item-row">
-                                        <div>
-                                            <strong style="font-size: 14px;">${item.name}</strong>
-                                            <div style="font-size: 12px; color: var(--text-light);">${item.price.toLocaleString()} MMK x ${item.quantity} = <strong>${itemTotal.toLocaleString()} MMK</strong></div>
-                                        </div>
-                                        ${isPending ? `
-                                            <div class="qty-controls">
-                                                <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, -1)">-</button>
-                                                <span style="font-size: 13px; font-weight: bold;">${item.quantity}</span>
-                                                <button class="live-qty-btn" onclick="updateLiveOrderQty('${orderId}', ${index}, 1)">+</button>
-                                            </div>
-                                        ` : `
-                                            <span style="font-weight: bold; font-size: 14px;">x${item.quantity}</span>
-                                        `}
-                                    </div>
-                                `;
-                            });
-                        }
-
-                        container.innerHTML += `
-                            <div class="order-card">
-                                <div class="order-header">
-                                    <div>
-                                        <strong>Order ID: #${orderId.substring(0, 6)}</strong>
-                                    </div>
-                                    <span class="order-status-badge ${statusClass}">${order.status || 'Pending'}</span>
-                                </div>
-                                <div>${itemsHtml}</div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                                    <span style="font-weight: bold; font-size: 15px;">Total Amount:</span>
-                                    <span style="font-weight: 800; font-size: 16px; color: var(--primary);">${(order.total || 0).toLocaleString()} MMK</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                }, error => {
-                    console.error("Error fetching orders: ", error);
-                    container.innerHTML = `<p style="text-align: center; color: var(--primary); margin-top: 20px;">အော်ဒါစာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။</p>`;
-                });
+        function closeCartDrawer() {
+            document.getElementById('cart-overlay').classList.remove('active');
+            document.getElementById('cart-drawer').classList.remove('active');
         }
 
-        // Live Quantity Adjust for Placed Orders (Pending status only)
-        async function updateLiveOrderQty(orderId, itemIndex, delta) {
-            const orderRef = db.collection("orders").doc(orderId);
+        // Place Order
+        async function placeOrder() {
+            if (cart.length === 0) return alert("Cart ထဲတွင် ပစ္စည်းမရှိသေးပါ။");
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discountAmount = isMember ? (subtotal * discountRate) : 0;
+            const finalTotal = subtotal - discountAmount;
 
             try {
-                await db.runTransaction(async (transaction) => {
-                    const doc = await transaction.get(orderRef);
-                    if (!doc.exists) {
-                        throw new Error("Order does not exist.");
-                    }
-
-                    const orderData = doc.data();
-
-                    if (orderData.status && orderData.status.toLowerCase() !== "pending") {
-                        alert("မီးဖိုချောင်မှ အစားအသောက် စတင်ပြင်ဆင်နေပြီဖြစ်သောကြောင့် ပြင်ဆင်၍ မရတော့ပါ။");
-                        return;
-                    }
-
-                    let updatedItems = [...orderData.items];
-                    const targetItem = updatedItems[itemIndex];
-
-                    if (!targetItem) return;
-
-                    targetItem.quantity += delta;
-
-                    if (targetItem.quantity <= 0) {
-                        updatedItems.splice(itemIndex, 1);
-                    }
-
-                    if (updatedItems.length === 0) {
-                        transaction.delete(orderRef);
-                        return;
-                    }
-
-                    const newTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-                    transaction.update(orderRef, {
-                        items: updatedItems,
-                        total: newTotal
-                    });
+                const orderRef = await db.collection("orders").add({
+                    table: tableId,
+                    items: cart,
+                    subtotal: subtotal,
+                    discount: discountAmount,
+                    total: finalTotal,
+                    isMember: isMember,
+                    status: "pending",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-            } catch (error) {
-                console.error("Error updating live order quantity:", error);
-                alert("အော်ဒါ ပြင်ဆင်ရာတွင် အမှားအယွင်းရှိနေပါသည်။");
+                activeOrderId = orderRef.id;
+                listenOrderStatus(activeOrderId);
+                alert("Order တင်ခြင်း အောင်မြင်ပါသည်။ မီးဖိုချောင်သို့ အော်ဒါ ပေးပို့လိုက်ပါပြီ။");
+                closeCartDrawer();
+            } catch(e) {
+                console.error("Order placing error:", e);
+                alert("အော်ဒါ တင်ရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
             }
         }
+
+        // Order Status Listener
+        function listenOrderStatus(orderId) {
+            db.collection("orders").doc(orderId).onSnapshot(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.status === "ready" || data.status === "completed") {
+                        document.getElementById('ready-banner').style.display = 'flex';
+                    }
+                }
+            });
+        }
+
+        // Pay Bill & Receipt UI
+        function openPayBillModal() {
+            if (cart.length === 0) return alert("မှာယူထားသော အော်ဒါမရှိသေးပါ။");
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discountAmount = isMember ? (subtotal * discountRate) : 0;
+            const finalTotal = subtotal - discountAmount;
+
+            const box = document.getElementById('receipt-details');
+
+            let html = `
+                <div style="text-align:center; font-weight:bold; font-size:15px; margin-bottom:4px;">SMART RESTAURANT</div>
+                <div style="text-align:center; font-size:12px; color:var(--text-light);">Table #${tableId} ${isMember ? '(Member 50% OFF Applied)' : ''}</div>
+                <div class="receipt-line"></div>
+            `;
+
+            cart.forEach(i => {
+                html += `
+                    <div class="receipt-row">
+                        <span>${i.name} x${i.quantity}</span>
+                        <span>${(i.price * i.quantity).toLocaleString()} MMK</span>
+                    </div>
+                `;
+            });
+
+            html += `<div class="receipt-line"></div>`;
+
+            if (isMember) {
+                html += `
+                    <div class="receipt-row" style="color:#666;">
+                        <span>Subtotal:</span>
+                        <span>${subtotal.toLocaleString()} MMK</span>
+                    </div>
+                    <div class="receipt-row" style="color:var(--member-color); font-weight:bold;">
+                        <span>Member Discount (50%):</span>
+                        <span>-${discountAmount.toLocaleString()} MMK</span>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="receipt-row" style="font-weight:bold; font-size:14px; margin-top:5px;">
+                    <span>TOTAL PAYABLE:</span>
+                    <span style="color:var(--primary);">${finalTotal.toLocaleString()} MMK</span>
+                </div>
+            `;
+
+            box.innerHTML = html;
+            document.getElementById('bill-modal').style.display = 'flex';
+        }
+
+        function closePayBillModal() { document.getElementById('bill-modal').style.display = 'none'; }
+
+        // Confirm Payment & 1 Lakh Top-Up Check (For Regular Customers)
+        async function confirmPayment() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const method = document.getElementById('payment-method').value;
+
+            if (activeOrderId) {
+                try {
+                    await db.collection("orders").doc(activeOrderId).update({
+                        paymentStatus: "paid",
+                        paymentMethod: method,
+                        status: "closed"
+                    });
+                } catch(e) {}
+            }
+
+            alert("Payment completed! Bill ရှင်းလွှာ အောင်မြင်ပါသည်။");
+            closePayBillModal();
+
+            // မန်ဘာ မဟုတ်သေးသော Customer ဖြစ်ပြီး ၁ သိန်းဖိုးနှင့် အထက် ဝယ်ယူထားပါက Member Registration မေးခြင်း
+            if (!isMember && subtotal >= 100000) {
+                document.getElementById('member-modal').style.display = 'flex';
+            } else {
+                resetSession();
+            }
+        }
+
+        function closeMemberModal() {
+            document.getElementById('member-modal').style.display = 'none';
+            resetSession();
+        }
+
+        async function registerMember(e) {
+            e.preventDefault();
+            const memberObj = {
+                name: document.getElementById('mem-name').value,
+                email: document.getElementById('mem-email').value,
+                password: document.getElementById('mem-password').value,
+                phone: document.getElementById('mem-phone').value,
+                registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try { 
+                await db.collection("members").add(memberObj); 
+                alert("Member Registration Successful! မန်ဘာအဖြစ် အောင်မြင်စွာ စာရင်းသွင်းပြီးပါပြီ။");
+            } catch(e) {
+                alert("Member ဝင်ရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
+            }
+            closeMemberModal();
+        }
+
+        function resetSession() {
+            cart = [];
+            activeOrderId = null;
+            updateCartUI();
+            document.getElementById('ready-banner').style.display = 'none';
+        }
+
+        // Initialize Page
+        window.onload = () => {
+            listenToMenuFromAdmin();
+        };
     </script>
 </body>
 </html>
