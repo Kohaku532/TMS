@@ -140,9 +140,9 @@
         .card-details { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
         .food-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
         
-        .rating-wrapper { margin-bottom: 8px; }
-        .rating-stars { color: #f1c40f; font-size: 13px; cursor: pointer; display: inline-block; }
-        .rating-count { font-size: 11px; color: var(--text-light); margin-left: 4px; }
+        .rating-wrapper { margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+        .rating-stars { color: #f1c40f; font-size: 13px; cursor: pointer; }
+        .rating-count { font-size: 11px; color: var(--text-light); }
 
         .food-price { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
 
@@ -204,9 +204,8 @@
     </div>
 
     <div class="container">
-        
         <div class="status-alert-banner" id="ready-banner">
-            <span><i class="fa-solid fa-circle-check"></i> Your order is ready! ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။</span>
+            <span><i class="fa-solid fa-bell"></i> Your order is ready! ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။</span>
             <button class="nav-tab-btn" onclick="openPayBillModal()" style="font-size:12px; padding:4px 10px;">Pay Bill Now</button>
         </div>
 
@@ -251,6 +250,7 @@
         </div>
     </div>
 
+    <!-- Initial Member Login Modal -->
     <div class="modal-overlay" id="initial-member-modal" style="display: flex;">
         <div class="modal-card">
             <div style="font-size: 40px; color: var(--member-color); margin-bottom: 10px;">
@@ -275,8 +275,12 @@
                     <label>Member Phone Number သို့မဟုတ် Email</label>
                     <input type="text" id="member-credential-input" placeholder="09xxxxxxxxx သို့မဟုတ် email@gmail.com">
                 </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="member-password-input" placeholder="******">
+                </div>
                 <button class="btn-action" style="background: var(--member-color);" onclick="verifyMemberCredentials()">
-                    <i class="fa-solid fa-check-circle"></i> Verify Member
+                    <i class="fa-solid fa-right-to-bracket"></i> Login & Verify
                 </button>
                 <button class="btn-secondary" onclick="backToCheckOptions()">နောက်သို့</button>
             </div>
@@ -321,12 +325,12 @@
                     <input type="email" id="mem-email" required placeholder="example@gmail.com">
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="mem-password" required placeholder="******">
-                </div>
-                <div class="form-group">
                     <label>Phone Number</label>
                     <input type="tel" id="mem-phone" required placeholder="09xxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="mem-password" required placeholder="******">
                 </div>
                 <button type="submit" class="btn-action" style="background:var(--primary);"><i class="fa-solid fa-user-plus"></i> Register Member</button>
             </form>
@@ -347,9 +351,8 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Audio System Setup (အသံအချက်ပေးစနစ်)
+        // Audio Context Setup
         let audioCtx = null;
-        let isAudioUnlocked = false;
 
         function initAudio() {
             if (!audioCtx) {
@@ -358,64 +361,56 @@
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
-            isAudioUnlocked = true;
         }
 
-        // Browser Autoplay တားဆီးမှုကျော်လွန်ရန် User Click လုပ်ချိန် အသံဖွင့်ပိုင်ခွင့် ယူခြင်း
         document.addEventListener('click', initAudio, { once: true });
         document.addEventListener('touchstart', initAudio, { once: true });
 
-        // အသံပေးမည့် Function
-        function playOrderReadySound() {
-            if (audioCtx && isAudioUnlocked) {
-                try {
-                    // Beep sound ထုတ်လုပ်ခြင်း
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 Note
-                    osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); // A5 Note
-                    
-                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+        // Notification POP Sound (Frequency Sweep Pop Tone)
+        function playNotificationSound() {
+            initAudio();
+            if (!audioCtx) return;
 
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
 
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.6);
-                } catch(e) {
-                    console.log("Audio play error:", e);
-                }
-            }
+                osc.type = 'sine';
+                
+                // Frequency starts at low and rises rapidly to high pitch (Pop effect)
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
 
-            // စကားပြောအသံ (Voice Alert) ဖြင့် အသိပေးခြင်း
-            if ('speechSynthesis' in window) {
-                const text = `Table ${tableId}, your order is ready!`;
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                window.speechSynthesis.speak(utterance);
+                // Volume envelope for sharp attack and quick fade
+                gain.gain.setValueAtTime(0.6, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } catch (e) {
+                console.log("Audio Playback Error:", e);
             }
         }
 
-        // System State Variables
+        // System Variables
         const urlParams = new URLSearchParams(window.location.search);
         const tableId = urlParams.get('table') || '1';
         document.getElementById('table-display').innerText = `Table #${tableId}`;
 
         let menuItems = [];
         let cart = [];
-        let activeOrderId = null;
+        let activeOrderId = localStorage.getItem('my_active_order_id') || null;
         let selectedCategory = 'All';
-        let alertPlayed = false; // အသံ တစ်ကြိမ်သာ မည်စေရန်
+        let alertPlayed = false;
 
-        // Membership State
         let isMember = false;
         let discountRate = 0;
         let currentMemberData = null;
 
-        // Modal View Switchers for Initial Member Check
         function showMemberLoginForm() {
             document.getElementById('check-options-view').style.display = 'none';
             document.getElementById('member-login-view').style.display = 'block';
@@ -432,26 +427,41 @@
             document.getElementById('initial-member-modal').style.display = 'none';
         }
 
+        // Verify Email or Phone AND Password
         async function verifyMemberCredentials() {
             const inputVal = document.getElementById('member-credential-input').value.trim();
+            const passwordVal = document.getElementById('member-password-input').value.trim();
+
             if (!inputVal) return alert("ကျေးဇူးပြု၍ ဖုန်းနံပါတ် သို့မဟုတ် Email ထည့်သွင်းပါ။");
+            if (!passwordVal) return alert("ကျေးဇူးပြု၍ Password ထည့်သွင်းပါ။");
 
             try {
                 const phoneQuery = await db.collection("members").where("phone", "==", inputVal).get();
                 const emailQuery = await db.collection("members").where("email", "==", inputVal).get();
 
-                if (!phoneQuery.empty || !emailQuery.empty) {
-                    const docData = !phoneQuery.empty ? phoneQuery.docs[0].data() : emailQuery.docs[0].data();
-                    isMember = true;
-                    discountRate = 0.5;
-                    currentMemberData = docData;
+                let foundDoc = null;
 
-                    document.getElementById('member-hdr-badge').style.display = 'flex';
-                    document.getElementById('initial-member-modal').style.display = 'none';
-                    alert(`မင်္ဂလာပါ ${docData.name || 'Member'} လူကြီးမင်း။ သင့်အတွက် 50% Discount လျှော့စျေး အလိုအလျောက် သက်ရောက်ပေးထားပါသည်။`);
-                    updateCartUI();
+                if (!phoneQuery.empty) {
+                    foundDoc = phoneQuery.docs[0].data();
+                } else if (!emailQuery.empty) {
+                    foundDoc = emailQuery.docs[0].data();
+                }
+
+                if (foundDoc) {
+                    if (foundDoc.password === passwordVal) {
+                        isMember = true;
+                        discountRate = 0.5;
+                        currentMemberData = foundDoc;
+
+                        document.getElementById('member-hdr-badge').style.display = 'flex';
+                        document.getElementById('initial-member-modal').style.display = 'none';
+                        alert(`မင်္ဂလာပါ ${foundDoc.name || 'Member'} လူကြီးမင်း။ သင့်အတွက် 50% Discount လျှော့စျေး အလိုအလျောက် သက်ရောက်ပေးထားပါသည်။`);
+                        updateCartUI();
+                    } else {
+                        alert("Password မှားယွင်းနေပါသည်။ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။");
+                    }
                 } else {
-                    alert("မန်ဘာစာရင်းတွင် ရှာမတွေ့ပါ။ ဖုန်းနံပါတ် သို့မဟုတ် Email ကို ပြန်လည်စစ်ဆေးပါ သို့မဟုတ် ရိုးရိုး Customer အဖြစ် ဝင်ရောက်ပါ။");
+                    alert("မန်ဘာစာရင်းတွင် ရှာမတွေ့ပါ။ အကောင့်မရှိပါက ရိုးရိုး Customer အဖြစ် ဝင်ရောက်ပါ။");
                 }
             } catch (error) {
                 console.error("Error verifying member:", error);
@@ -464,13 +474,16 @@
                 menuItems = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    const itemRating = data.rating !== undefined ? parseFloat(data.rating) : 5.0;
+                    const itemRatingCount = data.ratingCount !== undefined ? parseInt(data.ratingCount) : 1;
+
                     menuItems.push({
                         id: doc.id,
                         name: data.name || "Untitled",
                         category: data.category || "Food",
                         price: Number(data.price) || 0,
-                        rating: data.rating || 0,
-                        ratingCount: data.ratingCount || 0,
+                        rating: itemRating,
+                        ratingCount: itemRatingCount,
                         image: data.image || "https://via.placeholder.com/200"
                     });
                 });
@@ -496,13 +509,13 @@
             });
 
             if (filtered.length === 0) {
-                grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--text-light);">Menu မရှိသေးပါ သို့မဟုတ် မတွေ့ရှိပါ။</p>`;
+                grid.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:30px; color:var(--text-light);">Menu မရှိသေးပါ။</p>`;
                 return;
             }
 
             filtered.forEach((item, index) => {
-                const rating = item.rating || 0;
-                const isTopRated = (index === 0 && selectedCategory === 'All' && rating > 0);
+                const rating = item.rating || 5.0;
+                const isTopRated = (index === 0 && selectedCategory === 'All');
 
                 grid.innerHTML += `
                     <div class="food-card">
@@ -513,8 +526,8 @@
                         <div class="card-details">
                             <div>
                                 <div class="food-title">${item.name}</div>
-                                <div class="rating-wrapper">
-                                    <div class="rating-stars" onclick="customerGiveRating('${item.id}', ${rating}, ${item.ratingCount || 0})">
+                                <div class="rating-wrapper" onclick="customerGiveRating('${item.id}', ${rating}, ${item.ratingCount})">
+                                    <div class="rating-stars">
                                         ${renderStars(rating)}
                                     </div>
                                     <span class="rating-count">(${rating.toFixed(1)})</span>
@@ -533,17 +546,23 @@
         function renderStars(rating) {
             let stars = '';
             for (let i = 1; i <= 5; i++) {
-                stars += `<i class="fa-${i <= Math.round(rating) ? 'solid' : 'regular'} fa-star"></i>`;
+                if (i <= Math.floor(rating)) {
+                    stars += `<i class="fa-solid fa-star"></i>`;
+                } else if (i - rating <= 0.5) {
+                    stars += `<i class="fa-solid fa-star-half-stroke"></i>`;
+                } else {
+                    stars += `<i class="fa-regular fa-star"></i>`;
+                }
             }
             return stars;
         }
 
         async function customerGiveRating(itemId, currentRating, ratingCount) {
-            const userRating = prompt("သင့်၏ Rating ကို (1 မှ 5 အထိ) ထည့်သွင်းပေးပါ:", "5");
+            const userRating = prompt("သင့်၏ Rating ကို (1 မှ 5 အထိ) ပေးပါ:", "5");
             if (userRating && !isNaN(userRating) && userRating >= 1 && userRating <= 5) {
                 const val = parseFloat(userRating);
-                const newCount = ratingCount + 1;
-                const newAvgRating = parseFloat((((currentRating * ratingCount) + val) / newCount).toFixed(1));
+                const newCount = (ratingCount || 0) + 1;
+                const newAvgRating = parseFloat((((currentRating * (ratingCount || 0)) + val) / newCount).toFixed(1));
 
                 try {
                     await db.collection("menu").doc(itemId).update({
@@ -612,7 +631,7 @@
             container.innerHTML = "";
 
             if (cart.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:var(--text-light); margin-top:30px;">Order Cart တွင် ပစ္စည်းမရှိသေးပါ</p>`;
+                container.innerHTML = `<p style="text-align:center; color:var(--text-light); margin-top:30px;">Cart တွင် ပစ္စည်းမရှိသေးပါ</p>`;
                 return;
             }
 
@@ -671,28 +690,31 @@
                     status: "Pending",
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
+                
                 activeOrderId = orderRef.id;
-                alertPlayed = false; // Order အသစ်အတွက် reset လုပ်မည်
+                localStorage.setItem('my_active_order_id', activeOrderId);
+
+                alertPlayed = false;
                 listenOrderStatus(activeOrderId);
                 alert("Order တင်ခြင်း အောင်မြင်ပါသည်။ မီးဖိုချောင်သို့ အော်ဒါ ပေးပို့လိုက်ပါပြီ။");
                 closeCartDrawer();
             } catch(e) {
-                console.error("Order placing error:", e);
+                console.error("Order error:", e);
                 alert("အော်ဒါ တင်ရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
             }
         }
 
-        // Order Status Listener (အသံအချက်ပေးခြင်း ပါဝင်သည်)
         function listenOrderStatus(orderId) {
+            if (!orderId) return;
+
             db.collection("orders").doc(orderId).onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
                     if (data.status === "Completed" || data.status === "ready") {
                         document.getElementById('ready-banner').style.display = 'flex';
                         
-                        // အော်ဒါကျက်ပြီဆိုသည်နှင့် အသံဖြင့် အချက်ပေးမည်
                         if (!alertPlayed) {
-                            playOrderReadySound();
+                            playNotificationSound();
                             alertPlayed = true;
                         }
                     }
@@ -786,8 +808,8 @@
             const memberObj = {
                 name: document.getElementById('mem-name').value,
                 email: document.getElementById('mem-email').value,
-                password: document.getElementById('mem-password').value,
                 phone: document.getElementById('mem-phone').value,
+                password: document.getElementById('mem-password').value,
                 registeredAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
@@ -804,12 +826,16 @@
             cart = [];
             activeOrderId = null;
             alertPlayed = false;
+            localStorage.removeItem('my_active_order_id');
             updateCartUI();
             document.getElementById('ready-banner').style.display = 'none';
         }
 
         window.onload = () => {
             listenToMenuFromAdmin();
+            if (activeOrderId) {
+                listenOrderStatus(activeOrderId);
+            }
         };
     </script>
 </body>
