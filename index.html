@@ -119,8 +119,8 @@
         .card-details { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
         .food-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
         
-        .rating-wrapper { margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
-        .rating-stars { color: #f1c40f; font-size: 13px; cursor: pointer; }
+        .rating-wrapper { margin-bottom: 8px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .rating-stars { color: #f1c40f; font-size: 13px; }
         .rating-count { font-size: 11px; color: var(--text-light); }
 
         .food-price { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
@@ -154,7 +154,7 @@
         .modal-card { background: white; border-radius: 20px; width: 90%; max-width: 420px; padding: 25px; max-height: 90vh; overflow-y: auto; position: relative; text-align: center; }
         .modal-close { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; color: var(--text-light); }
         
-        /* Modern & Clean Receipt UI */
+        /* Receipt UI */
         .receipt-box { 
             background: #ffffff; 
             border: 1px dashed #d1d8e0; 
@@ -165,35 +165,12 @@
             font-size: 13px; 
             text-align: left;
             box-shadow: 0 8px 16px rgba(0,0,0,0.04);
-            position: relative;
         }
-
-        .receipt-header-title {
-            font-size: 16px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            text-align: center;
-            color: #2c3e50;
-        }
-
-        .receipt-sub-info {
-            text-align: center;
-            font-size: 11px;
-            color: #7f8c8d;
-            margin-bottom: 12px;
-        }
-
+        .receipt-header-title { font-size: 16px; font-weight: 900; letter-spacing: 1px; text-align: center; color: #2c3e50; }
+        .receipt-sub-info { text-align: center; font-size: 11px; color: #7f8c8d; margin-bottom: 12px; }
         .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: #34495e; }
         .receipt-line { border-bottom: 1px dashed #cbd5e1; margin: 12px 0; }
-        
-        .receipt-total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 15px;
-            font-weight: bold;
-            color: var(--primary);
-            padding-top: 4px;
-        }
+        .receipt-total-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; color: var(--primary); padding-top: 4px; }
 
         .form-group { margin-bottom: 12px; text-align: left; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
@@ -207,7 +184,7 @@
     <header>
         <div class="logo"><i class="fa-solid fa-utensils"></i> Smart Menu</div>
         <div class="nav-controls">
-            <div class="member-badge-hdr" id="member-hdr-badge"><i class="fa-solid fa-crown"></i> Member (50% OFF)</div>
+            <div class="member-badge-hdr" id="member-hdr-badge"><i class="fa-solid fa-crown"></i> Member (25% OFF)</div>
             <button class="nav-tab-btn pay-bill-nav-btn" onclick="openPayBillModal()"><i class="fa-solid fa-receipt"></i> Pay Bill</button>
             <div class="table-info" id="table-display">Table #1</div>
         </div>
@@ -268,7 +245,7 @@
             </div>
             <h2 style="margin-bottom: 8px;">Welcome to Smart Menu</h2>
             <p style="font-size: 13px; color: var(--text-light); margin-bottom: 20px;">
-                သင်သည် မန်ဘာ (Member) ဝင်ထားသူဖြစ်ပါသလား? မန်ဘာများအတွက် <b>50% Discount</b> ခံစားခွင့်ရရှိပါမည်။
+                သင်သည် မန်ဘာ (Member) ဝင်ထားသူဖြစ်ပါသလား? မန်ဘာများအတွက် <b>25% Discount</b> ခံစားခွင့်ရရှိပါမည်။
             </p>
 
             <div id="check-options-view">
@@ -322,7 +299,7 @@
             <i class="fa-solid fa-xmark modal-close" onclick="closeMemberModal()"></i>
             <h3 style="color:var(--warning);"><i class="fa-solid fa-crown"></i> Membership Offer</h3>
             <p style="font-size:13px; margin-bottom:15px; color:var(--text-light);">
-                သင့်၏ ဝယ်ယူမှုသည် ၁ သိန်းကျပ်ကျော်လွန်ပါသဖြင့် Member အဖြစ် အခမဲ့ စာရင်းသွင်းနိုင်ပါသည်။
+                သင့်၏ ဝယ်ယူမှုသည် ၅ သောင်းကျပ် (50,000 MMK) ကျော်လွန်ပါသဖြင့် Member အဖြစ် အခမဲ့ စာရင်းသွင်းနိုင်ပြီး 25% Discount ခံစားခွင့် ရရှိပါမည်။
             </p>
 
             <form onsubmit="registerMember(event)">
@@ -376,7 +353,7 @@
         document.addEventListener('click', initAudio, { once: true });
         document.addEventListener('touchstart', initAudio, { once: true });
 
-        // Loud & Clear POP Sound Notification
+        // Gentle & Clear Bell/Chime Sound Notification
         function playNotificationSound() {
             initAudio();
             if (!audioCtx) return;
@@ -384,38 +361,33 @@
             try {
                 const now = audioCtx.currentTime;
 
-                // Tone 1: High Punch Pop Tone
                 const osc1 = audioCtx.createOscillator();
                 const gain1 = audioCtx.createGain();
                 osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(400, now);
-                osc1.frequency.exponentialRampToValueAtTime(1600, now + 0.1);
-                
-                // Maximum Loud Gain Settings
-                gain1.gain.setValueAtTime(1.0, now);
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc1.frequency.setValueAtTime(880, now);
+
+                gain1.gain.setValueAtTime(0.3, now);
+                gain1.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
 
                 osc1.connect(gain1);
                 gain1.connect(audioCtx.destination);
 
                 osc1.start(now);
-                osc1.stop(now + 0.15);
+                osc1.stop(now + 1.2);
 
-                // Tone 2: Echo Pop Tone (0.1s အကြာ အသံကျယ်ကျယ် ပဲ့တင်သံ)
                 const osc2 = audioCtx.createOscillator();
                 const gain2 = audioCtx.createGain();
                 osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(800, now + 0.1);
-                osc2.frequency.exponentialRampToValueAtTime(2200, now + 0.22);
-                
-                gain2.gain.setValueAtTime(0.9, now + 0.1);
-                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc2.frequency.setValueAtTime(1174.66, now + 0.15);
+
+                gain2.gain.setValueAtTime(0.4, now + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
 
                 osc2.connect(gain2);
                 gain2.connect(audioCtx.destination);
 
-                osc2.start(now + 0.1);
-                osc2.stop(now + 0.25);
+                osc2.start(now + 0.15);
+                osc2.stop(now + 1.8);
 
             } catch (e) {
                 console.log("Audio Playback Error:", e);
@@ -434,7 +406,7 @@
         let alertPlayed = false;
 
         let isMember = false;
-        let discountRate = 0;
+        let discountRate = 0.25; // 25% Discount
         let currentMemberData = null;
 
         function showMemberLoginForm() {
@@ -449,11 +421,9 @@
 
         function continueAsRegular() {
             isMember = false;
-            discountRate = 0;
             document.getElementById('initial-member-modal').style.display = 'none';
         }
 
-        // Verify Email or Phone AND Password
         async function verifyMemberCredentials() {
             const inputVal = document.getElementById('member-credential-input').value.trim();
             const passwordVal = document.getElementById('member-password-input').value.trim();
@@ -476,12 +446,13 @@
                 if (foundDoc) {
                     if (foundDoc.password === passwordVal) {
                         isMember = true;
-                        discountRate = 0.5;
+                        discountRate = 0.25;
                         currentMemberData = foundDoc;
 
                         document.getElementById('member-hdr-badge').style.display = 'flex';
+                        document.getElementById('member-hdr-badge').innerText = '👑 Member (25% OFF)';
                         document.getElementById('initial-member-modal').style.display = 'none';
-                        alert(`မင်္ဂလာပါ ${foundDoc.name || 'Member'} လူကြီးမင်း။ သင့်အတွက် 50% Discount လျှော့စျေး အလိုအလျောက် သက်ရောက်ပေးထားပါသည်။`);
+                        alert(`မင်္ဂလာပါ ${foundDoc.name || 'Member'} လူကြီးမင်း။ သင့်အတွက် 25% Discount အလိုအလျောက် သက်ရောက်ပေးထားပါသည်။`);
                         updateCartUI();
                     } else {
                         alert("Password မှားယွင်းနေပါသည်။ ကျေးဇူးပြု၍ ပြန်လည်စစ်ဆေးပါ။");
@@ -523,6 +494,15 @@
             renderMenuGrid();
         }
 
+        function renderStars(rating) {
+            let stars = '';
+            const roundedRating = Math.round(rating); // 1, 2, 3, 4, 5
+            for (let i = 1; i <= roundedRating; i++) {
+                stars += `<i class="fa-solid fa-star" style="color: #f1c40f;"></i>`;
+            }
+            return stars;
+        }
+
         function renderMenuGrid() {
             const grid = document.getElementById('menu-grid');
             const searchVal = document.getElementById('search-input').value.toLowerCase();
@@ -552,7 +532,7 @@
                         <div class="card-details">
                             <div>
                                 <div class="food-title">${item.name}</div>
-                                <div class="rating-wrapper" onclick="customerGiveRating('${item.id}', ${rating}, ${item.ratingCount})">
+                                <div class="rating-wrapper" onclick="customerGiveRating('${item.id}', ${rating}, ${item.ratingCount}, '${item.name.replace(/'/g, "\\'")}')">
                                     <div class="rating-stars">
                                         ${renderStars(rating)}
                                     </div>
@@ -569,35 +549,34 @@
             });
         }
 
-        function renderStars(rating) {
-            let stars = '';
-            for (let i = 1; i <= 5; i++) {
-                if (i <= Math.floor(rating)) {
-                    stars += `<i class="fa-solid fa-star"></i>`;
-                } else if (i - rating <= 0.5) {
-                    stars += `<i class="fa-solid fa-star-half-stroke"></i>`;
-                } else {
-                    stars += `<i class="fa-regular fa-star"></i>`;
-                }
-            }
-            return stars;
-        }
-
-        async function customerGiveRating(itemId, currentRating, ratingCount) {
-            const userRating = prompt("သင့်၏ Rating ကို (1 မှ 5 အထိ) ပေးပါ:", "5");
+        async function customerGiveRating(itemId, currentRating, ratingCount, itemName) {
+            const userRating = prompt(`"${itemName}" အတွက် Rating (1 မှ 5 အထိ) ပေးပါ:`, "5");
+            
             if (userRating && !isNaN(userRating) && userRating >= 1 && userRating <= 5) {
                 const val = parseFloat(userRating);
                 const newCount = (ratingCount || 0) + 1;
                 const newAvgRating = parseFloat((((currentRating * (ratingCount || 0)) + val) / newCount).toFixed(1));
 
                 try {
+                    // 1. Menu Collection ထဲ ပျှမ်းမျှ Rating ကို Update လုပ်မည်
                     await db.collection("menu").doc(itemId).update({
                         rating: newAvgRating,
                         ratingCount: newCount
                     });
+
+                    // 2. 'ratings' Collection သို့ ဘယ် Item ကို ဘယ်လောက် Rating ပေးသွားကြောင်း သိမ်းမည်
+                    await db.collection("ratings").add({
+                        itemId: itemId,
+                        itemName: itemName || "Unknown Item",
+                        table: tableId,
+                        givenRating: val,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
                     alert("Rating ပေးမှုကို ကျေးဇူးတင်ပါသည်။");
                 } catch(e) {
                     console.error("Error updating rating:", e);
+                    alert("Rating ပေးရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
                 }
             }
         }
@@ -638,7 +617,7 @@
                         <span>Subtotal:</span><span>${subtotal.toLocaleString()} MMK</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; color:var(--member-color); font-weight:bold;">
-                        <span>Member Discount (50%):</span><span>-${discountAmount.toLocaleString()} MMK</span>
+                        <span>Member Discount (25%):</span><span>-${discountAmount.toLocaleString()} MMK</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:16px; margin-top:5px;">
                         <span>Total Payable:</span><span style="color:var(--primary);">${finalTotal.toLocaleString()} MMK</span>
@@ -730,6 +709,7 @@
             }
         }
 
+        // REALTIME LISTENER: Detects Admin Changes Remotely
         function listenOrderStatus(orderId) {
             if (!orderId) return;
 
@@ -738,13 +718,52 @@
                     const data = doc.data();
                     if (data.status === "Completed" || data.status === "ready") {
                         if (!alertPlayed) {
-                            playNotificationSound();
-                            alert("Your order is ready! ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။");
                             alertPlayed = true;
+
+                            // ၁။ အသံကို ချက်ချင်း စဖွင့်မည်
+                            playNotificationSound();
+
+                            // ၂။ Custom Modal Pop-up ပြသမည်
+                            showReadyModal();
                         }
                     }
                 }
             });
+        }
+
+        function showReadyModal() {
+            let readyModal = document.getElementById('ready-noti-modal');
+            
+            if (!readyModal) {
+                readyModal = document.createElement('div');
+                readyModal.id = 'ready-noti-modal';
+                readyModal.className = 'modal-overlay';
+                readyModal.style.zIndex = '9999';
+                readyModal.innerHTML = `
+                    <div class="modal-card" style="text-align: center; padding: 30px;">
+                        <div style="font-size: 50px; color: #2ed573; margin-bottom: 15px;">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <h2 style="color: #2f3542; margin-bottom: 10px;">Your Order is Ready!</h2>
+                        <p style="color: #747d8c; margin-bottom: 20px; font-size: 15px;">
+                            လူကြီးမင်း မှာယူထားသော အစားအသောက်များ ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။
+                        </p>
+                        <button class="btn-action" style="background: #2ed573;" onclick="closeReadyModal()">
+                            OK / လက်ခံရရှိပါပြီ
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(readyModal);
+            }
+            
+            readyModal.style.display = 'flex';
+        }
+
+        function closeReadyModal() {
+            const readyModal = document.getElementById('ready-noti-modal');
+            if (readyModal) {
+                readyModal.style.display = 'none';
+            }
         }
 
         function openPayBillModal() {
@@ -758,7 +777,7 @@
 
             let html = `
                 <div class="receipt-header-title">SMART RESTAURANT</div>
-                <div class="receipt-sub-info">Table #${tableId} ${isMember ? '| Member VIP Pass' : ''}</div>
+                <div class="receipt-sub-info">Table #${tableId} ${isMember ? '| Member VIP Pass (25% OFF)' : ''}</div>
                 <div class="receipt-line"></div>
             `;
 
@@ -780,7 +799,7 @@
                         <span>${subtotal.toLocaleString()} MMK</span>
                     </div>
                     <div class="receipt-row" style="color:var(--member-color); font-weight:bold;">
-                        <span>Member 50% Off</span>
+                        <span>Member 25% Off</span>
                         <span>-${discountAmount.toLocaleString()} MMK</span>
                     </div>
                     <div class="receipt-line"></div>
@@ -817,7 +836,8 @@
             alert("Payment completed! Bill ရှင်းလွှာ အောင်မြင်ပါသည်။");
             closePayBillModal();
 
-            if (!isMember && subtotal >= 100000) {
+            // ၅၀,၀၀၀ ကျပ်နှင့် အထက် ဝယ်ယူထားပြီး Member မဖြစ်သေးပါက Member Registration ပြသမည်
+            if (!isMember && subtotal >= 50000) {
                 document.getElementById('member-modal').style.display = 'flex';
             } else {
                 resetSession();
