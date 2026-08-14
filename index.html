@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Restaurant - Order Online</title>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
@@ -71,7 +69,7 @@
         .table-info { background: #ffffff; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
 
         .hero {
-            background: linear-gradient(135deg, vivid red, rgba(255, 107, 129, 0.8)), 
+            background: linear-gradient(135deg, #ff4757, rgba(255, 107, 129, 0.8)), 
                         url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80') center/cover;
             color: white;
             text-align: center;
@@ -448,7 +446,7 @@
         .receipt-icon {
             width: 60px;
             height: 60px;
-            background: #eccc68;
+            background: var(--primary);
             color: white;
             border-radius: 50%;
             display: flex;
@@ -456,7 +454,7 @@
             justify-content: center;
             font-size: 28px;
             margin: 0 auto 15px auto;
-            box-shadow: 0 4px 15px rgba(236, 204, 104, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
         }
 
         .receipt-card.completed .receipt-icon {
@@ -471,7 +469,7 @@
 
         .receipt-details-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-light); }
         .receipt-items-list { margin: 15px 0; max-height: 180px; overflow-y: auto; }
-        .receipt-item-line { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; }
+        .receipt-item-line { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; border-bottom: 1px dashed #f1f2f6; }
 
         .receipt-total-row { display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 800; color: var(--primary); margin-top: 10px; }
 
@@ -490,14 +488,32 @@
         }
 
         .btn-close-receipt:hover { background: var(--primary-hover); }
+
+        /* Pay Method Buttons */
+        .pay-method-btn {
+            flex: 1;
+            padding: 8px 4px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-dark);
+        }
+
+        .pay-method-btn.active, .pay-method-btn:hover {
+            border-color: var(--primary);
+            background: #fff0f3;
+            color: var(--primary);
+        }
     </style>
 </head>
 <body>
 
-    <!-- Notification Sound (HTML Audio Element) -->
     <audio id="notiSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
-    <!-- Header / Navbar -->
     <header>
         <div class="logo">
             <i class="fa-solid fa-utensils"></i> Ponyo
@@ -507,8 +523,8 @@
             <button class="nav-tab-btn active" id="btnMenuTab" onclick="switchPage('menu')">
                 <i class="fa-solid fa-book-open"></i> Menu
             </button>
-            <button class="nav-tab-btn" id="btnOrdersTab" onclick="switchPage('orders')">
-                <i class="fa-solid fa-receipt"></i> Orders
+            <button class="nav-tab-btn" id="btnPayBillTab" onclick="openBillReceiptModal()">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Pay Bill
             </button>
             <div class="table-select-box">
                <div class="table-info" id="tableDisplay"><i class="fa-solid fa-chair"></i> Table: -</div>
@@ -516,18 +532,14 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
     <div class="hero">
         <h1>Delicious Food, Fast Service</h1>
         <p>Choose your favorite meal and place order directly from your table</p>
     </div>
 
-    <!-- Main Content Container -->
     <div class="container">
 
-        <!-- PAGE 1: MENU VIEW -->
         <div id="menuView" class="page-view active">
-            <!-- Search Bar & Category Filters -->
             <div class="filter-section">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -550,13 +562,11 @@
                 </div>
             </div>
 
-            <!-- Menu Grid -->
             <div class="menu-grid" id="menuGrid">
                 <p style="text-align: center; grid-column: 1/-1; color: var(--text-light);">Loading delicious menu...</p>
             </div>
         </div>
 
-        <!-- PAGE 2: MY ORDERS & TRACKING VIEW -->
         <div id="ordersView" class="page-view">
             <h2 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                 <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Active Table Orders
@@ -568,17 +578,14 @@
 
     </div>
 
-    <!-- Floating Cart Button -->
     <div class="cart-float-btn" id="cartFloatBtn" onclick="toggleCartDrawer(true)">
         <i class="fa-solid fa-basket-shopping"></i>
         <span>My Order</span>
         <div class="cart-count" id="cartCount">0</div>
     </div>
 
-    <!-- Slide Cart Drawer Overlay -->
     <div class="cart-drawer-overlay" id="cartOverlay" onclick="toggleCartDrawer(false)"></div>
 
-    <!-- Slide Cart Drawer Panel -->
     <div class="cart-drawer" id="cartDrawer">
         <div class="drawer-header">
             <h3><i class="fa-solid fa-receipt"></i> Your Order List</h3>
@@ -594,7 +601,55 @@
         </div>
     </div>
 
-    <!-- RECEIPT / INVOICE MODAL POPUP -->
+    <div class="receipt-modal-overlay" id="payBillModal">
+        <div class="receipt-card">
+            <div style="text-align: right; margin-bottom: -10px;">
+                <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 18px; color: var(--text-light);" onclick="closePayBillModal()"></i>
+            </div>
+            <div class="receipt-icon">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <div class="receipt-title">Table Bill Invoice</div>
+            <div class="receipt-subtitle">ကျသင့်ငွေ စာရင်းရှင်းလွှာ</div>
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-details-row">
+                <span>Table Number:</span>
+                <strong id="billTableNum">Table -</strong>
+            </div>
+            <div class="receipt-details-row">
+                <span>Date & Time:</span>
+                <strong id="billDateTime">-</strong>
+            </div>
+
+            <div class="receipt-items-list" id="billItemsList">
+                </div>
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-total-row">
+                <span>Grand Total</span>
+                <span id="billGrandTotal" style="color: var(--primary);">0 MMK</span>
+            </div>
+
+            <div style="margin-top: 15px; text-align: left;">
+                <label style="font-size: 13px; font-weight: 700; color: var(--text-dark); display: block; margin-bottom: 8px;">
+                    <i class="fa-solid fa-wallet"></i> Select Payment Method:
+                </label>
+                <div style="display: flex; gap: 8px; justify-content: space-between;">
+                    <button type="button" class="pay-method-btn active" onclick="selectPayMethod('KBZPay', this)">KBZPay</button>
+                    <button type="button" class="pay-method-btn" onclick="selectPayMethod('WavePay', this)">WavePay</button>
+                    <button type="button" class="pay-method-btn" onclick="selectPayMethod('Cash', this)">Cash</button>
+                </div>
+            </div>
+
+            <button class="btn-checkout" style="margin-top: 20px;" id="btnConfirmPayment" onclick="processTablePayment()">
+                <i class="fa-solid fa-credit-card"></i> Pay Now
+            </button>
+        </div>
+    </div>
+
     <div class="receipt-modal-overlay" id="receiptModal">
         <div class="receipt-card" id="receiptCard">
             <div class="receipt-icon" id="receiptIcon">
@@ -615,8 +670,7 @@
             </div>
 
             <div class="receipt-items-list" id="receiptItemsList">
-                <!-- Dynamic Items -->
-            </div>
+                </div>
 
             <div class="receipt-divider"></div>
 
@@ -652,6 +706,7 @@
         let cart = [];
         let ordersUnsubscribe = null;
         let isInitialLoad = true;
+        let selectedPaymentMethod = 'KBZPay';
 
         const menuGrid = document.getElementById('menuGrid');
 
@@ -659,7 +714,7 @@
         function playNotiSound() {
             const audio = document.getElementById('notiSound');
             if (audio) {
-                audio.currentTime = 0; // Rewind to start
+                audio.currentTime = 0;
                 audio.play().catch(error => {
                     console.log("Audio playback blocked by browser policies until user interacts:", error);
                 });
@@ -694,16 +749,14 @@
                         const status = orderData.status;
 
                         if (status === "Ready" || status === "Completed") {
-                            // Play Bell Sound Effect
                             playNotiSound();
-                            // Show Receipt Popup
                             showReceiptModal(orderId, orderData);
                         }
                     }
                 });
             });
 
-        // Switch Between Pages (Menu vs Orders)
+        // Switch Between Pages
         function switchPage(pageName) {
             document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
@@ -714,9 +767,119 @@
                 document.getElementById('cartFloatBtn').style.display = 'flex';
             } else if (pageName === 'orders') {
                 document.getElementById('ordersView').classList.add('active');
-                document.getElementById('btnOrdersTab').classList.add('active');
                 document.getElementById('cartFloatBtn').style.display = 'none';
                 fetchTableOrders();
+            }
+        }
+
+        // Select Payment Method Option
+        function selectPayMethod(method, element) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.pay-method-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Open Pay Bill Receipt Modal & Aggregate Table Bill
+        async function openBillReceiptModal() {
+            const modal = document.getElementById('payBillModal');
+            const itemsContainer = document.getElementById('billItemsList');
+            const totalDisplay = document.getElementById('billGrandTotal');
+            const tableDisplay = document.getElementById('billTableNum');
+            const dateDisplay = document.getElementById('billDateTime');
+
+            tableDisplay.innerText = `Table ${currentTable}`;
+            dateDisplay.innerText = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+            itemsContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); margin: 20px 0;">အော်ဒါများ ရယူနေပါသည်...</p>`;
+
+            try {
+                const snapshot = await db.collection("orders")
+                    .where("table", "==", currentTable)
+                    .where("status", "in", ["Pending", "Preparing", "Ready"])
+                    .get();
+
+                if (snapshot.empty) {
+                    itemsContainer.innerHTML = `<p style="text-align: center; color: var(--text-light); margin: 20px 0;">ရှင်းရန် အော်ဒါဘေလ် မရှိသေးပါ။</p>`;
+                    totalDisplay.innerText = `0 MMK`;
+                    document.getElementById('btnConfirmPayment').style.display = 'none';
+                    modal.classList.add('active');
+                    return;
+                }
+
+                document.getElementById('btnConfirmPayment').style.display = 'block';
+                let mergedItems = {};
+                let grandTotal = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.items && Array.isArray(data.items)) {
+                        data.items.forEach(item => {
+                            if (mergedItems[item.name]) {
+                                mergedItems[item.name].quantity += item.quantity;
+                                mergedItems[item.name].total += (item.price * item.quantity);
+                            } else {
+                                mergedItems[item.name] = {
+                                    price: item.price,
+                                    quantity: item.quantity,
+                                    total: item.price * item.quantity
+                                };
+                            }
+                            grandTotal += (item.price * item.quantity);
+                        });
+                    }
+                });
+
+                let html = '';
+                Object.keys(mergedItems).forEach(itemName => {
+                    const item = mergedItems[itemName];
+                    html += `
+                        <div class="receipt-item-line">
+                            <span>${itemName} x${item.quantity}</span>
+                            <strong>${item.total.toLocaleString()} MMK</strong>
+                        </div>
+                    `;
+                });
+
+                itemsContainer.innerHTML = html;
+                totalDisplay.innerText = `${grandTotal.toLocaleString()} MMK`;
+                modal.classList.add('active');
+
+            } catch (error) {
+                console.error("Error fetching bill: ", error);
+                alert("ဘေလ်စာရင်း ရယူရာတွင် အမှားအယွင်းရှိနေပါသည်။");
+            }
+        }
+
+        // Close Pay Bill Modal
+        function closePayBillModal() {
+            document.getElementById('payBillModal').classList.remove('active');
+        }
+
+        // Process Table Payment
+        async function processTablePayment() {
+            if (!confirm(`${selectedPaymentMethod} ဖြင့် ငွေပေးချေမှုကို အတည်ပြုပါသလား?`)) return;
+
+            try {
+                const snapshot = await db.collection("orders")
+                    .where("table", "==", currentTable)
+                    .where("status", "in", ["Pending", "Preparing", "Ready"])
+                    .get();
+
+                const batch = db.batch();
+                snapshot.forEach(doc => {
+                    batch.update(doc.ref, {
+                        status: "Completed",
+                        paymentMethod: selectedPaymentMethod,
+                        paidAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+
+                await batch.commit();
+
+                alert("ငွေပေးချေမှု အောင်မြင်စွာ ပြီးမြောက်ပါပြီ။ ကျေးဇူးတင်ပါသည်။!");
+                closePayBillModal();
+            } catch (error) {
+                console.error("Error processing payment: ", error);
+                alert("ငွေပေးချေမှု ပြုလုပ်ရာတွင် အမှားအယွင်းရှိခဲ့ပါသည်။");
             }
         }
 
@@ -870,7 +1033,6 @@
                 cart = [];
                 updateCartUI();
                 toggleCartDrawer(false);
-                switchPage('orders');
             } catch (error) {
                 console.error("Error ordering: ", error);
                 alert("အော်ဒါ တင်ရာတွင် အမှားအယွင်းရှိနေပါသည်။");
