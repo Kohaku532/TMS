@@ -76,27 +76,6 @@
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
 
-        /* Order Ready Banner Notification */
-        .status-alert-banner {
-            background: #2ed573;
-            color: white;
-            padding: 14px 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(46, 213, 115, 0.3);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.01); }
-            100% { transform: scale(1); }
-        }
-
         /* Filter Section */
         .filter-section { margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; }
         .search-box { position: relative; width: 100%; }
@@ -175,10 +154,46 @@
         .modal-card { background: white; border-radius: 20px; width: 90%; max-width: 420px; padding: 25px; max-height: 90vh; overflow-y: auto; position: relative; text-align: center; }
         .modal-close { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; color: var(--text-light); }
         
-        /* Receipt UI */
-        .receipt-box { background: #fdfdfd; border: 1px dashed #ccc; padding: 15px; border-radius: 10px; margin: 15px 0; font-family: monospace; font-size: 13px; text-align: left; }
-        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .receipt-line { border-bottom: 1px dashed #bbb; margin: 10px 0; }
+        /* Modern & Clean Receipt UI */
+        .receipt-box { 
+            background: #ffffff; 
+            border: 1px dashed #d1d8e0; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin: 15px 0; 
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 13px; 
+            text-align: left;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.04);
+            position: relative;
+        }
+
+        .receipt-header-title {
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .receipt-sub-info {
+            text-align: center;
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 12px;
+        }
+
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: #34495e; }
+        .receipt-line { border-bottom: 1px dashed #cbd5e1; margin: 12px 0; }
+        
+        .receipt-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--primary);
+            padding-top: 4px;
+        }
 
         .form-group { margin-bottom: 12px; text-align: left; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
@@ -204,11 +219,6 @@
     </div>
 
     <div class="container">
-        <div class="status-alert-banner" id="ready-banner">
-            <span><i class="fa-solid fa-bell"></i> Your order is ready! ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။</span>
-            <button class="nav-tab-btn" onclick="openPayBillModal()" style="font-size:12px; padding:4px 10px;">Pay Bill Now</button>
-        </div>
-
         <div class="filter-section">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -366,31 +376,47 @@
         document.addEventListener('click', initAudio, { once: true });
         document.addEventListener('touchstart', initAudio, { once: true });
 
-        // Notification POP Sound (Frequency Sweep Pop Tone)
+        // Loud & Clear POP Sound Notification
         function playNotificationSound() {
             initAudio();
             if (!audioCtx) return;
 
             try {
                 const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
 
-                osc.type = 'sine';
+                // Tone 1: High Punch Pop Tone
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(400, now);
+                osc1.frequency.exponentialRampToValueAtTime(1600, now + 0.1);
                 
-                // Frequency starts at low and rises rapidly to high pitch (Pop effect)
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+                // Maximum Loud Gain Settings
+                gain1.gain.setValueAtTime(1.0, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
 
-                // Volume envelope for sharp attack and quick fade
-                gain.gain.setValueAtTime(0.6, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
 
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.15);
 
-                osc.start(now);
-                osc.stop(now + 0.12);
+                // Tone 2: Echo Pop Tone (0.1s အကြာ အသံကျယ်ကျယ် ပဲ့တင်သံ)
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(800, now + 0.1);
+                osc2.frequency.exponentialRampToValueAtTime(2200, now + 0.22);
+                
+                gain2.gain.setValueAtTime(0.9, now + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+
+                osc2.start(now + 0.1);
+                osc2.stop(now + 0.25);
+
             } catch (e) {
                 console.log("Audio Playback Error:", e);
             }
@@ -711,10 +737,9 @@
                 if (doc.exists) {
                     const data = doc.data();
                     if (data.status === "Completed" || data.status === "ready") {
-                        document.getElementById('ready-banner').style.display = 'flex';
-                        
                         if (!alertPlayed) {
                             playNotificationSound();
+                            alert("Your order is ready! ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။");
                             alertPlayed = true;
                         }
                     }
@@ -732,15 +757,15 @@
             const box = document.getElementById('receipt-details');
 
             let html = `
-                <div style="text-align:center; font-weight:bold; font-size:15px; margin-bottom:4px;">SMART RESTAURANT</div>
-                <div style="text-align:center; font-size:12px; color:var(--text-light);">Table #${tableId} ${isMember ? '(Member 50% OFF Applied)' : ''}</div>
+                <div class="receipt-header-title">SMART RESTAURANT</div>
+                <div class="receipt-sub-info">Table #${tableId} ${isMember ? '| Member VIP Pass' : ''}</div>
                 <div class="receipt-line"></div>
             `;
 
             cart.forEach(i => {
                 html += `
                     <div class="receipt-row">
-                        <span>${i.name} x${i.quantity}</span>
+                        <span>${i.name} (x${i.quantity})</span>
                         <span>${(i.price * i.quantity).toLocaleString()} MMK</span>
                     </div>
                 `;
@@ -750,21 +775,22 @@
 
             if (isMember) {
                 html += `
-                    <div class="receipt-row" style="color:#666;">
-                        <span>Subtotal:</span>
+                    <div class="receipt-row" style="color:#7f8c8d;">
+                        <span>Subtotal</span>
                         <span>${subtotal.toLocaleString()} MMK</span>
                     </div>
                     <div class="receipt-row" style="color:var(--member-color); font-weight:bold;">
-                        <span>Member Discount (50%):</span>
+                        <span>Member 50% Off</span>
                         <span>-${discountAmount.toLocaleString()} MMK</span>
                     </div>
+                    <div class="receipt-line"></div>
                 `;
             }
 
             html += `
-                <div class="receipt-row" style="font-weight:bold; font-size:14px; margin-top:5px;">
-                    <span>TOTAL PAYABLE:</span>
-                    <span style="color:var(--primary);">${finalTotal.toLocaleString()} MMK</span>
+                <div class="receipt-total-row">
+                    <span>TOTAL PAYABLE</span>
+                    <span>${finalTotal.toLocaleString()} MMK</span>
                 </div>
             `;
 
@@ -828,7 +854,6 @@
             alertPlayed = false;
             localStorage.removeItem('my_active_order_id');
             updateCartUI();
-            document.getElementById('ready-banner').style.display = 'none';
         }
 
         window.onload = () => {
