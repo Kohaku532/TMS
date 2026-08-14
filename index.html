@@ -334,18 +334,70 @@
     </div>
 
     <script>
-        // Firebase Config Setup (သင့် Firebase Keys များဖြင့် အစားထိုးပါ)
+        // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
+            authDomain: "smart-restaurant-85871.firebaseapp.com",
+            projectId: "smart-restaurant-85871",
+            storageBucket: "smart-restaurant-85871.firebasestorage.app",
+            messagingSenderId: "909399970300",
+            appId: "1:909399970300:web:8da6c6522af7b1a6296279"
         };
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // Audio System Setup (အသံအချက်ပေးစနစ်)
+        let audioCtx = null;
+        let isAudioUnlocked = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            isAudioUnlocked = true;
+        }
+
+        // Browser Autoplay တားဆီးမှုကျော်လွန်ရန် User Click လုပ်ချိန် အသံဖွင့်ပိုင်ခွင့် ယူခြင်း
+        document.addEventListener('click', initAudio, { once: true });
+        document.addEventListener('touchstart', initAudio, { once: true });
+
+        // အသံပေးမည့် Function
+        function playOrderReadySound() {
+            if (audioCtx && isAudioUnlocked) {
+                try {
+                    // Beep sound ထုတ်လုပ်ခြင်း
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5 Note
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); // A5 Note
+                    
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.6);
+                } catch(e) {
+                    console.log("Audio play error:", e);
+                }
+            }
+
+            // စကားပြောအသံ (Voice Alert) ဖြင့် အသိပေးခြင်း
+            if ('speechSynthesis' in window) {
+                const text = `Table ${tableId}, your order is ready!`;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
 
         // System State Variables
         const urlParams = new URLSearchParams(window.location.search);
@@ -356,10 +408,11 @@
         let cart = [];
         let activeOrderId = null;
         let selectedCategory = 'All';
+        let alertPlayed = false; // အသံ တစ်ကြိမ်သာ မည်စေရန်
 
         // Membership State
         let isMember = false;
-        let discountRate = 0; // 0.5 (50%) for members
+        let discountRate = 0;
         let currentMemberData = null;
 
         // Modal View Switchers for Initial Member Check
@@ -373,27 +426,24 @@
             document.getElementById('member-login-view').style.display = 'none';
         }
 
-        // ရိုးရိုး Customer အဖြစ် ဝင်ရောက်ခြင်း
         function continueAsRegular() {
             isMember = false;
             discountRate = 0;
             document.getElementById('initial-member-modal').style.display = 'none';
         }
 
-        // Member စစ်ဆေးခြင်း (Phone သို့မဟုတ် Email ဖြင့် Firestore တွင် စစ်သည်)
         async function verifyMemberCredentials() {
             const inputVal = document.getElementById('member-credential-input').value.trim();
             if (!inputVal) return alert("ကျေးဇူးပြု၍ ဖုန်းနံပါတ် သို့မဟုတ် Email ထည့်သွင်းပါ။");
 
             try {
-                // Email သို့မဟုတ် Phone ဖြင့် Firestore `members` collection တွင် ရှာဖွေခြင်း
                 const phoneQuery = await db.collection("members").where("phone", "==", inputVal).get();
                 const emailQuery = await db.collection("members").where("email", "==", inputVal).get();
 
                 if (!phoneQuery.empty || !emailQuery.empty) {
                     const docData = !phoneQuery.empty ? phoneQuery.docs[0].data() : emailQuery.docs[0].data();
                     isMember = true;
-                    discountRate = 0.5; // 50% Discount
+                    discountRate = 0.5;
                     currentMemberData = docData;
 
                     document.getElementById('member-hdr-badge').style.display = 'flex';
@@ -409,9 +459,8 @@
             }
         }
 
-        // Admin မှ Menu Items များကို ဖတ်ယူခြင်း
         function listenToMenuFromAdmin() {
-            db.collection("menu_items").onSnapshot(snapshot => {
+            db.collection("menu").onSnapshot(snapshot => {
                 menuItems = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
@@ -419,7 +468,7 @@
                         id: doc.id,
                         name: data.name || "Untitled",
                         category: data.category || "Food",
-                        price: data.price || 0,
+                        price: Number(data.price) || 0,
                         rating: data.rating || 0,
                         ratingCount: data.ratingCount || 0,
                         image: data.image || "https://via.placeholder.com/200"
@@ -459,7 +508,7 @@
                     <div class="food-card">
                         <div class="card-img-wrap">
                             ${isTopRated ? '<div class="top-rating-badge"><i class="fa-solid fa-star"></i> Top Rated</div>' : ''}
-                            <img src="${item.image}" class="food-img" alt="${item.name}">
+                            <img src="${item.image}" class="food-img" alt="${item.name}" onerror="this.src='https://via.placeholder.com/200?text=Food'">
                         </div>
                         <div class="card-details">
                             <div>
@@ -489,7 +538,6 @@
             return stars;
         }
 
-        // Rating ပေးခြင်း
         async function customerGiveRating(itemId, currentRating, ratingCount) {
             const userRating = prompt("သင့်၏ Rating ကို (1 မှ 5 အထိ) ထည့်သွင်းပေးပါ:", "5");
             if (userRating && !isNaN(userRating) && userRating >= 1 && userRating <= 5) {
@@ -498,7 +546,7 @@
                 const newAvgRating = parseFloat((((currentRating * ratingCount) + val) / newCount).toFixed(1));
 
                 try {
-                    await db.collection("menu_items").doc(itemId).update({
+                    await db.collection("menu").doc(itemId).update({
                         rating: newAvgRating,
                         ratingCount: newCount
                     });
@@ -516,7 +564,6 @@
             renderMenuGrid();
         }
 
-        // Cart Logic with 50% Member Discount Calculation
         function addToCart(itemId) {
             const item = menuItems.find(i => i.id === itemId);
             if (!item) return;
@@ -606,7 +653,6 @@
             document.getElementById('cart-drawer').classList.remove('active');
         }
 
-        // Place Order
         async function placeOrder() {
             if (cart.length === 0) return alert("Cart ထဲတွင် ပစ္စည်းမရှိသေးပါ။");
 
@@ -622,10 +668,11 @@
                     discount: discountAmount,
                     total: finalTotal,
                     isMember: isMember,
-                    status: "pending",
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    status: "Pending",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 activeOrderId = orderRef.id;
+                alertPlayed = false; // Order အသစ်အတွက် reset လုပ်မည်
                 listenOrderStatus(activeOrderId);
                 alert("Order တင်ခြင်း အောင်မြင်ပါသည်။ မီးဖိုချောင်သို့ အော်ဒါ ပေးပို့လိုက်ပါပြီ။");
                 closeCartDrawer();
@@ -635,19 +682,24 @@
             }
         }
 
-        // Order Status Listener
+        // Order Status Listener (အသံအချက်ပေးခြင်း ပါဝင်သည်)
         function listenOrderStatus(orderId) {
             db.collection("orders").doc(orderId).onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
-                    if (data.status === "ready" || data.status === "completed") {
+                    if (data.status === "Completed" || data.status === "ready") {
                         document.getElementById('ready-banner').style.display = 'flex';
+                        
+                        // အော်ဒါကျက်ပြီဆိုသည်နှင့် အသံဖြင့် အချက်ပေးမည်
+                        if (!alertPlayed) {
+                            playOrderReadySound();
+                            alertPlayed = true;
+                        }
                     }
                 }
             });
         }
 
-        // Pay Bill & Receipt UI
         function openPayBillModal() {
             if (cart.length === 0) return alert("မှာယူထားသော အော်ဒါမရှိသေးပါ။");
 
@@ -700,7 +752,6 @@
 
         function closePayBillModal() { document.getElementById('bill-modal').style.display = 'none'; }
 
-        // Confirm Payment & 1 Lakh Top-Up Check (For Regular Customers)
         async function confirmPayment() {
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const method = document.getElementById('payment-method').value;
@@ -710,7 +761,7 @@
                     await db.collection("orders").doc(activeOrderId).update({
                         paymentStatus: "paid",
                         paymentMethod: method,
-                        status: "closed"
+                        status: "Completed"
                     });
                 } catch(e) {}
             }
@@ -718,7 +769,6 @@
             alert("Payment completed! Bill ရှင်းလွှာ အောင်မြင်ပါသည်။");
             closePayBillModal();
 
-            // မန်ဘာ မဟုတ်သေးသော Customer ဖြစ်ပြီး ၁ သိန်းဖိုးနှင့် အထက် ဝယ်ယူထားပါက Member Registration မေးခြင်း
             if (!isMember && subtotal >= 100000) {
                 document.getElementById('member-modal').style.display = 'flex';
             } else {
@@ -753,11 +803,11 @@
         function resetSession() {
             cart = [];
             activeOrderId = null;
+            alertPlayed = false;
             updateCartUI();
             document.getElementById('ready-banner').style.display = 'none';
         }
 
-        // Initialize Page
         window.onload = () => {
             listenToMenuFromAdmin();
         };
