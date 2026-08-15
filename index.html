@@ -177,6 +177,32 @@
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
         .btn-action { background: var(--success); color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
         .btn-secondary { background: #e2e8f0; color: var(--text-dark); border: none; width: 100%; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 8px; }
+
+        /* QR Payment Style */
+        .qrPayment { 
+            display: none; 
+            text-align: center; 
+            margin-top: 15px;
+            padding: 15px; 
+            background: #f1f2f6; 
+            border-radius: 16px;
+            border: 1px solid #dcdde1; 
+        }
+        .qrPayment h3 { font-size: 16px; margin-bottom: 5px; color: var(--text-dark); }
+        .qrPayment .qr-box { 
+            width: 200px; 
+            height: 200px; 
+            margin: 10px auto;
+            padding: 8px;
+            background: white; 
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .qrPayment .qr-box img { width: 100%; height: 100%; object-fit: contain; }
+        .qrPayment p { font-size: 13px; color: var(--text-light); margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -253,7 +279,7 @@
                     <i class="fa-solid fa-id-card"></i> Member ဖြစ်ပါတယ် (Login)
                 </button>
                 <button class="btn-secondary" onclick="continueAsRegular()">
-                    ရိုးရိုး Customer အဖြစ် ဆက်သွားမည်
+                    No
                 </button>
             </div>
 
@@ -274,6 +300,7 @@
         </div>
     </div>
 
+    <!-- Pay Bill Modal -->
     <div class="modal-overlay" id="bill-modal">
         <div class="modal-card">
             <i class="fa-solid fa-xmark modal-close" onclick="closePayBillModal()"></i>
@@ -283,17 +310,27 @@
 
             <div class="form-group">
                 <label>Select Payment Method:</label>
-                <select id="payment-method">
+                <select id="payment-method" onchange="showPaymentQR()">
                     <option value="KBZPay">KBZPay</option>
                     <option value="WavePay">WavePay</option>
                     <option value="Cash">Cash at Table</option>
                 </select>
+
+                <!-- Dynamic QR Box -->
+                <div id="qr-payment" class="qrPayment">
+                    <h3 id="qr-title">Scan KBZPay QR Code</h3>
+                    <div class="qr-box">
+                        <img id="qr-image" src="kpayqr.jpg" alt="QR Code">
+                    </div>
+                    <p id="qr-text">Open KBZPay and scan the QR code</p>
+                </div>
             </div>
 
             <button class="btn-action" onclick="confirmPayment()"><i class="fa-solid fa-check"></i> Complete Payment</button>
         </div>
     </div>
 
+    <!-- Member Registration Offer Modal -->
     <div class="modal-overlay" id="member-modal">
         <div class="modal-card">
             <i class="fa-solid fa-xmark modal-close" onclick="closeMemberModal()"></i>
@@ -496,7 +533,7 @@
 
         function renderStars(rating) {
             let stars = '';
-            const roundedRating = Math.round(rating); // 1, 2, 3, 4, 5
+            const roundedRating = Math.round(rating);
             for (let i = 1; i <= roundedRating; i++) {
                 stars += `<i class="fa-solid fa-star" style="color: #f1c40f;"></i>`;
             }
@@ -558,13 +595,11 @@
                 const newAvgRating = parseFloat((((currentRating * (ratingCount || 0)) + val) / newCount).toFixed(1));
 
                 try {
-                    // 1. Menu Collection ထဲ ပျှမ်းမျှ Rating ကို Update လုပ်မည်
                     await db.collection("menu").doc(itemId).update({
                         rating: newAvgRating,
                         ratingCount: newCount
                     });
 
-                    // 2. 'ratings' Collection သို့ ဘယ် Item ကို ဘယ်လောက် Rating ပေးသွားကြောင်း သိမ်းမည်
                     await db.collection("ratings").add({
                         itemId: itemId,
                         itemName: itemName || "Unknown Item",
@@ -719,11 +754,7 @@
                     if (data.status === "Completed" || data.status === "ready") {
                         if (!alertPlayed) {
                             alertPlayed = true;
-
-                            // ၁။ အသံကို ချက်ချင်း စဖွင့်မည်
                             playNotificationSound();
-
-                            // ၂။ Custom Modal Pop-up ပြသမည်
                             showReadyModal();
                         }
                     }
@@ -749,7 +780,7 @@
                             လူကြီးမင်း မှာယူထားသော အစားအသောက်များ ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။
                         </p>
                         <button class="btn-action" style="background: #2ed573;" onclick="closeReadyModal()">
-                            OK / လက်ခံရရှိပါပြီ
+                            OK
                         </button>
                     </div>
                 `;
@@ -815,9 +846,35 @@
 
             box.innerHTML = html;
             document.getElementById('bill-modal').style.display = 'flex';
+            
+            // Show QR Code dynamically when modal opens
+            showPaymentQR();
         }
 
         function closePayBillModal() { document.getElementById('bill-modal').style.display = 'none'; }
+
+        // Function to handle QR Code visibility based on payment method
+        function showPaymentQR() {
+            const paymentMethod = document.getElementById('payment-method').value;
+            const qrPayment = document.getElementById('qr-payment');
+            const qrImage = document.getElementById('qr-image');
+            const qrTitle = document.getElementById('qr-title');
+            const qrText = document.getElementById('qr-text');
+
+            if (paymentMethod === 'KBZPay') {
+                qrPayment.style.display = 'block';
+                qrImage.src = 'kpayqr.jpg';
+                qrTitle.innerText = 'Scan KBZPay QR Code';
+                qrText.innerText = 'Open KBZPay app and scan to pay';
+            } else if (paymentMethod === 'WavePay') {
+                qrPayment.style.display = 'block';
+                qrImage.src = 'waveqr.jpg'; // WavePay QR Code Image (If available)
+                qrTitle.innerText = 'Scan WavePay QR Code';
+                qrText.innerText = 'Open WavePay app and scan to pay';
+            } else {
+                qrPayment.style.display = 'none';
+            }
+        }
 
         async function confirmPayment() {
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -836,7 +893,6 @@
             alert("Payment completed! Bill ရှင်းလွှာ အောင်မြင်ပါသည်။");
             closePayBillModal();
 
-            // ၅၀,၀၀၀ ကျပ်နှင့် အထက် ဝယ်ယူထားပြီး Member မဖြစ်သေးပါက Member Registration ပြသမည်
             if (!isMember && subtotal >= 50000) {
                 document.getElementById('member-modal').style.display = 'flex';
             } else {
