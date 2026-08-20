@@ -1,193 +1,2196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner Dashboard - Smart Restaurant</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: #f1f2f6; padding: 20px; }
-        .dashboard { max-width: 900px; margin: 0 auto; }
-        header { background: #2f3542; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
-        
-        /* Stats Dashboard Section */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { color: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-        .stat-card small { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
-        .stat-card h2 { font-size: 28px; margin-top: 8px; }
+<title>Smart Restaurant - Owner Dashboard</title>
 
-        .card-total { background: linear-gradient(135deg, #1e90ff, #3742fa); }
-        .card-daily { background: linear-gradient(135deg, #2ed573, #26af5f); }
-        .card-sales { background: linear-gradient(135deg, #ffa502, #ff7f50); }
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-        .date-picker-box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .date-picker-box input { padding: 8px 12px; border-radius: 6px; border: 1px solid #ced6e0; outline: none; font-weight: bold; color: #2f3542; }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        .section-box { background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .section-title { font-size: 18px; color: #2f3542; margin-bottom: 15px; border-bottom: 2px solid #f1f2f6; padding-bottom: 8px; }
+<style>
 
-        .order-card { background: #f8f9fa; border: 1px solid #eccc68; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .order-header { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px; font-weight: bold; }
-        .order-items { margin-bottom: 10px; font-size: 14px; color: #57606f; }
-        .order-footer { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: #2f3542; }
-        
-        .time-badge { background: #70a1ff; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
-        .payment-badge { background: #ffa502; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; }
-        .status-badge { padding: 3px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; font-weight: bold; }
-        .status-pending { background: #ff7f50; color: white; }
-        .status-finished { background: #2ed573; color: white; }
-    </style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",Arial,sans-serif;
+}
+
+body{
+    background:#f5f7fb;
+    color:#1f2937;
+}
+
+button,
+input,
+select{
+    font-family:inherit;
+}
+
+.app{
+    display:flex;
+    min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:250px;
+    background:#111827;
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    padding:24px 16px;
+    z-index:1000;
+    overflow-y:auto;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:0 8px;
+    margin-bottom:35px;
+}
+
+.logo-icon{
+    width:45px;
+    height:45px;
+    border-radius:13px;
+    background:#f59e0b;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:23px;
+}
+
+.logo h2{
+    font-size:18px;
+}
+
+.logo small{
+    color:#9ca3af;
+    font-size:11px;
+}
+
+.menu-title{
+    color:#6b7280;
+    font-size:10px;
+    text-transform:uppercase;
+    font-weight:700;
+    letter-spacing:1px;
+    margin:20px 10px 10px;
+}
+
+.menu a{
+    display:flex;
+    align-items:center;
+    gap:13px;
+    padding:13px 14px;
+    margin-bottom:6px;
+    border-radius:10px;
+    text-decoration:none;
+    color:#d1d5db;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.menu a:hover{
+    background:#1f2937;
+    color:white;
+}
+
+.menu a.active{
+    background:#f59e0b;
+    color:white;
+}
+
+.menu-icon{
+    width:22px;
+    text-align:center;
+}
+
+.sidebar-bottom{
+    position:absolute;
+    left:16px;
+    right:16px;
+    bottom:20px;
+}
+
+.owner-box{
+    background:#1f2937;
+    border-radius:12px;
+    padding:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.owner-avatar{
+    width:40px;
+    height:40px;
+    background:#f59e0b;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.owner-box strong{
+    font-size:13px;
+}
+
+.owner-box small{
+    color:#9ca3af;
+    font-size:11px;
+}
+
+/* MAIN */
+
+.main{
+    margin-left:250px;
+    width:calc(100% - 250px);
+    padding:24px;
+    min-height:100vh;
+}
+
+/* TOPBAR */
+
+.topbar{
+    background:white;
+    border-radius:15px;
+    padding:18px 22px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:22px;
+    box-shadow:0 3px 15px rgba(0,0,0,.05);
+}
+
+.topbar h1{
+    font-size:25px;
+}
+
+.topbar p{
+    color:#6b7280;
+    margin-top:4px;
+    font-size:14px;
+}
+
+.live{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#16a34a;
+    font-weight:600;
+    font-size:13px;
+}
+
+.live-dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#22c55e;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(34,197,94,.6); }
+    70%{ box-shadow:0 0 0 8px rgba(34,197,94,0); }
+    100%{ box-shadow:0 0 0 0 rgba(34,197,94,0); }
+}
+
+/* PAGE SYSTEM */
+
+.page{
+    display:none;
+}
+
+.page.active-page{
+    display:block;
+}
+
+/* CARDS */
+
+.card{
+    background:white;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 3px 15px rgba(0,0,0,.05);
+}
+
+.card-title{
+    font-size:18px;
+    font-weight:700;
+}
+
+.card-subtitle{
+    color:#6b7280;
+    font-size:13px;
+    margin-top:4px;
+}
+
+/* STATS */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:18px;
+    margin-bottom:22px;
+}
+
+.stat{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 3px 15px rgba(0,0,0,.05);
+}
+
+.stat-icon{
+    width:46px;
+    height:46px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:21px;
+    margin-bottom:14px;
+}
+
+.stat-label{
+    color:#6b7280;
+    font-size:13px;
+}
+
+.stat h2{
+    font-size:22px;
+    margin:5px 0;
+}
+
+.green{ background:#dcfce7; color:#16a34a; }
+.orange{ background:#fef3c7; color:#d97706; }
+.blue{ background:#dbeafe; color:#2563eb; }
+.red{ background:#fee2e2; color:#dc2626; }
+.purple{ background:#ede9fe; color:#7c3aed; }
+
+/* DASHBOARD GRID */
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:20px;
+}
+
+/* PANEL HEADER */
+
+.panel-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.panel-header h2{
+    font-size:18px;
+}
+
+.controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+select,
+input{
+    border:1px solid #d1d5db;
+    background:white;
+    padding:10px 12px;
+    border-radius:9px;
+    outline:none;
+}
+
+select:focus,
+input:focus{
+    border-color:#f59e0b;
+}
+
+/* CHART */
+
+.chart-wrapper{
+    height:350px;
+}
+
+.chart-switch{
+    display:flex;
+    background:#f3f4f6;
+    padding:4px;
+    border-radius:9px;
+}
+
+.chart-switch button{
+    border:0;
+    background:transparent;
+    padding:8px 13px;
+    border-radius:7px;
+    cursor:pointer;
+    color:#6b7280;
+    font-weight:600;
+}
+
+.chart-switch button.active{
+    background:#f59e0b;
+    color:white;
+}
+
+/* SUMMARY */
+
+.info-row{
+    display:flex;
+    justify-content:space-between;
+    padding:14px 0;
+    border-bottom:1px solid #eee;
+}
+
+.info-row:last-child{
+    border-bottom:0;
+}
+
+.info-label{
+    color:#6b7280;
+}
+
+.info-value{
+    font-weight:700;
+}
+
+/* PAGE HEADER */
+
+.page-header{
+    background:white;
+    border-radius:15px;
+    padding:22px;
+    margin-bottom:20px;
+    box-shadow:0 3px 15px rgba(0,0,0,.05);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.page-header h2{
+    font-size:22px;
+}
+
+.page-header p{
+    color:#6b7280;
+    margin-top:5px;
+    font-size:13px;
+}
+
+/* ORDERS */
+
+.order-tools{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.search{
+    flex:1;
+}
+
+.order-list{
+    display:grid;
+    gap:12px;
+}
+
+.order-card{
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:16px;
+    transition:.2s;
+}
+
+.order-card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 5px 15px rgba(0,0,0,.07);
+}
+
+.order-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.order-number{
+    font-weight:700;
+}
+
+.order-time{
+    color:#6b7280;
+    font-size:13px;
+}
+
+.order-items{
+    color:#6b7280;
+    margin:10px 0;
+    line-height:1.7;
+}
+
+.order-bottom{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-top:1px solid #eee;
+    padding-top:11px;
+}
+
+.amount{
+    color:#16a34a;
+    font-weight:700;
+}
+
+.badges{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
+.badge{
+    padding:5px 9px;
+    border-radius:6px;
+    font-size:11px;
+    font-weight:700;
+}
+
+.payment{ background:#ede9fe; color:#7c3aed; }
+.pending{ background:#fef3c7; color:#b45309; }
+.finished{ background:#dcfce7; color:#15803d; }
+
+/* PROMOTIONS */
+
+.promo-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.promo-card{
+    border:1px solid #e5e7eb;
+    border-radius:13px;
+    padding:18px;
+    position:relative;
+}
+
+.promo-icon{
+    width:50px;
+    height:50px;
+    border-radius:12px;
+    background:#fff7ed;
+    color:#ea580c;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:23px;
+    margin-bottom:12px;
+}
+
+.promo-card h3{
+    margin-bottom:7px;
+}
+
+.promo-card p{
+    color:#6b7280;
+    font-size:13px;
+    line-height:1.6;
+}
+
+.promo-status{
+    display:inline-block;
+    background:#dcfce7;
+    color:#15803d;
+    padding:5px 9px;
+    border-radius:6px;
+    font-size:11px;
+    font-weight:700;
+}
+
+.delete-btn{
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:#fee2e2;
+    color:#dc2626;
+    border:none;
+    padding:5px 9px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:bold;
+}
+
+/* MEMBERS */
+
+.member-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.member-card{
+    border:1px solid #e5e7eb;
+    border-radius:13px;
+    padding:18px;
+    display:flex;
+    align-items:center;
+    gap:13px;
+}
+
+.member-avatar{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    background:#dbeafe;
+    color:#2563eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+}
+
+.member-card h3{
+    font-size:15px;
+}
+
+.member-card p{
+    color:#6b7280;
+    font-size:12px;
+    margin-top:3px;
+}
+
+/* MENU PAGE / CUSTOMER VIEW */
+
+.customer-view{
+    background:#f8fafc;
+    border-radius:18px;
+    overflow:hidden;
+}
+
+.customer-top{
+    background:#111827;
+    color:white;
+    padding:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.customer-brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.customer-logo{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    background:#f59e0b;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.customer-products{
+    padding:20px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.food-card{
+    background:white;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 3px 12px rgba(0,0,0,.05);
+    position:relative;
+}
+
+.food-image{
+    height:130px;
+    background:#fef3c7;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:55px;
+}
+
+.food-body{
+    padding:15px;
+}
+
+.food-body h3{
+    margin-bottom:5px;
+}
+
+.food-body p{
+    color:#6b7280;
+    font-size:12px;
+    line-height:1.5;
+}
+
+.food-price{
+    color:#16a34a;
+    font-weight:700;
+    margin-top:8px;
+}
+
+.discount-tag{
+    position:absolute;
+    top:10px;
+    right:10px;
+    background:#dc2626;
+    color:white;
+    padding:4px 8px;
+    border-radius:6px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+/* MODAL */
+
+.modal-overlay{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    z-index:2000;
+    align-items:center;
+    justify-content:center;
+}
+
+.modal-box{
+    background:white;
+    padding:24px;
+    border-radius:15px;
+    width:380px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modal-box h3{
+    margin-bottom:15px;
+}
+
+.modal-box label{
+    display:block;
+    font-size:13px;
+    margin-bottom:5px;
+    color:#4b5563;
+    font-weight:600;
+}
+
+.modal-box input{
+    width:100%;
+    margin-bottom:15px;
+}
+
+/* EMPTY & TOAST */
+
+.empty{
+    text-align:center;
+    padding:50px 20px;
+    color:#9ca3af;
+}
+
+.empty-icon{
+    font-size:45px;
+    margin-bottom:10px;
+}
+
+.toast{
+    position:fixed;
+    right:25px;
+    bottom:25px;
+    background:#111827;
+    color:white;
+    padding:13px 18px;
+    border-radius:10px;
+    box-shadow:0 5px 20px rgba(0,0,0,.2);
+    display:none;
+    z-index:3000;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:1250px){
+    .stats{ grid-template-columns:repeat(3,1fr); }
+    .promo-grid, .member-grid, .customer-products{ grid-template-columns:repeat(2,1fr); }
+}
+
+@media(max-width:1050px){
+    .dashboard-grid{ grid-template-columns:1fr; }
+    .stats{ grid-template-columns:repeat(2,1fr); }
+}
+
+@media(max-width:700px){
+    .sidebar{ width:70px; padding:20px 9px; }
+    .logo{ justify-content:center; padding:0; }
+    .logo h2, .logo small, .menu span, .menu-title, .owner-box div{ display:none; }
+    .menu a{ justify-content:center; font-size:20px; }
+    .owner-box{ justify-content:center; }
+    .main{ margin-left:70px; width:calc(100% - 70px); padding:14px; }
+    .topbar{ flex-direction:column; align-items:flex-start; gap:12px; }
+    .stats{ grid-template-columns:1fr; }
+    .page-header, .panel-header{ flex-direction:column; align-items:flex-start; gap:12px; }
+    .controls{ width:100%; }
+    .controls select, .controls input{ flex:1; min-width:130px; }
+    .promo-grid, .member-grid, .customer-products{ grid-template-columns:1fr; }
+    .customer-top, .order-tools{ flex-direction:column; }
+    .chart-wrapper{ height:300px; }
+}
+
+/* MEMBERS TABLE */
+
+.member-count{
+    background:#f3e8ff;
+    color:#7c3aed;
+    padding:9px 14px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.member-count strong{
+    font-size:16px;
+    margin-left:5px;
+}
+
+.table-wrapper{
+    width:100%;
+    overflow-x:auto;
+}
+
+.members-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:850px;
+    margin-top:10px;
+}
+
+.members-table thead{
+    background:#f8fafc;
+}
+
+.members-table th{
+    text-align:left;
+    padding:14px 15px;
+    font-size:13px;
+    font-weight:700;
+    color:#374151;
+    border-bottom:1px solid #e5e7eb;
+    white-space:nowrap;
+}
+
+.members-table td{
+    padding:14px 15px;
+    font-size:13px;
+    color:#4b5563;
+    border-bottom:1px solid #eef0f3;
+    vertical-align:middle;
+}
+
+.members-table tbody tr{
+    transition:.2s;
+}
+
+.members-table tbody tr:hover{
+    background:#fafafa;
+}
+
+.member-number{
+    font-weight:700;
+    color:#7c3aed;
+}
+
+.member-name-cell{
+    font-weight:700;
+    color:#111827;
+}
+
+.member-phone{
+    color:#374151;
+}
+
+.member-email{
+    color:#2563eb;
+}
+
+.member-password{
+    font-family:monospace;
+    background:#f3f4f6;
+    padding:5px 9px;
+    border-radius:6px;
+    color:#374151;
+}
+
+.member-stamps{
+    display:inline-block;
+    background:#dcfce7;
+    color:#15803d;
+    padding:5px 9px;
+    border-radius:6px;
+    font-size:11px;
+    font-weight:700;
+}
+
+.loading-member{
+    text-align:center !important;
+    padding:40px !important;
+    color:#6b7280 !important;
+}
+
+.no-members{
+    text-align:center !important;
+    padding:40px !important;
+    color:#9ca3af !important;
+}
+
+@media(max-width:900px){
+    .table-wrapper{
+        overflow-x:auto;
+    }
+}
+</style>
 </head>
+
 <body>
 
-<div class="dashboard">
-    <header>
-        <h1>Owner Dashboard</h1>
-    </header>
+<div class="app">
 
-    <div class="date-picker-box">
-        <label for="salesDate"><strong>📅 Select Date for Daily View:</strong></label>
-        <input type="date" id="salesDate" onchange="filterSalesByDate()">
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+        <div class="logo-icon">🍽️</div>
+        <div>
+            <h2>Smart Restaurant</h2>
+            <small>Owner System</small>
+        </div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card card-total">
-            <small>💰 Total Income (All Time)</small>
+    <div class="menu-title">Main Menu</div>
+
+    <nav class="menu">
+        <a class="nav-link active" data-page="dashboardPage" data-title="Dashboard" data-description="Restaurant overview and performance">
+            <span class="menu-icon">📊</span>
+            <span>Dashboard</span>
+        </a>
+
+        <a class="nav-link" data-page="ordersPage" data-title="Orders" data-description="View and manage restaurant orders">
+            <span class="menu-icon">🛒</span>
+            <span>Orders</span>
+        </a>
+
+        <a class="nav-link" data-page="promotionsPage" data-title="Promotions" data-description="Manage restaurant promotions">
+            <span class="menu-icon">🏷️</span>
+            <span>Promotions</span>
+        </a>
+
+        <a class="nav-link" data-page="membersPage" data-title="Members Info" data-description="Restaurant member information">
+            <span class="menu-icon">👥</span>
+            <span>Members Info</span>
+        </a>
+
+        <a class="nav-link" data-page="settingsPage" data-title="Settings" data-description="Owner account and system settings">
+            <span class="menu-icon">⚙️</span>
+            <span>Settings</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="owner-box">
+            <div class="owner-avatar">👨‍💼</div>
+            <div>
+                <strong id="sidebarOwnerName">Owner</strong>
+                <small id="sidebarOwnerEmail" style="display:block;">Not signed in</small>
+            </div>
+        </div>
+    </div>
+
+</aside>
+
+
+<!-- MAIN -->
+
+<main class="main">
+
+<header class="topbar">
+    <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p id="pageDescription">Restaurant overview and performance</p>
+    </div>
+    <div class="live">
+        <span class="live-dot"></span>
+        Live System
+    </div>
+</header>
+
+
+<!-- DASHBOARD PAGE -->
+
+<section id="dashboardPage" class="page active-page">
+
+    <div class="card" style="margin-bottom:22px;">
+        <div class="panel-header">
+            <div>
+                <div class="card-title">📅 Revenue Period</div>
+                <div class="card-subtitle">Select a month to view its income and order performance.</div>
+            </div>
+
+            <div class="controls">
+                <label>Month</label>
+                <select id="monthSelector">
+                    <option value="0">January</option>
+                    <option value="1">February</option>
+                    <option value="2">March</option>
+                    <option value="3">April</option>
+                    <option value="4">May</option>
+                    <option value="5">June</option>
+                    <option value="6">July</option>
+                    <option value="7">August</option>
+                    <option value="8">September</option>
+                    <option value="9">October</option>
+                    <option value="10">November</option>
+                    <option value="11">December</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <section class="stats">
+        <div class="stat">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-label">Total Revenue</div>
             <h2 id="totalIncome">0 MMK</h2>
+            <div class="stat-label">All time</div>
         </div>
 
-        <div class="stat-card card-daily">
-            <small>📅 Daily Income</small>
+        <div class="stat">
+            <div class="stat-icon purple">📅</div>
+            <div class="stat-label"><span id="monthIncomeTitle">August</span> Income</div>
+            <h2 id="monthlyIncome">0 MMK</h2>
+            <div class="stat-label" id="monthlyIncomeLabel">August 2026</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon orange">💵</div>
+            <div class="stat-label">Today's Revenue</div>
             <h2 id="dailyIncome">0 MMK</h2>
+            <div class="stat-label" id="selectedDateText">Today</div>
         </div>
 
-        <div class="stat-card card-sales">
-            <small>🛒 Daily Sales (Orders Count)</small>
-            <h2 id="dailySalesCount">0 Orders</h2>
+        <div class="stat">
+            <div class="stat-icon blue">🛒</div>
+            <div class="stat-label">Monthly Orders</div>
+            <h2 id="monthlyOrders">0</h2>
+            <div class="stat-label">Selected month</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-icon red">⏳</div>
+            <div class="stat-label">Pending Orders</div>
+            <h2 id="pendingOrders">0</h2>
+            <div class="stat-label">Need attention</div>
+        </div>
+    </section>
+
+    <section class="dashboard-grid">
+        <div class="card">
+            <div class="panel-header">
+                <div>
+                    <div class="card-title">📈 Sales Overview</div>
+                    <div class="card-subtitle" id="chartMonthLabel">August 2026</div>
+                </div>
+
+                <div class="controls">
+                    <div class="chart-switch">
+                        <button id="dailyChartBtn" class="active">Daily</button>
+                        <button id="monthlyChartBtn">Monthly</button>
+                    </div>
+                    <input type="date" id="salesDate">
+                </div>
+            </div>
+
+            <div class="chart-wrapper">
+                <canvas id="salesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="panel-header">
+                <div>
+                    <div class="card-title">📋 Selected Day Summary</div>
+                    <div class="card-subtitle" id="summaryDate">Today</div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Total Orders</span>
+                <span class="info-value" id="summaryOrders">0</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Revenue</span>
+                <span class="info-value" id="summaryRevenue">0 MMK</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Pending</span>
+                <span class="info-value" id="summaryPending">0</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Finished</span>
+                <span class="info-value" id="summaryFinished">0</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">Average Order</span>
+                <span class="info-value" id="averageOrder">0 MMK</span>
+            </div>
+
+            <button onclick="openPage('ordersPage')" style="width:100%; margin-top:18px; padding:12px; border:0; background:#f59e0b; color:white; border-radius:99px; cursor:pointer; font-weight:700;">
+                🛒 View Order History
+            </button>
+        </div>
+    </section>
+
+</section>
+
+
+<!-- ORDERS PAGE -->
+
+<section id="ordersPage" class="page">
+    <div class="page-header">
+        <div>
+            <h2>🛒 Order History</h2>
+            <p>All restaurant orders are shown here.</p>
+        </div>
+        <div class="controls">
+            <input type="date" id="ordersDate">
         </div>
     </div>
 
-    <div class="section-box">
-        <h2 class="section-title">🛒 Orders History (<span id="displayDateLabel">Today</span>)</h2>
-        <div id="ordersContainer">
-            <p style="text-align: center; color: #777;">Loading sales data...</p>
+    <div class="card">
+        <div class="order-tools">
+            <input type="text" id="searchOrder" class="search" placeholder="🔎 Search table, item, payment...">
+        </div>
+
+        <div id="ordersContainer" class="order-list">
+            <div class="empty">
+                <div class="empty-icon">⏳</div>
+                Loading orders...
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- PROMOTIONS PAGE -->
+
+<section id="promotionsPage" class="page">
+    <div class="page-header">
+        <div>
+            <h2>🏷️ Promotions</h2>
+            <p>Manage special offers and restaurant promotions.</p>
+        </div>
+
+        <button onclick="openPromoModal()" style="border:0; background:#f59e0b; color:white; padding:11px 16px; border-radius:9px; font-weight:700; cursor:pointer;">
+            + New Promotion
+        </button>
+    </div>
+
+    <div class="card">
+        <div id="promoContainer" class="promo-grid">
+            <!-- Dynamic Promotions loaded via Javascript -->
+        </div>
+    </div>
+</section>
+
+
+<!-- MENU PAGE (CUSTOMER VIEW) -->
+
+<section id="menuPage" class="page">
+    <div class="page-header">
+        <div>
+            <h2>🍔 Restaurant Menu Page</h2>
+            <p>Live preview of discounts applied from Promotions.</p>
+        </div>
+    </div>
+
+    <div class="card customer-view">
+        <div class="customer-top">
+            <div class="customer-brand">
+                <div class="customer-logo">🍽️</div>
+                <h3>Smart Restaurant Menu</h3>
+            </div>
+        </div>
+
+        <div class="customer-products">
+            <div class="food-card">
+                <span class="discount-tag" id="tag-1" style="display:none;"></span>
+                <div class="food-image">🍔</div>
+                <div class="food-body">
+                    <h3>Burger Special</h3>
+                    <p>Delicious beef burger with cheese.</p>
+                    <div class="food-price" data-price="8000" id="price-1">8,000 MMK</div>
+                </div>
+            </div>
+
+            <div class="food-card">
+                <span class="discount-tag" id="tag-2" style="display:none;"></span>
+                <div class="food-image">🍕</div>
+                <div class="food-body">
+                    <h3>Cheese Pizza</h3>
+                    <p>Freshly baked pizza with extra cheese.</p>
+                    <div class="food-price" data-price="15000" id="price-2">15,000 MMK</div>
+                </div>
+            </div>
+
+            <div class="food-card">
+                <span class="discount-tag" id="tag-3" style="display:none;"></span>
+                <div class="food-image">🥤</div>
+                <div class="food-body">
+                    <h3>Cold Fresh Drinks</h3>
+                    <p>Refreshing fruit juice and soda.</p>
+                    <div class="food-price" data-price="3000" id="price-3">3,000 MMK</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- MEMBERS PAGE -->
+<section id="membersPage" class="page">
+
+    <div class="page-header">
+        <div>
+            <h2>👥 Members Info</h2>
+            <p>All registered restaurant members</p>
+        </div>
+
+        <input
+            type="text"
+            id="memberSearch"
+            placeholder="🔎 Search name, phone or email..."
+        >
+    </div>
+
+    <div class="card">
+
+        <div class="panel-header">
+            <div>
+                <div class="card-title">
+                    👥 Registered Members
+                </div>
+
+                <div class="card-subtitle">
+                    Menu Page မှ Register လုပ်ထားသော Members များ
+                </div>
+            </div>
+
+            <div class="member-count">
+                Total Members:
+                <strong id="totalMembers">0</strong>
+            </div>
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table class="members-table">
+
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Name</th>
+                        <th>Phone Number</th>
+                        <th>Email</th>
+                        <th>Password</th>
+                        <th>Stamps</th>
+                        <th>Registered Date</th>
+                    </tr>
+                </thead>
+
+                <tbody id="membersTableBody">
+
+                    <tr>
+                        <td colspan="7" class="loading-member">
+                            Loading Members...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- SETTINGS PAGE -->
+<section id="settingsPage" class="page">
+    <div class="page-header">
+        <div>
+            <h2>⚙️ Owner Settings</h2>
+            <p>Manage your owner login session.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <div class="card-title">👤 Owner Account</div>
+            <div class="card-subtitle">Currently signed-in owner</div>
+
+            <div class="info-row">
+                <span class="info-label">Name</span>
+                <span class="info-value" id="settingsOwnerName">Owner</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value" id="settingsOwnerEmail">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">UID</span>
+                <span class="info-value" id="settingsOwnerUid" style="font-size:12px;">-</span>
+            </div>
+
+            <button onclick="logoutOwner()" style="width:100%; margin-top:18px; padding:13px; border:0; background:#dc2626; color:white; border-radius:9px; cursor:pointer; font-weight:700;">
+                🚪 Logout
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">🔐 Security</div>
+            <div class="card-subtitle">Your dashboard data is filtered by the logged-in owner's UID.</div>
+            <div class="info-row">
+                <span class="info-label">Orders</span>
+                <span class="info-value">Owner only</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Members</span>
+                <span class="info-value">Owner only</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Promotions</span>
+                <span class="info-value">Owner only</span>
+            </div>
+            <p style="margin-top:18px;color:#6b7280;font-size:13px;line-height:1.6;">
+                ⚠️ Member passwords are not shown. Firebase Authentication does not expose user passwords,
+                and storing plaintext passwords in Firestore is unsafe.
+            </p>
+        </div>
+    </div>
+</section>
+
+</main>
+
+</div>
+
+
+<!-- OWNER LOGIN -->
+<div id="ownerLoginOverlay" class="modal-overlay" style="display:flex; background:#f5f7fb; z-index:5000;">
+    <div class="modal-box" style="width:420px;">
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:48px;">🍽️</div>
+            <h2 style="margin:8px 0;">Owner Login</h2>
+            <p style="color:#6b7280;font-size:13px;">Sign in to manage your restaurant.</p>
+        </div>
+
+        <label>Email</label>
+        <input type="email" id="ownerLoginEmail" placeholder="owner@example.com" autocomplete="username">
+
+        <label>Password</label>
+        <input type="password" id="ownerLoginPassword" placeholder="Enter password" autocomplete="current-password">
+
+        <button id="ownerLoginBtn" onclick="loginOwner()" style="width:100%;padding:12px;border:0;background:#f59e0b;color:white;border-radius:9px;cursor:pointer;font-weight:700;">
+            🔐 Login
+        </button>
+
+        <div id="loginError" style="display:none;margin-top:12px;padding:10px;border-radius:8px;background:#fee2e2;color:#b91c1c;font-size:13px;"></div>
+    </div>
+</div>
+
+
+<!-- PROMOTION INPUT MODAL (UPDATED WITH DISCOUNT +/- BUTTONS) -->
+
+<div id="promoModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3>Add New Promotion</h3>
+        
+        <label>Promotion Title</label>
+        <input type="text" id="promoTitle" placeholder="e.g., Summer Special">
+        
+        <label>Discount Percentage (%)</label>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
+            <button type="button" onclick="adjustDiscount(-5)" style="padding:10px 14px; background:#e5e7eb; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">-5%</button>
+            <button type="button" onclick="adjustDiscount(-1)" style="padding:10px 14px; background:#fee2e2; color:#dc2626; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">-1%</button>
+            <input type="number" id="promoDiscount" value="10" min="1" max="100" style="margin-bottom:0; text-align:center; font-weight:bold; font-size:16px;">
+            <button type="button" onclick="adjustDiscount(1)" style="padding:10px 14px; background:#dcfce7; color:#15803d; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+1%</button>
+            <button type="button" onclick="adjustDiscount(5)" style="padding:10px 14px; background:#e5e7eb; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">+5%</button>
+        </div>
+
+        <label>Description</label>
+        <input type="text" id="promoDesc" placeholder="e.g., 20% off all items">
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button onclick="closePromoModal()" style="padding:9px 16px; border:none; background:#e5e7eb; border-radius:8px; cursor:pointer; font-weight:600;">Cancel</button>
+            <button onclick="savePromotion()" style="padding:9px 16px; border:none; background:#f59e0b; color:white; border-radius:8px; cursor:pointer; font-weight:600;">Save & Apply</button>
         </div>
     </div>
 </div>
 
+<div id="toast" class="toast"></div>
+
+
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
-        authDomain: "smart-restaurant-85871.firebaseapp.com",
-        projectId: "smart-restaurant-85871",
-        storageBucket: "smart-restaurant-85871.firebasestorage.app",
-        messagingSenderId: "909399970300",
-        appId: "1:909399970300:web:8da6c6522af7b1a6296279"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
-    const ordersContainer = document.getElementById('ordersContainer');
-    const totalIncomeElement = document.getElementById('totalIncome');
-    const dailyIncomeElement = document.getElementById('dailyIncome');
-    const dailySalesCountElement = document.getElementById('dailySalesCount');
-    const salesDateInput = document.getElementById('salesDate');
-    const displayDateLabel = document.getElementById('displayDateLabel');
+/* FIREBASE CONFIG */
 
-    let allOrders = [];
+const firebaseConfig = {
+    apiKey: "AIzaSyAV_3fSOQDigao1MDeZ12V734yqqHBKSDw",
+    authDomain: "smart-restaurant-85871.firebaseapp.com",
+    projectId: "smart-restaurant-85871",
+    storageBucket: "smart-restaurant-85871.firebasestorage.app",
+    messagingSenderId: "909399970300",
+    appId: "1:909399970300:web:8da6c6522af7b1a6296279"
+};
 
-    // Set default date to Today
-    const today = new Date();
-    salesDateInput.value = today.toISOString().split('T')[0];
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-    // Read All Orders Realtime (Includes Finished & Pending Orders)
-    db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-        allOrders = [];
-        let grandTotalRevenue = 0;
 
-        snapshot.forEach(doc => {
-            const orderData = doc.data();
-            allOrders.push(orderData);
+/* VARIABLES */
 
-            // Calculate Overall Total Income for all time
-            const orderTotal = Number(orderData.total || 0);
-            grandTotalRevenue += orderTotal;
-        });
+let allOrders = [];
+let allMembers = [];
+let salesChart = null;
+let chartMode = "daily";
+let currentOwner = null;
+let unsubscribeOrders = null;
+let unsubscribeMembers = null;
+let unsubscribePromotions = null;
 
-        // Display Overall Total Income
-        totalIncomeElement.innerText = `${grandTotalRevenue.toLocaleString()} MMK`;
+const now = new Date();
+const currentYear = now.getFullYear();
 
-        // Update Daily stats and orders list based on selected date
-        filterSalesByDate();
+const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+
+
+/* ELEMENTS */
+
+const monthSelector = document.getElementById("monthSelector");
+const salesDate = document.getElementById("salesDate");
+const ordersDate = document.getElementById("ordersDate");
+const searchOrder = document.getElementById("searchOrder");
+const ordersContainer = document.getElementById("ordersContainer");
+const totalIncome = document.getElementById("totalIncome");
+const monthlyIncome = document.getElementById("monthlyIncome");
+const monthlyOrders = document.getElementById("monthlyOrders");
+const dailyIncome = document.getElementById("dailyIncome");
+const pendingOrders = document.getElementById("pendingOrders");
+
+
+/* HELPERS */
+
+function dateToString(date){
+    return (
+        date.getFullYear() + "-" +
+        String(date.getMonth()+1).padStart(2,"0") + "-" +
+        String(date.getDate()).padStart(2,"0")
+    );
+}
+
+const todayString = dateToString(now);
+
+salesDate.value = todayString;
+ordersDate.value = todayString;
+monthSelector.value = String(now.getMonth());
+
+function formatMoney(value){
+    return Number(value || 0).toLocaleString() + " MMK";
+}
+
+function getOrderDate(order){
+    const timestamp = order.timestamp || order.createdAt || order.date;
+    if(timestamp && typeof timestamp.toDate === "function"){
+        return timestamp.toDate();
+    }
+    if(timestamp instanceof Date){
+        return timestamp;
+    }
+    if(typeof timestamp === "string"){
+        const d = new Date(timestamp);
+        if(!isNaN(d.getTime())) return d;
+    }
+    return null;
+}
+
+
+/* NAVIGATION */
+
+document.querySelectorAll(".nav-link").forEach(link => {
+    link.addEventListener("click", function(){
+        const page = this.dataset.page;
+        openPage(page);
+    });
+});
+
+function openPage(pageId){
+    if(!currentOwner){
+        document.getElementById("ownerLoginOverlay").style.display = "flex";
+        return;
+    }
+    document.querySelectorAll(".page").forEach(page => {
+        page.classList.remove("active-page");
     });
 
-    function filterSalesByDate() {
-        const selectedDateStr = salesDateInput.value;
-        if (!selectedDateStr) return;
+    const target = document.getElementById(pageId);
+    if(target){
+        target.classList.add("active-page");
+    }
 
-        let dailyRevenue = 0;
-        ordersContainer.innerHTML = "";
-        displayDateLabel.innerText = selectedDateStr;
+    document.querySelectorAll(".nav-link").forEach(link => {
+        link.classList.remove("active");
+        if(link.dataset.page === pageId){
+            link.classList.add("active");
+            document.getElementById("pageTitle").innerText = link.dataset.title;
+            document.getElementById("pageDescription").innerText = link.dataset.description;
+        }
+    });
 
-        // Filter orders based on selected date
-        const filteredOrders = allOrders.filter(order => {
-            const createdAt = order.timestamp || order.createdAt;
-            if (createdAt && typeof createdAt.toDate === 'function') {
-                return createdAt.toDate().toLocaleDateString('sv-SE') === selectedDateStr;
-            }
-            return false;
+    window.scrollTo({ top:0, behavior:"smooth" });
+
+    if(pageId === "ordersPage"){
+        renderOrdersPage();
+    }
+}
+
+
+/* PROMOTION MODAL & DISCOUNT FUNCTIONS */
+
+function openPromoModal() {
+    if(!currentOwner) return showToast("Please login first.");
+    document.getElementById("promoModal").style.display = "flex";
+}
+
+function closePromoModal() {
+    document.getElementById("promoModal").style.display = "none";
+}
+
+/* Discount Percent ကို အလျှော့အတင်း (+ / -) လုပ်ပေးသော Function */
+function adjustDiscount(change) {
+    const discountInput = document.getElementById("promoDiscount");
+    let currentValue = Number(discountInput.value) || 0;
+    let newValue = currentValue + change;
+
+    if (newValue < 1) newValue = 1;
+    if (newValue > 100) newValue = 100;
+
+    discountInput.value = newValue;
+}
+
+function savePromotion() {
+    if(!currentOwner) return showToast("Please login first.");
+
+    const title = document.getElementById("promoTitle").value.trim();
+    const discount = Number(document.getElementById("promoDiscount").value);
+    const desc = document.getElementById("promoDesc").value.trim();
+
+    if (!title || !discount || discount < 1 || discount > 100) {
+        alert("Please provide a discount between 1 and 100%.");
+        return;
+    }
+
+    db.collection("promotions").add({
+        ownerId: currentOwner.uid,
+        ownerEmail: currentOwner.email || "",
+        title: title,
+        discount: discount,
+        description: desc,
+        active: true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+        showToast("Promotion saved for this restaurant.");
+        closePromoModal();
+        document.getElementById("promoTitle").value = "";
+        document.getElementById("promoDiscount").value = "10";
+        document.getElementById("promoDesc").value = "";
+    })
+    .catch((error) => {
+        console.error("Error saving promotion:", error);
+        showToast("Unable to save promotion.");
+    });
+}
+
+function deletePromotion(id) {
+    if(!currentOwner) return;
+    if(confirm("Are you sure you want to delete this promotion?")) {
+        db.collection("promotions").doc(id).delete()
+        .then(() => showToast("Promotion removed."))
+        .catch(err => {
+            console.error(err);
+            showToast("Unable to remove promotion.");
         });
+    }
+}
 
-        // Update Daily Sales Count
-        dailySalesCountElement.innerText = `${filteredOrders.length} Orders`;
-
-        if (filteredOrders.length === 0) {
-            ordersContainer.innerHTML = `<p style='text-align:center; color: #777;'>No orders found on ${selectedDateStr}.</p>`;
-            dailyIncomeElement.innerText = "0 MMK";
+/* ထည့်သွင်းပြီးသား Discount Percent ကို ပြန်လည် ပြင်ဆင်နိုင်ရေး (Edit Discount) */
+function editDiscount(promoId, currentDiscount) {
+    if(!currentOwner) return;
+    
+    const newDiscount = prompt("Discount % ကို ပြင်ဆင်ပါ (1-100):", currentDiscount);
+    
+    if (newDiscount !== null) {
+        const parsedDiscount = Number(newDiscount);
+        
+        if (isNaN(parsedDiscount) || parsedDiscount < 1 || parsedDiscount > 100) {
+            alert("ကျေးဇူးပြု၍ 1 မှ 100 အတွင်း ကိန်းဂဏန်းသာ ထည့်ပါ။");
             return;
         }
 
-        filteredOrders.forEach(order => {
-            const orderTotal = Number(order.total || 0);
-            const createdAt = order.timestamp || order.createdAt;
-            let orderTime = (createdAt && typeof createdAt.toDate === 'function') 
-                ? createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                : "";
-
-            // Accumulate Daily Income
-            dailyRevenue += orderTotal;
-
-            let itemsText = (order.items && Array.isArray(order.items)) 
-                ? order.items.map(i => `${i.name} (x${i.quantity})`).join(", ") 
-                : "";
-
-            const statusClass = (order.status === 'Finished' || order.status === 'Completed') ? 'status-finished' : 'status-pending';
-            const orderStatus = order.status || 'Pending';
-
-            ordersContainer.innerHTML += `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span>Table ${order.table || 'N/A'} 
-                            <span class="payment-badge">${order.paymentMethod || 'Cash'}</span>
-                            <span class="status-badge ${statusClass}">${orderStatus}</span>
-                        </span>
-                        <span class="time-badge">${orderTime}</span>
-                    </div>
-                    <div class="order-items"><strong>Items:</strong> ${itemsText}</div>
-                    <div class="order-footer">
-                        <span>Amount:</span>
-                        <span style="color: #2ed573;">${orderTotal.toLocaleString()} MMK</span>
-                    </div>
-                </div>
-            `;
+        db.collection("promotions").doc(promoId).update({
+            discount: parsedDiscount
+        })
+        .then(() => showToast("Discount % ပြင်ဆင်ပြီးပါပြီ။"))
+        .catch(err => {
+            console.error(err);
+            showToast("Discount ပြင်ဆင်၍ မရပါ။");
         });
-
-        // Display Daily Income for selected date
-        dailyIncomeElement.innerText = `${dailyRevenue.toLocaleString()} MMK`;
     }
+}
+
+/* REALTIME OWNER-SPECIFIC PROMOTIONS */
+function startPromotionListener(){
+    if(unsubscribePromotions) unsubscribePromotions();
+
+    unsubscribePromotions = db.collection("promotions")
+        .where("ownerId", "==", currentOwner.uid)
+        .where("active", "==", true)
+        .onSnapshot(snapshot => {
+            const promoContainer = document.getElementById("promoContainer");
+            promoContainer.innerHTML = "";
+
+            let highestDiscount = 0;
+
+            if(snapshot.empty){
+                promoContainer.innerHTML = `
+                    <div class="empty" style="grid-column:1/-1;">
+                        <div class="empty-icon">🏷️</div>
+                        No active promotions yet. Click "+ New Promotion" to create one.
+                    </div>
+                `;
+            }
+
+            snapshot.forEach(doc => {
+                const promo = doc.data();
+                const promoId = doc.id;
+
+                highestDiscount = Math.max(highestDiscount, Number(promo.discount || 0));
+
+                const card = document.createElement("div");
+                card.className = "promo-card";
+                card.innerHTML = `
+                    <button class="delete-btn" onclick="deletePromotion('${promoId}')">✕</button>
+                    <div class="promo-icon">🎁</div>
+                    <h3>${escapeHTML(promo.title)} (${Number(promo.discount || 0)}% OFF)</h3>
+                    <p>${escapeHTML(promo.description || "Special Discount Offer")}</p>
+                    <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
+                        <span class="promo-status">ACTIVE</span>
+                        <button onclick="editDiscount('${promoId}', ${promo.discount})" style="background:#f59e0b; color:white; border:none; padding:5px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:bold;">✏️ Edit Discount</button>
+                    </div>
+                `;
+                promoContainer.appendChild(card);
+            });
+
+            updateMenuDiscounts(highestDiscount);
+        }, error => {
+            console.error("Promotion listener:", error);
+            document.getElementById("promoContainer").innerHTML =
+                '<div class="empty" style="grid-column:1/-1;">⚠️ Unable to load promotions.</div>';
+        });
+}
+
+/* UPDATE MENU PAGE DISCOUNT DISPLAY */
+
+function updateMenuDiscounts(discountPercent) {
+    const prices = document.querySelectorAll(".food-price");
+
+    prices.forEach((priceEl, index) => {
+        const originalPrice = Number(priceEl.dataset.price);
+        const tagEl = document.getElementById(`tag-${index + 1}`);
+
+        if (discountPercent > 0) {
+            const discountedPrice = originalPrice - (originalPrice * (discountPercent / 100));
+            priceEl.innerHTML = `
+                <span style="text-decoration: line-through; color: #9ca3af; font-size:13px; margin-right:5px;">
+                    ${formatMoney(originalPrice)}
+                </span> 
+                <span style="color:#dc2626;">${formatMoney(discountedPrice)}</span>
+            `;
+
+            if(tagEl) {
+                tagEl.innerText = `${discountPercent}% OFF`;
+                tagEl.style.display = "block";
+            }
+        } else {
+            priceEl.innerText = formatMoney(originalPrice);
+            if(tagEl) {
+                tagEl.style.display = "none";
+            }
+        }
+    });
+}
+
+
+/* FIRESTORE REALTIME OWNER ORDERS */
+function startOrdersListener(){
+    if(unsubscribeOrders) unsubscribeOrders();
+
+    unsubscribeOrders = db.collection("orders")
+        .where("ownerId", "==", currentOwner.uid)
+        .onSnapshot(
+            snapshot => {
+                allOrders = [];
+                snapshot.forEach(doc => {
+                    allOrders.push({ id:doc.id, ...doc.data() });
+                });
+
+                allOrders.sort((a,b) => {
+                    const da = getOrderDate(a);
+                    const dbb = getOrderDate(b);
+                    return (dbb ? dbb.getTime() : 0) - (da ? da.getTime() : 0);
+                });
+
+                updateAllDashboardData();
+                renderOrdersPage();
+            },
+            error => {
+                console.error("Owner orders error:", error);
+                allOrders = [];
+                ordersContainer.innerHTML = `
+                    <div class="empty">
+                        <div class="empty-icon">⚠️</div>
+                        Unable to load this owner's orders. Make sure each order document has the correct ownerId.
+                    </div>
+                `;
+            }
+        );
+}
+
+/* DASHBOARD DATA UPDATES */
+
+function updateAllDashboardData(){
+    let total = 0;
+    let pending = 0;
+
+    allOrders.forEach(order => {
+        total += Number(order.total || 0);
+        if(isPending(order)){ pending++; }
+    });
+
+    totalIncome.innerText = formatMoney(total);
+    pendingOrders.innerText = pending;
+
+    updateMonthlyData();
+    updateSelectedDay();
+    createChart();
+}
+
+function isPending(order){
+    const status = String(order.status || "Pending").toLowerCase();
+    return (status === "pending" || status === "processing");
+}
+
+function updateMonthlyData(){
+    const month = Number(monthSelector.value);
+    let income = 0;
+    let count = 0;
+
+    allOrders.forEach(order => {
+        const date = getOrderDate(order);
+        if(!date) return;
+        if(date.getFullYear() === currentYear && date.getMonth() === month){
+            income += Number(order.total || 0);
+            count++;
+        }
+    });
+
+    monthlyIncome.innerText = formatMoney(income);
+    monthlyOrders.innerText = count;
+
+    document.getElementById("monthIncomeTitle").innerText = monthNames[month];
+    document.getElementById("monthlyIncomeLabel").innerText = monthNames[month] + " " + currentYear;
+    document.getElementById("chartMonthLabel").innerText = monthNames[month] + " " + currentYear;
+}
+
+function updateSelectedDay(){
+    const selected = salesDate.value;
+    let revenue = 0;
+    let pending = 0;
+    let finished = 0;
+    let orders = [];
+
+    allOrders.forEach(order => {
+        const date = getOrderDate(order);
+        if(!date) return;
+        if(dateToString(date) === selected){
+            orders.push(order);
+            revenue += Number(order.total || 0);
+            if(isPending(order)){ pending++; } else { finished++; }
+        }
+    });
+
+    dailyIncome.innerText = formatMoney(revenue);
+    document.getElementById("selectedDateText").innerText = formatDisplayDate(selected);
+    document.getElementById("summaryDate").innerText = formatDisplayDate(selected);
+    document.getElementById("summaryOrders").innerText = orders.length;
+    document.getElementById("summaryRevenue").innerText = formatMoney(revenue);
+    document.getElementById("summaryPending").innerText = pending;
+    document.getElementById("summaryFinished").innerText = finished;
+    document.getElementById("averageOrder").innerText = formatMoney(orders.length ? revenue / orders.length : 0);
+}
+
+
+/* CHART CONTROLS */
+
+document.getElementById("dailyChartBtn").addEventListener("click", function(){
+    chartMode = "daily";
+    this.classList.add("active");
+    document.getElementById("monthlyChartBtn").classList.remove("active");
+    createChart();
+});
+
+document.getElementById("monthlyChartBtn").addEventListener("click", function(){
+    chartMode = "monthly";
+    this.classList.add("active");
+    document.getElementById("dailyChartBtn").classList.remove("active");
+    createChart();
+});
+
+function createChart(){
+    const canvas = document.getElementById("salesChart");
+    if(!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    if(salesChart){ salesChart.destroy(); salesChart = null; }
+    if(chartMode === "daily"){ createDailyChart(ctx); } else { createMonthlyChart(ctx); }
+}
+
+function createDailyChart(ctx){
+    const selected = salesDate.value;
+    const hourly = new Array(24).fill(0);
+
+    allOrders.forEach(order => {
+        const date = getOrderDate(order);
+        if(!date) return;
+        if(dateToString(date) === selected){
+            hourly[date.getHours()] += Number(order.total || 0);
+        }
+    });
+
+    const labels = hourly.map((_,i) => String(i).padStart(2,"0") + ":00");
+
+    salesChart = new Chart(ctx, {
+        type:"line",
+        data:{
+            labels:labels,
+            datasets:[{
+                label:"Daily Sales",
+                data:hourly,
+                borderWidth:3,
+                tension:.35,
+                fill:true,
+                pointRadius:3
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            plugins:{ legend:{ display:false } },
+            scales:{
+                y:{ beginAtZero:true, ticks:{ callback: value => Number(value).toLocaleString() } },
+                x:{ ticks:{ maxTicksLimit:12 } }
+            }
+        }
+    });
+}
+
+function createMonthlyChart(ctx){
+    const selectedMonth = Number(monthSelector.value);
+    const daysInMonth = new Date(currentYear, selectedMonth + 1, 0).getDate();
+    const dailyRevenue = new Array(daysInMonth).fill(0);
+
+    allOrders.forEach(order => {
+        const date = getOrderDate(order);
+        if(!date) return;
+        if(date.getFullYear() === currentYear && date.getMonth() === selectedMonth){
+            dailyRevenue[date.getDate() - 1] += Number(order.total || 0);
+        }
+    });
+
+    const labels = dailyRevenue.map((_,i) => "Day " + (i + 1));
+
+    salesChart = new Chart(ctx, {
+        type:"bar",
+        data:{
+            labels:labels,
+            datasets:[{
+                label: monthNames[selectedMonth] + " Sales",
+                data: dailyRevenue,
+                borderWidth:1
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            plugins:{ legend:{ display:false } },
+            scales:{
+                y:{ beginAtZero:true, ticks:{ callback: value => Number(value).toLocaleString() } },
+                x:{ ticks:{ maxTicksLimit:15 } }
+            }
+        }
+    });
+}
+
+
+/* LISTENERS */
+
+monthSelector.addEventListener("change", function(){ updateMonthlyData(); createChart(); });
+salesDate.addEventListener("change", function(){ updateSelectedDay(); if(chartMode === "daily") createChart(); });
+ordersDate.addEventListener("change", function(){ renderOrdersPage(); });
+searchOrder.addEventListener("input", function(){ renderOrdersPage(); });
+
+
+/* RENDER ORDERS */
+
+function renderOrdersPage(){
+    const selectedDate = ordersDate.value;
+    const search = searchOrder.value.toLowerCase().trim();
+
+    let filtered = allOrders.filter(order => {
+        const date = getOrderDate(order);
+        if(!date) return false;
+        if(dateToString(date) !== selectedDate) return false;
+        if(!search) return true;
+
+        const table = String(order.table || "").toLowerCase();
+        const payment = String(order.paymentMethod || "").toLowerCase();
+        const status = String(order.status || "").toLowerCase();
+        const items = Array.isArray(order.items) ? order.items.map(i => i.name || "").join(" ").toLowerCase() : "";
+
+        return (table.includes(search) || payment.includes(search) || status.includes(search) || items.includes(search));
+    });
+
+    displayOrders(filtered);
+}
+
+function displayOrders(orders){
+    ordersContainer.innerHTML = "";
+
+    if(orders.length === 0){
+        ordersContainer.innerHTML = `
+            <div class="empty">
+                <div class="empty-icon">🛒</div>
+                No orders found for this date.
+            </div>
+        `;
+        return;
+    }
+
+    orders.forEach(order => {
+        const date = getOrderDate(order);
+        const time = date ? date.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" }) : "";
+        const status = order.status || "Pending";
+        const finished = String(status).toLowerCase() === "finished" || String(status).toLowerCase() === "completed";
+
+        let itemsHTML = "";
+        if(Array.isArray(order.items)){
+            itemsHTML = order.items.map(item => `
+                <div>${escapeHTML(item.name || "Item")} × ${escapeHTML(String(item.quantity || 1))}</div>
+            `).join("");
+        }
+
+        const card = document.createElement("div");
+        card.className = "order-card";
+        card.innerHTML = `
+            <div class="order-top">
+                <div class="order-number">🪑 Table ${escapeHTML(String(order.table || "N/A"))}</div>
+                <div class="order-time">${time}</div>
+            </div>
+
+            <div class="order-items">${itemsHTML || "No item details"}</div>
+
+            <div class="order-bottom">
+                <div class="badges">
+                    <span class="badge payment">💳 ${escapeHTML(String(order.paymentMethod || "Cash"))}</span>
+                    <span class="badge ${finished ? "finished" : "pending"}">${finished ? "✓" : "⏳"} ${escapeHTML(String(status))}</span>
+                </div>
+                <div class="amount">${formatMoney(order.total || 0)}</div>
+            </div>
+        `;
+        ordersContainer.appendChild(card);
+    });
+}
+
+function formatDisplayDate(dateString){
+    if(!dateString) return "Today";
+    const date = new Date(dateString + "T00:00:00");
+    return date.toLocaleDateString("en-US", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+}
+
+function escapeHTML(value){
+    return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function showToast(message){
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.style.display = "block";
+    setTimeout(function(){ toast.style.display = "none"; }, 2500);
+}
+
+/* OWNER LOGIN / LOGOUT + AUTH-GATED DATA */
+
+function showLoginError(message){
+    const el = document.getElementById("loginError");
+    el.innerText = message;
+    el.style.display = "block";
+}
+
+function clearLoginError(){
+    const el = document.getElementById("loginError");
+    el.innerText = "";
+    el.style.display = "none";
+}
+
+async function loginOwner(){
+    const email = document.getElementById("ownerLoginEmail").value.trim();
+    const password = document.getElementById("ownerLoginPassword").value;
+
+    clearLoginError();
+
+    if(!email || !password){
+        showLoginError("Email and password are required.");
+        return;
+    }
+
+    const btn = document.getElementById("ownerLoginBtn");
+    btn.disabled = true;
+    btn.innerText = "Logging in...";
+
+    try{
+        await auth.signInWithEmailAndPassword(email, password);
+    }catch(error){
+        console.error("Login error:", error);
+        const messages = {
+            "auth/invalid-credential":"Invalid email or password.",
+            "auth/user-not-found":"Owner account was not found.",
+            "auth/wrong-password":"Invalid email or password.",
+            "auth/invalid-email":"Please enter a valid email address.",
+            "auth/too-many-requests":"Too many attempts. Please try again later."
+        };
+        showLoginError(messages[error.code] || error.message);
+    }finally{
+        btn.disabled = false;
+        btn.innerText = "🔐 Login";
+    }
+}
+
+async function logoutOwner(){
+    if(!confirm("Logout from Owner Dashboard?")) return;
+
+    try{
+        await auth.signOut();
+    }catch(error){
+        console.error("Logout error:", error);
+        showToast("Logout failed.");
+    }
+}
+
+function updateOwnerUI(user){
+    const name = user.displayName || (user.email ? user.email.split("@")[0] : "Owner");
+    const email = user.email || "-";
+
+    document.getElementById("sidebarOwnerName").innerText = name;
+    document.getElementById("sidebarOwnerEmail").innerText = email;
+    document.getElementById("settingsOwnerName").innerText = name;
+    document.getElementById("settingsOwnerEmail").innerText = email;
+    document.getElementById("settingsOwnerUid").innerText = user.uid;
+}
+
+function stopOwnerListeners(){
+    if(unsubscribeOrders){ unsubscribeOrders(); unsubscribeOrders = null; }
+    if(unsubscribeMembers){ unsubscribeMembers(); unsubscribeMembers = null; }
+    if(unsubscribePromotions){ unsubscribePromotions(); unsubscribePromotions = null; }
+
+    allOrders = [];
+    allMembers = [];
+}
+
+function startOwnerListeners(){
+    startOrdersListener();
+    startMembersListener();
+    startPromotionListener();
+}
+
+function startMembersListener(){
+    if(unsubscribeMembers) unsubscribeMembers();
+
+    unsubscribeMembers = db.collection("members")
+        .where("ownerId", "==", currentOwner.uid)
+        .onSnapshot(
+            snapshot => {
+                allMembers = [];
+                snapshot.forEach(doc => {
+                    allMembers.push({ id:doc.id, ...doc.data() });
+                });
+
+                allMembers.sort((a,b) => {
+                    const da = getMemberDate(a);
+                    const dbb = getMemberDate(b);
+                    return (dbb ? dbb.getTime() : 0) - (da ? da.getTime() : 0);
+                });
+
+                renderMembersTable();
+            },
+            error => {
+                console.error("Members Error:", error);
+                membersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="no-members">
+                            ⚠️ Members data load မလုပ်နိုင်ပါ။ Member document တွေမှာ ownerId ထည့်ထားကြောင်းစစ်ပါ။
+                        </td>
+                    </tr>
+                `;
+            }
+        );
+}
+
+function getMemberDate(member){
+    const value = member.registeredAt || member.createdAt;
+    if(value && typeof value.toDate === "function") return value.toDate();
+    if(value instanceof Date) return value;
+    if(typeof value === "string"){
+        const d = new Date(value);
+        if(!isNaN(d.getTime())) return d;
+    }
+    return null;
+}
+
+function renderMembersTable(){
+    const search = (memberSearch?.value || "").trim().toLowerCase();
+
+    const filteredMembers = allMembers.filter(member => {
+        const name = String(member.name || "").toLowerCase();
+        const phone = String(member.phone || "").toLowerCase();
+        const email = String(member.email || "").toLowerCase();
+        return name.includes(search) || phone.includes(search) || email.includes(search);
+    });
+
+    if(totalMembers) totalMembers.innerText = allMembers.length;
+
+    if(filteredMembers.length === 0){
+        membersTableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="no-members">
+                    👥 ${search ? "ရှာဖွေထားသော Member မတွေ့ပါ။" : "Member မရှိသေးပါ။"}
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    membersTableBody.innerHTML = filteredMembers.map((member,index) => {
+        const date = getMemberDate(member);
+        const registeredDate = date ? date.toLocaleDateString("en-GB") : "Unknown";
+
+        return `
+            <tr>
+                <td class="member-number">${index + 1}</td>
+                <td class="member-name-cell">👤 ${escapeHTML(member.name || "No Name")}</td>
+                <td class="member-phone">📱 ${escapeHTML(member.phone || "No Phone")}</td>
+                <td class="member-email">✉️ ${escapeHTML(member.email || "No Email")}</td>
+                <td><span class="member-password">••••••••</span></td>
+                <td><span class="member-stamps">⭐ ${Number(member.stamps || 0)} / 10</span></td>
+                <td>${registeredDate}</td>
+            </tr>
+        `;
+    }).join("");
+}
+
+if(memberSearch){
+    memberSearch.addEventListener("input", renderMembersTable);
+}
+
+/* AUTH STATE */
+auth.onAuthStateChanged(user => {
+    const overlay = document.getElementById("ownerLoginOverlay");
+
+    if(user){
+        currentOwner = user;
+        overlay.style.display = "none";
+        updateOwnerUI(user);
+        startOwnerListeners();
+        updateAllDashboardData();
+        showToast("Owner login successful.");
+    }else{
+        currentOwner = null;
+        stopOwnerListeners();
+        overlay.style.display = "flex";
+
+        document.getElementById("sidebarOwnerName").innerText = "Owner";
+        document.getElementById("sidebarOwnerEmail").innerText = "Not signed in";
+        document.getElementById("settingsOwnerName").innerText = "Owner";
+        document.getElementById("settingsOwnerEmail").innerText = "-";
+        document.getElementById("settingsOwnerUid").innerText = "-";
+
+        if(salesChart){
+            salesChart.destroy();
+            salesChart = null;
+        }
+    }
+});
+
+document.getElementById("ownerLoginPassword").addEventListener("keydown", e => {
+    if(e.key === "Enter") loginOwner();
+});
+
 </script>
 
 </body>
