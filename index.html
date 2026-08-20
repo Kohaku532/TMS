@@ -3,48 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Restaurant - Order Online</title>
+    <title>Smart Restaurant & Member Stamp System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
-            --primary: #ff4757;
-            --primary-hover: #ff6b81;
-            --bg: #82dbf3;
-            --text-dark: #2f3542;
-            --text-light: #747d8c;
-            --card-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            --success: #2ed573;
-            --warning: #ffa502;
-            --member-color: #8e44ad;
+            --primary: #BC7C63;
+            --primary-hover: #A3654E;
+            --header-bg: #CF9D89;
+            --hero-bg: #B57963;
+            --bg: #E8D3C3;
+            --card-bg: #F0E0D2;
+            --text-dark: #3E2419;
+            --text-light: #7A5343;
+            --border-color: #BA8D78;
+            --card-shadow: 0 4px 15px rgba(62, 36, 25, 0.12);
+            --success: #2ED573;
+            --warning: #E58E26;
+            --member-color: #8E44AD;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: var(--bg); color: var(--text-dark); padding-bottom: 90px; }
 
-        /* Header */
+        /* Header Bar */
         header {
-            background: #6bbeef;
+            background: var(--header-bg);
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 10px rgba(62, 36, 25, 0.15);
             padding: 12px 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .logo { font-size: 22px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
         .nav-controls { display: flex; align-items: center; gap: 10px; }
 
         .nav-tab-btn {
-            background: #ffffff;
-            border: none;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 13px;
@@ -54,25 +59,34 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
-        .pay-bill-nav-btn { background: var(--success); color: white; }
-        .table-info { background: #ffffff; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .member-badge-hdr { background: var(--member-color); color: white; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 12px; display: none; align-items: center; gap: 5px; }
+        .pay-bill-nav-btn { background: var(--hero-bg); color: white; border: none; }
+        .table-info { 
+            background: var(--card-bg); 
+            color: var(--text-dark); 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-weight: 800; 
+            font-size: 14px; 
+            border: 1px solid var(--border-color);
+        }
+        .member-badge-hdr { background: var(--member-color); color: white; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 12px; display: none; align-items: center; gap: 5px; cursor: pointer; }
 
         /* Hero Banner */
         .hero {
-            background: linear-gradient(135deg, #ff4757, #ff6b81);
+            background: linear-gradient(135deg, #ae6b53,#eda087, #cb6078, #eda087,#ae6b53);
             color: white;
             text-align: center;
             padding: 30px 20px;
             border-radius: 0 0 25px 25px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(62, 36, 25, 0.15);
         }
 
-        .hero h1 { font-size: 26px; margin-bottom: 5px; }
-        .hero p { font-size: 14px; opacity: 0.9; }
+        .hero h1 { font-size: 26px; margin-bottom: 5px; font-weight: 800; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .hero p { font-size: 14px; opacity: 0.95; }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; }
 
@@ -83,81 +97,124 @@
             width: 100%;
             padding: 12px 16px 12px 45px;
             border-radius: 30px;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1.5px solid var(--border-color);
+            background: var(--card-bg);
             font-size: 15px;
+            color: var(--text-dark);
             outline: none;
         }
+        .search-box input::placeholder { color: var(--text-light); }
         .search-box i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-light); }
 
         .category-tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .category-tabs::-webkit-scrollbar { display: none; }
         .cat-btn {
-            background: white; border: 1px solid #e2e8f0; padding: 8px 18px; border-radius: 20px;
-            font-size: 14px; font-weight: 600; color: var(--text-dark); cursor: pointer; white-space: nowrap;
+            background: var(--card-bg); 
+            border: 1.5px solid var(--border-color); 
+            padding: 8px 18px; 
+            border-radius: 20px;
+            font-size: 14px; 
+            font-weight: 600; 
+            color: var(--text-dark); 
+            cursor: pointer; 
+            white-space: nowrap;
         }
-        .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .cat-btn.active { 
+            background: var(--primary); 
+            color: white; 
+            border-color: var(--primary); 
+        }
 
         /* Menu Grid */
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         @media (min-width: 768px) { .menu-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; } }
 
         .food-card {
-            background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--card-shadow);
-            display: flex; flex-direction: column; position: relative; transition: 0.3s;
+            background: var(--card-bg); 
+            border: 1.5px solid var(--border-color);
+            border-radius: 18px; 
+            overflow: hidden; 
+            box-shadow: var(--card-shadow);
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            transition: 0.3s;
         }
-        .food-card:hover { transform: translateY(-5px); }
+        .food-card:hover { transform: translateY(-4px); }
 
         .card-img-wrap { width: 100%; height: 140px; position: relative; overflow: hidden; }
         .food-img { width: 100%; height: 100%; object-fit: cover; }
 
         .top-rating-badge {
-            position: absolute; top: 10px; left: 10px; background: var(--warning); color: white;
-            font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 12px;
+            position: absolute; top: 10px; left: 10px; background: rgba(163, 101, 78, 0.9); color: white;
+            font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 12px; backdrop-filter: blur(2px);
         }
 
         .card-details { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; }
         .food-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
         
         .rating-wrapper { margin-bottom: 8px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
-        .rating-stars { color: #f1c40f; font-size: 13px; }
+        .rating-stars { color: #C87132; font-size: 13px; }
         .rating-count { font-size: 11px; color: var(--text-light); }
 
-        .food-price { font-size: 15px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+        .food-price { font-size: 15px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; }
 
         .btn-add-cart {
-            width: 100%; background: #f1f2f6; color: var(--text-dark); border: none; padding: 8px;
-            border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s;
+            width: 100%; 
+            background: var(--bg); 
+            color: var(--text-dark); 
+            border: 1px solid var(--border-color); 
+            padding: 8px;
+            border-radius: 12px; 
+            font-size: 13px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: 0.2s;
         }
-        .btn-add-cart:hover { background: var(--primary); color: white; }
+        .btn-add-cart:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
         /* Floating Cart Button */
         .cart-float-btn {
-            position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white;
-            padding: 14px 22px; border-radius: 50px; box-shadow: 0 8px 20px rgba(255, 47, 87, 0.4);
+            position: fixed; bottom: 20px; right: 20px; 
+            background: linear-gradient(135deg, #CF9D89, #cb6078, #eda087,#ae6b53); 
+            color: white;
+            padding: 12px 22px; border-radius: 50px; 
+            box-shadow: 0 8px 20px rgba(62, 36, 25, 0.35);
             display: flex; align-items: center; gap: 12px; cursor: pointer; z-index: 99;
+            border: 1px solid rgba(255,255,255,0.3);
         }
-        .cart-count { background: white; color: var(--primary); font-weight: 800; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .cart-count { 
+            background: #2D1A12; 
+            color: white; 
+            font-weight: 800; 
+            width: 26px; 
+            height: 26px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 12px; 
+        }
 
         /* Side Cart Drawer */
         .cart-drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
         .cart-drawer-overlay.active { display: block; }
-        .cart-drawer { position: fixed; top: 0; right: -400px; width: 100%; max-width: 380px; height: 100%; background: white; z-index: 1001; transition: 0.3s ease; display: flex; flex-direction: column; }
+        .cart-drawer { position: fixed; top: 0; right: -400px; width: 100%; max-width: 380px; height: 100%; background: var(--card-bg); z-index: 1001; transition: 0.3s ease; display: flex; flex-direction: column; }
         .cart-drawer.active { right: 0; }
-        .drawer-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .drawer-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .drawer-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
-        .drawer-footer { padding: 20px; border-top: 1px solid #eee; background: #fafafa; }
+        .drawer-footer { padding: 20px; border-top: 1px solid var(--border-color); background: var(--bg); }
         .btn-checkout { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; }
 
         /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1100; backdrop-filter: blur(4px); }
-        .modal-card { background: white; border-radius: 20px; width: 90%; max-width: 420px; padding: 25px; max-height: 90vh; overflow-y: auto; position: relative; text-align: center; }
+        .modal-card { background: var(--card-bg); border-radius: 20px; width: 90%; max-width: 450px; padding: 25px; max-height: 90vh; overflow-y: auto; position: relative; text-align: center; border: 1px solid var(--border-color); }
         .modal-close { position: absolute; top: 15px; right: 15px; font-size: 20px; cursor: pointer; color: var(--text-light); }
         
         /* Receipt UI */
         .receipt-box { 
-            background: #ffffff; 
-            border: 1px dashed #d1d8e0; 
+            background: #FFFBF7; 
+            border: 1px dashed var(--border-color); 
             padding: 20px; 
             border-radius: 12px; 
             margin: 15px 0; 
@@ -166,15 +223,15 @@
             text-align: left;
             box-shadow: 0 8px 16px rgba(0,0,0,0.04);
         }
-        .receipt-header-title { font-size: 16px; font-weight: 900; letter-spacing: 1px; text-align: center; color: #2c3e50; }
-        .receipt-sub-info { text-align: center; font-size: 11px; color: #7f8c8d; margin-bottom: 12px; }
-        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: #34495e; }
-        .receipt-line { border-bottom: 1px dashed #cbd5e1; margin: 12px 0; }
+        .receipt-header-title { font-size: 16px; font-weight: 900; letter-spacing: 1px; text-align: center; color: var(--text-dark); }
+        .receipt-sub-info { text-align: center; font-size: 11px; color: var(--text-light); margin-bottom: 12px; }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--text-dark); }
+        .receipt-line { border-bottom: 1px dashed var(--border-color); margin: 12px 0; }
         .receipt-total-row { display: flex; justify-content: space-between; font-size: 15px; font-weight: bold; color: var(--primary); padding-top: 4px; }
 
         .form-group { margin-bottom: 12px; text-align: left; }
-        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .form-group label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 4px; color: var(--text-dark); }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; background: white; }
         .btn-action { background: var(--success); color: white; border: none; width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
         .btn-secondary { background: #e2e8f0; color: var(--text-dark); border: none; width: 100%; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; margin-top: 8px; }
 
@@ -186,12 +243,12 @@
             padding: 15px; 
             background: #f1f2f6; 
             border-radius: 16px;
-            border: 1px solid #dcdde1; 
+            border: 1px solid var(--border-color); 
         }
         .qrPayment h3 { font-size: 16px; margin-bottom: 5px; color: var(--text-dark); }
         .qrPayment .qr-box { 
-            width: 200px; 
-            height: 200px; 
+            width: 180px; 
+            height: 180px; 
             margin: 10px auto;
             padding: 8px;
             background: white; 
@@ -203,6 +260,36 @@
         }
         .qrPayment .qr-box img { width: 100%; height: 100%; object-fit: contain; }
         .qrPayment p { font-size: 13px; color: var(--text-light); margin-top: 5px; }
+
+        /* Member Card & Stamp System Style */
+        .member-card-ui {
+            background: rgb(237, 182, 115);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            margin-top: 10px;
+        }
+        .member-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #222; }
+        .stamp-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .stamp {
+            height: 65px;
+            border: 2px dashed #e7a06d;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #fffaf5;
+        }
+        .stamp-number { font-size: 11px; color: #777; margin-bottom: 2px; }
+        .check { font-size: 22px; color: #ccc; font-weight: bold; }
+        .stamp.checked { background: #e9f8ed; border: 2px solid #28a745; }
+        .stamp.checked .check { color: #28a745; }
+
+        .progress-area { margin-top: 15px; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+        .progress-bar { width: 100%; height: 10px; background: #ddd; border-radius: 10px; overflow: hidden; }
+        .progress { width: 0%; height: 100%; background: #e65c00; border-radius: 10px; transition: 0.4s; }
     </style>
 </head>
 <body>
@@ -210,7 +297,7 @@
     <header>
         <div class="logo"><i class="fa-solid fa-utensils"></i> Smart Menu</div>
         <div class="nav-controls">
-            <div class="member-badge-hdr" id="member-hdr-badge"><i class="fa-solid fa-crown"></i> Member (25% OFF)</div>
+            <div class="member-badge-hdr" id="member-hdr-badge" onclick="openMemberTicketModal()"><i class="fa-solid fa-crown"></i> Member (25% OFF)</div>
             <button class="nav-tab-btn pay-bill-nav-btn" onclick="openPayBillModal()"><i class="fa-solid fa-receipt"></i> Pay Bill</button>
             <div class="table-info" id="table-display">Table #1</div>
         </div>
@@ -271,7 +358,7 @@
             </div>
             <h2 style="margin-bottom: 8px;">Welcome to Smart Menu</h2>
             <p style="font-size: 13px; color: var(--text-light); margin-bottom: 20px;">
-                သင်သည် မန်ဘာ (Member) ဝင်ထားသူဖြစ်ပါသလား? မန်ဘာများအတွက် <b>25% Discount</b> ခံစားခွင့်ရရှိပါမည်။
+                သင်သည် မန်ဘာ (Member) ဝင်ထားသူဖြစ်ပါသလား? မန်ဘာများအတွက် <b>25% Discount</b> နှင့် Stamp Promotion ခံစားခွင့်ရရှိပါမည်။ 30,000 MMK နှင့်အထက် ဝယ်ယူ၍ <b>member card free</b> ရယူပါ။[cite: 2]
             </p>
 
             <div id="check-options-view">
@@ -297,6 +384,27 @@
                 </button>
                 <button class="btn-secondary" onclick="backToCheckOptions()">နောက်သို့</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Interactive Rating Modal -->
+    <div class="modal-overlay" id="rating-modal">
+        <div class="modal-card">
+            <i class="fa-solid fa-xmark modal-close" onclick="closeRatingModal()"></i>
+            <h3 id="rating-item-title">Rate Item</h3>
+            <p style="font-size: 13px; color: var(--text-light); margin-top: 5px; margin-bottom: 15px;">
+                သင့်၏ အကြံပြုချက်အတွက် ကြယ်ပွင့်အရေအတွက်ကို နှိပ်ပေးပါ[cite: 1]:
+            </p>
+            
+            <div id="star-picker" style="font-size: 32px; color: #ccc; cursor: pointer; margin-bottom: 20px; display: flex; justify-content: center; gap: 8px;">
+                <i class="fa-solid fa-star" onclick="selectStar(1)" onmouseover="hoverStar(1)"></i>
+                <i class="fa-solid fa-star" onclick="selectStar(2)" onmouseover="hoverStar(2)"></i>
+                <i class="fa-solid fa-star" onclick="selectStar(3)" onmouseover="hoverStar(3)"></i>
+                <i class="fa-solid fa-star" onclick="selectStar(4)" onmouseover="hoverStar(4)"></i>
+                <i class="fa-solid fa-star" onclick="selectStar(5)" onmouseover="hoverStar(5)"></i>
+            </div>
+
+            <button class="btn-action" style="background: var(--primary);" onclick="submitRating()"><i class="fa-solid fa-paper-plane"></i> Rating ပေးမည်</button>
         </div>
     </div>
 
@@ -330,13 +438,54 @@
         </div>
     </div>
 
+    <!-- Member Ticket Card Modal -->
+    <div class="modal-overlay" id="member-ticket-modal">
+        <div class="modal-card">
+            <i class="fa-solid fa-xmark modal-close" onclick="closeMemberTicketModal()"></i>
+            
+            <div class="member-card-ui">
+                <div class="member-title">🎫 MEMBER STAMP CARD</div>
+
+                <div class="stamp-container">
+                    <div class="stamp" id="stamp1"><div class="stamp-number">1</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp2"><div class="stamp-number">2</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp3"><div class="stamp-number">3</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp4"><div class="stamp-number">4</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp5"><div class="stamp-number">5</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp6"><div class="stamp-number">6</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp7"><div class="stamp-number">7</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp8"><div class="stamp-number">8</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp9"><div class="stamp-number">9</div><div class="check">○</div></div>
+                    <div class="stamp" id="stamp10"><div class="stamp-number">10</div><div class="check">○</div></div>
+                </div>
+
+                <div class="progress-area">
+                    <div class="progress-text">
+                        <span>Stamp Progress</span>
+                        <strong><span id="stamp-count-text">0</span> / 10</strong>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress" id="stamp-progress-bar"></div>
+                    </div>
+
+                    <div style="margin-top:12px; padding:10px; background:#fff8ed; border-radius:10px; text-align:center; font-size:13px; color:#6b4635; font-weight:600;">
+                        🥤 Collect 10 Stamps & Get 1 Free Juice!
+                        <br>
+                        <span style="font-size:11px; color:#888;">30,000 MMK နှင့်အထက် ဝယ်ယူမှုတိုင်း Stamp 1 ခုရရှိမည်[cite: 2]</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Member Registration Offer Modal -->
     <div class="modal-overlay" id="member-modal">
         <div class="modal-card">
             <i class="fa-solid fa-xmark modal-close" onclick="closeMemberModal()"></i>
             <h3 style="color:var(--warning);"><i class="fa-solid fa-crown"></i> Membership Offer</h3>
             <p style="font-size:13px; margin-bottom:15px; color:var(--text-light);">
-                သင့်၏ ဝယ်ယူမှုသည် ၅ သောင်းကျပ် (50,000 MMK) ကျော်လွန်ပါသဖြင့် Member အဖြစ် အခမဲ့ စာရင်းသွင်းနိုင်ပြီး 25% Discount ခံစားခွင့် ရရှိပါမည်။
+                သင့်၏ ဝယ်ယူမှုသည် ၃ သောင်းကျပ် (30,000 MMK) ကျော်လွန်ပါသဖြင့် Member အဖြစ် အခမဲ့ စာရင်းသွင်းနိုင်ပြီး 25% Discount ခံစားခွင့် ရရှိပါမည်။[cite: 2]
             </p>
 
             <form onsubmit="registerMember(event)">
@@ -390,7 +539,6 @@
         document.addEventListener('click', initAudio, { once: true });
         document.addEventListener('touchstart', initAudio, { once: true });
 
-        // Gentle & Clear Bell/Chime Sound Notification
         function playNotificationSound() {
             initAudio();
             if (!audioCtx) return;
@@ -402,13 +550,10 @@
                 const gain1 = audioCtx.createGain();
                 osc1.type = 'sine';
                 osc1.frequency.setValueAtTime(880, now);
-
                 gain1.gain.setValueAtTime(0.3, now);
                 gain1.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
-
                 osc1.connect(gain1);
                 gain1.connect(audioCtx.destination);
-
                 osc1.start(now);
                 osc1.stop(now + 1.2);
 
@@ -416,16 +561,12 @@
                 const gain2 = audioCtx.createGain();
                 osc2.type = 'sine';
                 osc2.frequency.setValueAtTime(1174.66, now + 0.15);
-
                 gain2.gain.setValueAtTime(0.4, now + 0.15);
                 gain2.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
-
                 osc2.connect(gain2);
                 gain2.connect(audioCtx.destination);
-
                 osc2.start(now + 0.15);
                 osc2.stop(now + 1.8);
-
             } catch (e) {
                 console.log("Audio Playback Error:", e);
             }
@@ -444,7 +585,12 @@
 
         let isMember = false;
         let discountRate = 0.25; // 25% Discount
+        let currentMemberDocId = null;
         let currentMemberData = null;
+
+        // Rating Variables
+        let currentRatingItem = null;
+        let selectedRatingValue = 5;
 
         function showMemberLoginForm() {
             document.getElementById('check-options-view').style.display = 'none';
@@ -473,11 +619,14 @@
                 const emailQuery = await db.collection("members").where("email", "==", inputVal).get();
 
                 let foundDoc = null;
+                let foundDocId = null;
 
                 if (!phoneQuery.empty) {
                     foundDoc = phoneQuery.docs[0].data();
+                    foundDocId = phoneQuery.docs[0].id;
                 } else if (!emailQuery.empty) {
                     foundDoc = emailQuery.docs[0].data();
+                    foundDocId = emailQuery.docs[0].id;
                 }
 
                 if (foundDoc) {
@@ -485,10 +634,14 @@
                         isMember = true;
                         discountRate = 0.25;
                         currentMemberData = foundDoc;
+                        currentMemberDocId = foundDocId;
 
                         document.getElementById('member-hdr-badge').style.display = 'flex';
-                        document.getElementById('member-hdr-badge').innerText = '👑 Member (25% OFF)';
+                        document.getElementById('member-hdr-badge').innerHTML = '<i class="fa-solid fa-crown"></i> Member (25% OFF)';
                         document.getElementById('initial-member-modal').style.display = 'none';
+                        
+                        renderMemberStampCard(foundDoc.stamps || 0);
+
                         alert(`မင်္ဂလာပါ ${foundDoc.name || 'Member'} လူကြီးမင်း။ သင့်အတွက် 25% Discount အလိုအလျောက် သက်ရောက်ပေးထားပါသည်။`);
                         updateCartUI();
                     } else {
@@ -501,6 +654,37 @@
                 console.error("Error verifying member:", error);
                 alert("Member စစ်ဆေးရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
             }
+        }
+
+        // UI Stamp Card Render
+        function renderMemberStampCard(count) {
+            const totalStamps = count || 0;
+            document.getElementById('stamp-count-text').innerText = totalStamps;
+            document.getElementById('stamp-progress-bar').style.width = (totalStamps * 10) + "%";
+
+            for (let i = 1; i <= 10; i++) {
+                const stampElem = document.getElementById("stamp" + i);
+                if (stampElem) {
+                    if (i <= totalStamps) {
+                        stampElem.classList.add("checked");
+                        stampElem.querySelector(".check").innerHTML = "✓";
+                    } else {
+                        stampElem.classList.remove("checked");
+                        stampElem.querySelector(".check").innerHTML = "○";
+                    }
+                }
+            }
+        }
+
+        function openMemberTicketModal() {
+            if (currentMemberData) {
+                renderMemberStampCard(currentMemberData.stamps || 0);
+            }
+            document.getElementById('member-ticket-modal').style.display = 'flex';
+        }
+
+        function closeMemberTicketModal() {
+            document.getElementById('member-ticket-modal').style.display = 'none';
         }
 
         function listenToMenuFromAdmin() {
@@ -535,7 +719,7 @@
             let stars = '';
             const roundedRating = Math.round(rating);
             for (let i = 1; i <= roundedRating; i++) {
-                stars += `<i class="fa-solid fa-star" style="color: #f1c40f;"></i>`;
+                stars += `<i class="fa-solid fa-star" style="color: #C87132;"></i>`;
             }
             return stars;
         }
@@ -558,7 +742,7 @@
 
             filtered.forEach((item, index) => {
                 const rating = item.rating || 5.0;
-                const isTopRated = (index === 0 && selectedCategory === 'All');
+                const isTopRated = (index === 0 && selectedCategory === 'All') || rating >= 4.5;
 
                 grid.innerHTML += `
                     <div class="food-card">
@@ -586,33 +770,67 @@
             });
         }
 
-        async function customerGiveRating(itemId, currentRating, ratingCount, itemName) {
-            const userRating = prompt(`"${itemName}" အတွက် Rating (1 မှ 5 အထိ) ပေးပါ:`, "5");
-            
-            if (userRating && !isNaN(userRating) && userRating >= 1 && userRating <= 5) {
-                const val = parseFloat(userRating);
-                const newCount = (ratingCount || 0) + 1;
-                const newAvgRating = parseFloat((((currentRating * (ratingCount || 0)) + val) / newCount).toFixed(1));
+        // Real Interactive Rating Functions[cite: 1]
+        function customerGiveRating(itemId, currentRating, ratingCount, itemName) {
+            currentRatingItem = {
+                id: itemId,
+                rating: currentRating,
+                count: ratingCount,
+                name: itemName
+            };
+            document.getElementById('rating-item-title').innerText = itemName + " ကို Rating ပေးရန်";
+            selectStar(5);
+            document.getElementById('rating-modal').style.display = 'flex';
+        }
 
-                try {
-                    await db.collection("menu").doc(itemId).update({
-                        rating: newAvgRating,
-                        ratingCount: newCount
-                    });
+        function closeRatingModal() {
+            document.getElementById('rating-modal').style.display = 'none';
+        }
 
-                    await db.collection("ratings").add({
-                        itemId: itemId,
-                        itemName: itemName || "Unknown Item",
-                        table: tableId,
-                        givenRating: val,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-
-                    alert("Rating ပေးမှုကို ကျေးဇူးတင်ပါသည်။");
-                } catch(e) {
-                    console.error("Error updating rating:", e);
-                    alert("Rating ပေးရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
+        function hoverStar(count) {
+            const stars = document.querySelectorAll('#star-picker i');
+            stars.forEach((star, index) => {
+                if (index < count) {
+                    star.style.color = '#C87132';
+                } else {
+                    star.style.color = '#ccc';
                 }
+            });
+        }
+
+        function selectStar(count) {
+            selectedRatingValue = count;
+            hoverStar(count);
+        }
+
+        async function submitRating() {
+            if (!currentRatingItem) return;
+
+            const itemId = currentRatingItem.id;
+            const currentRating = currentRatingItem.rating || 0;
+            const ratingCount = currentRatingItem.count || 0;
+            const newCount = ratingCount + 1;
+            const newAvgRating = parseFloat((((currentRating * ratingCount) + selectedRatingValue) / newCount).toFixed(1));
+
+            try {
+                await db.collection("menu").doc(itemId).update({
+                    rating: newAvgRating,
+                    ratingCount: newCount
+                });
+
+                await db.collection("ratings").add({
+                    itemId: itemId,
+                    itemName: currentRatingItem.name,
+                    table: tableId,
+                    givenRating: selectedRatingValue,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("Rating ပေးမှုကို ကျေးဇူးတင်ပါသည်! ပျမ်းမျှ Rating: " + newAvgRating);
+                closeRatingModal();
+            } catch(e) {
+                console.error("Error updating rating:", e);
+                alert("Rating ပေးရာတွင် အမှားအယွင်း ရှိခဲ့ပါသည်။");
             }
         }
 
@@ -677,15 +895,15 @@
 
             cart.forEach(item => {
                 container.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:10px; border-bottom:1px dashed #eee;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding-bottom:10px; border-bottom:1px dashed var(--border-color);">
                         <div>
-                            <div style="font-weight:bold; font-size:14px;">${item.name}</div>
+                            <div style="font-weight:bold; font-size:14px; color:var(--text-dark);">${item.name}</div>
                             <div style="font-size:12px; color:var(--primary);">${(item.price * item.quantity).toLocaleString()} MMK</div>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px; background:#f1f2f6; padding:4px 8px; border-radius:6px;">
-                            <button style="border:none; background:transparent; font-weight:bold; cursor:pointer;" onclick="changeQty('${item.id}', -1)">-</button>
+                        <div style="display:flex; align-items:center; gap:8px; background:var(--bg); padding:4px 8px; border-radius:6px; border: 1px solid var(--border-color);">
+                            <button style="border:none; background:transparent; font-weight:bold; cursor:pointer; color:var(--text-dark);" onclick="changeQty('${item.id}', -1)">-</button>
                             <span>${item.quantity}</span>
-                            <button style="border:none; background:transparent; font-weight:bold; cursor:pointer;" onclick="changeQty('${item.id}', 1)">+</button>
+                            <button style="border:none; background:transparent; font-weight:bold; cursor:pointer; color:var(--text-dark);" onclick="changeQty('${item.id}', 1)">+</button>
                         </div>
                     </div>
                 `;
@@ -727,6 +945,7 @@
                     discount: discountAmount,
                     total: finalTotal,
                     isMember: isMember,
+                    memberId: currentMemberDocId || null,
                     status: "Pending",
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
@@ -744,7 +963,6 @@
             }
         }
 
-        // REALTIME LISTENER: Detects Admin Changes Remotely
         function listenOrderStatus(orderId) {
             if (!orderId) return;
 
@@ -775,8 +993,8 @@
                         <div style="font-size: 50px; color: #2ed573; margin-bottom: 15px;">
                             <i class="fa-solid fa-circle-check"></i>
                         </div>
-                        <h2 style="color: #2f3542; margin-bottom: 10px;">Your Order is Ready!</h2>
-                        <p style="color: #747d8c; margin-bottom: 20px; font-size: 15px;">
+                        <h2 style="color: var(--text-dark); margin-bottom: 10px;">Your Order is Ready!</h2>
+                        <p style="color: var(--text-light); margin-bottom: 20px; font-size: 15px;">
                             လူကြီးမင်း မှာယူထားသော အစားအသောက်များ ချက်ပြုတ်ပြင်ဆင်ပြီးပါပြီ။
                         </p>
                         <button class="btn-action" style="background: #2ed573;" onclick="closeReadyModal()">
@@ -825,7 +1043,7 @@
 
             if (isMember) {
                 html += `
-                    <div class="receipt-row" style="color:#7f8c8d;">
+                    <div class="receipt-row" style="color:var(--text-light);">
                         <span>Subtotal</span>
                         <span>${subtotal.toLocaleString()} MMK</span>
                     </div>
@@ -846,14 +1064,11 @@
 
             box.innerHTML = html;
             document.getElementById('bill-modal').style.display = 'flex';
-            
-            // Show QR Code dynamically when modal opens
             showPaymentQR();
         }
 
         function closePayBillModal() { document.getElementById('bill-modal').style.display = 'none'; }
 
-        // Function to handle QR Code visibility based on payment method
         function showPaymentQR() {
             const paymentMethod = document.getElementById('payment-method').value;
             const qrPayment = document.getElementById('qr-payment');
@@ -868,7 +1083,7 @@
                 qrText.innerText = 'Open KBZPay app and scan to pay';
             } else if (paymentMethod === 'WavePay') {
                 qrPayment.style.display = 'block';
-                qrImage.src = 'waveqr.jpg'; // WavePay QR Code Image (If available)
+                qrImage.src = 'waveqr.jpg';
                 qrTitle.innerText = 'Scan WavePay QR Code';
                 qrText.innerText = 'Open WavePay app and scan to pay';
             } else {
@@ -876,33 +1091,99 @@
             }
         }
 
+        async function processMemberStampPromotion(purchaseAmount) {
+            if (!isMember || !currentMemberDocId) return;
+
+            if (purchaseAmount < 30000) {
+                alert("Stamp မရရှိပါ။\n\nStamp ရရှိရန် 30,000 MMK နှင့်အထက် ဝယ်ယူရပါမည်။");
+                return;
+            }
+
+            let currentStamps = 0;
+            if (currentMemberData && currentMemberData.stamps) {
+                currentStamps = Number(currentMemberData.stamps);
+            }
+
+            currentStamps = currentStamps + 1;
+
+            if (currentStamps >= 10) {
+                try {
+                    await db.collection("members").doc(currentMemberDocId).update({
+                        stamps: 0,
+                        lastReward: "Free Juice",
+                        lastRewardAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    currentMemberData.stamps = 0;
+                    currentMemberData.lastReward = "Free Juice";
+
+                    renderMemberStampCard(0);
+                    alert("🎉 Congratulations!\n\nStamp 10/10 ပြည့်ပါပြီ။\n\n🥤 Juice 1 ခွက် လက်ဆောင်ရရှိပါပြီ။\n\nStamp Card အသစ်ကို 0/10 မှ ပြန်စပါမည်။");
+                    openMemberTicketModal();
+                } catch (error) {
+                    console.error("Error completing stamp reward:", error);
+                    alert("Stamp Reward သိမ်းရာတွင် အမှားအယွင်းရှိခဲ့ပါသည်။");
+                }
+                return;
+            }
+
+            try {
+                await db.collection("members").doc(currentMemberDocId).update({
+                    stamps: currentStamps
+                });
+
+                currentMemberData.stamps = currentStamps;
+                renderMemberStampCard(currentStamps);
+                alert("🎉 Stamp 1 ခု ရရှိပါသည်။\n\nလက်ရှိ Stamp: " + currentStamps + "/10\n\n🥤 Stamp " + (10 - currentStamps) + " ခု ထပ်ရပါက Juice 1 ခွက် Free ရရှိပါမည်။");
+                openMemberTicketModal();
+            } catch (error) {
+                console.error("Error updating stamp:", error);
+                alert("Stamp သိမ်းရာတွင် အမှားအယွင်းရှိခဲ့ပါသည်။");
+            }
+        }
+
         async function confirmPayment() {
+            if (cart.length === 0) return alert("မှာယူထားသော အော်ဒါမရှိသေးပါ။");
+
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const discountAmount = isMember ? (subtotal * discountRate) : 0;
+            const finalTotal = subtotal - discountAmount;
             const method = document.getElementById('payment-method').value;
 
-            if (activeOrderId) {
-                try {
+            try {
+                if (activeOrderId) {
                     await db.collection("orders").doc(activeOrderId).update({
                         paymentStatus: "paid",
                         paymentMethod: method,
-                        status: "Completed"
+                        status: "Completed",
+                        subtotal: subtotal,
+                        discount: discountAmount,
+                        total: finalTotal,
+                        paidAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                } catch(e) {}
-            }
+                }
 
-            alert("Payment completed! Bill ရှင်းလွှာ အောင်မြင်ပါသည်။");
-            closePayBillModal();
+                alert("Payment completed!\n\nBill ရှင်းလွှာ အောင်မြင်ပါသည်။");
+                closePayBillModal();
 
-            if (!isMember && subtotal >= 50000) {
-                document.getElementById('member-modal').style.display = 'flex';
-            } else {
-                resetSession();
+                if (isMember) {
+                    await processMemberStampPromotion(subtotal);
+                    resetSession();
+                } else {
+                    if (subtotal >= 30000) {
+                        document.getElementById('member-modal').style.display = 'flex';
+                    } else {
+                        resetSession();
+                    }
+                }
+            } catch (error) {
+                console.error("Payment Error:", error);
+                alert("Payment ပြုလုပ်ရာတွင် အမှားအယွင်းရှိခဲ့ပါသည်။");
             }
         }
 
         function closeMemberModal() {
             document.getElementById('member-modal').style.display = 'none';
-            resetSession();
         }
 
         async function registerMember(e) {
@@ -912,6 +1193,7 @@
                 email: document.getElementById('mem-email').value,
                 phone: document.getElementById('mem-phone').value,
                 password: document.getElementById('mem-password').value,
+                stamps: 0,
                 registeredAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
