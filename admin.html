@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Restaurant Admin Dashboard</title>
+<title>Restaurant kitchen Dashboard</title>
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -471,6 +471,18 @@ select{
     rgba(255,71,87,.08);
 }
 
+.category-input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-add-category {
+    padding: 0 14px;
+    font-size: 16px;
+    border-radius: 9px;
+    white-space: nowrap;
+}
+
 .image-preview{
     width:100%;
     height:120px;
@@ -749,6 +761,24 @@ select{
     padding:4px 8px;
 
     font-size:10px;
+
+    margin-left:6px;
+}
+
+.member-badge{
+    display:inline-block;
+
+    background:linear-gradient(45deg, #ff4757, #ff6b81);
+
+    color:white;
+
+    border-radius:6px;
+
+    padding:4px 8px;
+
+    font-size:10px;
+
+    font-weight:bold;
 
     margin-left:6px;
 }
@@ -1038,6 +1068,7 @@ body.dark .search-box input{
     color:white;
     border-color:#2a303c;
 }
+
 /* =========================
    ADMIN LOGIN
 ========================= */
@@ -1145,6 +1176,62 @@ body.dark .login-card{
     background:#181d27;
     color:white;
 }
+
+.main{
+    display:none;
+}
+
+.logout-btn{
+    height:40px;
+
+    padding:0 15px;
+
+    border:1px solid #ffd1d5;
+
+    border-radius:10px;
+
+    background:#fff0f1;
+
+    color:#ff4757;
+
+    cursor:pointer;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:7px;
+
+    transition:.2s;
+}
+
+.logout-btn:hover{
+    background:#ff4757;
+    color:white;
+    border-color:#ff4757;
+}
+
+.logout-btn i{
+    font-size:13px;
+}
+
+body.dark .logout-btn{
+    background:#2a1820;
+    border-color:#4a2730;
+    color:#ff6b78;
+}
+
+body.dark .logout-btn:hover{
+    background:#ff4757;
+    color:white;
+}
+
 </style>
 </head>
 
@@ -1157,7 +1244,7 @@ body.dark .login-card{
             <i class="fa-solid fa-utensils"></i>
         </div>
 
-        <h1>Admin Login</h1>
+        <h1>Kitchen Login</h1>
 
         <p>Sign in to manage your restaurant</p>
 
@@ -1168,7 +1255,7 @@ body.dark .login-card{
                 <input
                     type="email"
                     id="loginEmail"
-                    placeholder="Admin Email"
+                    placeholder="kitchen Email"
                     required>
             </div>
 
@@ -1209,7 +1296,7 @@ body.dark .login-card{
             <div class="page-title">
 
                 <h2>
-                    admin Dashboard
+                    kitchen Dashboard
                 </h2>
 
                 <p>
@@ -1222,36 +1309,40 @@ body.dark .login-card{
 
         <div class="top-actions">
 
-            <button class="icon-btn"
-                    onclick="refreshDashboard()"
-                    title="Refresh">
+    <button class="icon-btn"
+            onclick="refreshDashboard()"
+            title="Refresh">
+        <i class="fa-solid fa-rotate"></i>
+    </button>
 
-                <i class="fa-solid fa-rotate"></i>
+    <button class="icon-btn"
+            onclick="toggleDarkMode()"
+            title="Dark Mode">
+        <i class="fa-solid fa-moon"></i>
+    </button>
 
-            </button>
+    <button class="icon-btn"
+            onclick="scrollToOrders()"
+            title="Orders">
+        <i class="fa-solid fa-bell"></i>
 
-            <button class="icon-btn"
-                    onclick="toggleDarkMode()"
-                    title="Dark Mode">
+        <span class="notification-dot"
+              id="notificationDot">
+        </span>
+    </button>
 
-                <i class="fa-solid fa-moon"></i>
+    <!-- LOGOUT -->
+    <button class="logout-btn"
+            onclick="logoutAdmin()"
+            title="Logout">
 
-            </button>
+        <i class="fa-solid fa-right-from-bracket"></i>
 
-            <button class="icon-btn"
-                    onclick="scrollToOrders()"
-                    title="Orders">
+        <span>Logout</span>
 
-                <i class="fa-solid fa-bell"></i>
+    </button>
 
-                <span class="notification-dot"
-                      id="notificationDot">
-                </span>
-
-            </button>
-
-        </div>
-
+</div>
     </header>
 
 
@@ -1266,7 +1357,7 @@ body.dark .login-card{
             <div>
 
                 <h1>
-                    Welcome back, Admin 👋
+                    Welcome back,Kitchen view 👋
                 </h1>
 
                 <p>
@@ -1442,27 +1533,37 @@ body.dark .login-card{
                                 Category
                             </label>
 
-                            <select
-                                id="itemCategory"
-                                class="form-control">
+                            <div class="category-input-group">
+                                <select
+                                    id="itemCategory"
+                                    class="form-control">
 
-                                <option value="Food">
-                                    Food
-                                </option>
+                                    <option value="Food">
+                                        Food
+                                    </option>
 
-                                <option value="Drink">
-                                    Drink
-                                </option>
+                                    <option value="Drink">
+                                        Drink
+                                    </option>
 
-                                <option value="Snack">
-                                    Snack
-                                </option>
+                                    <option value="Snack">
+                                        Snack
+                                    </option>
 
-                                <option value="Dessert">
-                                    Dessert
-                                </option>
+                                    <option value="Dessert">
+                                        Dessert
+                                    </option>
 
-                            </select>
+                                </select>
+
+                                <button 
+                                    type="button" 
+                                    class="btn btn-secondary btn-add-category" 
+                                    onclick="addNewCategoryPrompt()" 
+                                    title="Add New Category">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
 
                         </div>
 
@@ -1727,15 +1828,10 @@ loginForm.addEventListener("submit", async function(e){
     e.preventDefault();
 
     const email =
-        document
-        .getElementById("loginEmail")
-        .value
-        .trim();
+        document.getElementById("loginEmail").value.trim();
 
     const password =
-        document
-        .getElementById("loginPassword")
-        .value;
+        document.getElementById("loginPassword").value;
 
     const errorBox =
         document.getElementById("loginError");
@@ -1744,39 +1840,71 @@ loginForm.addEventListener("submit", async function(e){
 
     try{
 
-        await auth.signInWithEmailAndPassword(
-            email,
-            password
-        );
+        const result =
+            await auth.signInWithEmailAndPassword(
+                email,
+                password
+            );
 
-        showToast("Login successful.");
+        console.log(
+            "Login successful:",
+            result.user.email
+        );
 
     }catch(error){
 
-        console.error(error);
+        console.error(
+            "Firebase Login Error:",
+            error.code,
+            error.message
+        );
 
-        let message =
-            "Login failed. Please check your email and password.";
+        switch(error.code){
 
-        if(error.code === "auth/user-not-found"){
-            message = "Admin account not found.";
+            case "auth/invalid-email":
+                errorBox.textContent =
+                    "Invalid email address.";
+                break;
+
+            case "auth/user-not-found":
+                errorBox.textContent =
+                    "Admin account does not exist.";
+                break;
+
+            case "auth/wrong-password":
+                errorBox.textContent =
+                    "Incorrect password.";
+                break;
+
+            case "auth/invalid-credential":
+                errorBox.textContent =
+                    "Incorrect email or password.";
+                break;
+
+            case "auth/too-many-requests":
+                errorBox.textContent =
+                    "Too many login attempts. Try again later.";
+                break;
+
+            case "auth/user-disabled":
+                errorBox.textContent =
+                    "This admin account has been disabled.";
+                break;
+
+            case "auth/network-request-failed":
+                errorBox.textContent =
+                    "Network error. Please check your internet connection.";
+                break;
+
+            default:
+                errorBox.textContent =
+                    error.message || "Login failed.";
+
         }
-
-        if(error.code === "auth/wrong-password"){
-            message = "Incorrect password.";
-        }
-
-        if(error.code === "auth/invalid-email"){
-            message = "Invalid email address.";
-        }
-
-        errorBox.textContent = message;
 
     }
 
 });
-
-
 // =========================
 // AUTH STATE
 // =========================
@@ -1791,19 +1919,74 @@ auth.onAuthStateChanged(function(user){
 
     if(user){
 
-        // Logged in
-        loginPage.style.display = "none";
-        dashboard.style.display = "block";
+    console.log(
+        "Admin logged in:",
+        user.email
+    );
 
-    }else{
+    loginPage.style.display = "none";
 
-        // Not logged in
+    dashboard.style.display = "block";
+
+
+    // Ask permission for browser notification
+    if(
+        "Notification" in window &&
+        Notification.permission === "default"
+    ){
+
+        Notification.requestPermission();
+
+    }
+
+}else{
+
+        console.log("No admin logged in");
+
         loginPage.style.display = "flex";
         dashboard.style.display = "none";
 
     }
 
 });
+
+/* =====================================================
+   ADMIN LOGOUT
+===================================================== */
+
+async function logoutAdmin(){
+
+    const confirmLogout = confirm(
+        "Are you sure you want to logout?"
+    );
+
+    if(!confirmLogout){
+        return;
+    }
+
+    try{
+
+        await auth.signOut();
+
+        showToast(
+            "Admin logged out successfully."
+        );
+
+    }catch(error){
+
+        console.error(
+            "Logout Error:",
+            error
+        );
+
+        showToast(
+            "Could not logout. Please try again.",
+            "error"
+        );
+
+    }
+
+}
 
 /* =====================================================
    GLOBAL DATA
@@ -1816,6 +1999,132 @@ let previousPendingCount = 0;
 const DEFAULT_IMAGE =
 "https://via.placeholder.com/300x200?text=Restaurant";
 
+/* =====================================================
+   NEW ORDER NOTIFICATION SOUND
+===================================================== */
+
+let notificationAudio = null;
+let audioUnlocked = false;
+
+function createNotificationSound(){
+
+    try{
+
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if(!AudioContext){
+            return;
+        }
+
+        const ctx = new AudioContext();
+
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        oscillator.type = "sine";
+
+        oscillator.frequency.setValueAtTime(
+            880,
+            ctx.currentTime
+        );
+
+        oscillator.frequency.setValueAtTime(
+            1174,
+            ctx.currentTime + 0.12
+        );
+
+        oscillator.frequency.setValueAtTime(
+            880,
+            ctx.currentTime + 0.24
+        );
+
+        gain.gain.setValueAtTime(
+            0.0001,
+            ctx.currentTime
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.35,
+            ctx.currentTime + 0.02
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            0.0001,
+            ctx.currentTime + 0.55
+        );
+
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+
+        oscillator.start();
+
+        oscillator.stop(
+            ctx.currentTime + 0.55
+        );
+
+    }catch(error){
+
+        console.error(
+            "Notification sound error:",
+            error
+        );
+
+    }
+
+}
+
+document.addEventListener(
+    "click",
+    function(){
+
+        audioUnlocked = true;
+
+    },
+    { once:true }
+);
+
+function playNewOrderSound(){
+
+    if(!audioUnlocked){
+        console.log(
+            "Audio waiting for user interaction."
+        );
+        return;
+    }
+
+    createNotificationSound();
+
+}
+
+function showBrowserNotification(
+    title,
+    message
+){
+
+    if(
+        !("Notification" in window)
+    ){
+        return;
+    }
+
+    if(
+        Notification.permission === "granted"
+    ){
+
+        new Notification(
+            title,
+            {
+                body: message,
+                icon:
+                "https://via.placeholder.com/128"
+            }
+        );
+
+    }
+
+}
 
 /* =====================================================
    UTILITIES
@@ -1832,14 +2141,12 @@ function escapeHTML(value){
 
 }
 
-
 function money(value){
 
     return Number(value || 0)
         .toLocaleString() + " MMK";
 
 }
-
 
 function showToast(message,type="success"){
 
@@ -1862,6 +2169,38 @@ function showToast(message,type="success"){
 
 }
 
+/* =====================================================
+   DYNAMIC CATEGORY ADDITION
+===================================================== */
+
+function addNewCategoryPrompt(){
+    const newCategory = prompt("Category အသစ်အမည် ရိုက်ထည့်ပါ (ဥပမာ- Bakery, Soup):");
+    
+    if (newCategory && newCategory.trim() !== "") {
+        const categorySelect = document.getElementById("itemCategory");
+        const trimmedCat = newCategory.trim();
+        
+        let exists = false;
+        for (let i = 0; i < categorySelect.options.length; i++) {
+            if (categorySelect.options[i].value.toLowerCase() === trimmedCat.toLowerCase()) {
+                exists = true;
+                categorySelect.selectedIndex = i;
+                break;
+            }
+        }
+        
+        if (!exists) {
+            const newOption = document.createElement("option");
+            newOption.value = trimmedCat;
+            newOption.textContent = trimmedCat;
+            categorySelect.appendChild(newOption);
+            categorySelect.value = trimmedCat;
+            showToast(`Category "${trimmedCat}" ကို ထည့်သွင်းပြီးပါပြီ။`);
+        } else {
+            showToast("ဒီ Category ရှိပြီးသားဖြစ်ပါသည်။");
+        }
+    }
+}
 
 /* =====================================================
    SIDEBAR
@@ -1874,7 +2213,6 @@ function toggleSidebar(){
         .classList.toggle("open");
 
 }
-
 
 function scrollToOrders(){
 
@@ -1890,7 +2228,6 @@ function scrollToOrders(){
 
 }
 
-
 function scrollToMenu(){
 
     document
@@ -1904,7 +2241,6 @@ function scrollToMenu(){
         .classList.remove("open");
 
 }
-
 
 /* =====================================================
    DARK MODE
@@ -1921,7 +2257,6 @@ function toggleDarkMode(){
 
 }
 
-
 if(
     localStorage.getItem("restaurantDark")
     ===
@@ -1931,7 +2266,6 @@ if(
     document.body.classList.add("dark");
 
 }
-
 
 /* =====================================================
    IMAGE PREVIEW
@@ -1965,7 +2299,6 @@ document
 
     }
 );
-
 
 /* =====================================================
    ADD / EDIT MENU
@@ -2010,7 +2343,6 @@ document
             .getElementById("editingMenuId")
             .value;
 
-
         if(!name || price <= 0){
 
             showToast(
@@ -2021,7 +2353,6 @@ document
             return;
 
         }
-
 
         try{
 
@@ -2043,7 +2374,6 @@ document
                             .serverTimestamp()
 
                     });
-
 
                 showToast(
                     "Menu item updated successfully."
@@ -2067,13 +2397,11 @@ document
 
                     });
 
-
                 showToast(
                     "New menu item added successfully."
                 );
 
             }
-
 
             cancelEdit();
 
@@ -2091,7 +2419,6 @@ document
     }
 );
 
-
 /* =====================================================
    MENU REALTIME
 ===================================================== */
@@ -2106,12 +2433,10 @@ db.collection("menu")
             document
             .getElementById("adminMenuList");
 
-
         document
             .getElementById("menuCount")
             .textContent =
             `${snapshot.size} items`;
-
 
         if(snapshot.empty){
 
@@ -2133,9 +2458,7 @@ db.collection("menu")
 
         }
 
-
         list.innerHTML = "";
-
 
         snapshot.forEach(doc=>{
 
@@ -2145,6 +2468,23 @@ db.collection("menu")
                 item.image ||
                 DEFAULT_IMAGE;
 
+            // Ensure category from DB is listed in select box
+            if (item.category) {
+                const categorySelect = document.getElementById("itemCategory");
+                let exists = false;
+                for (let i = 0; i < categorySelect.options.length; i++) {
+                    if (categorySelect.options[i].value === item.category) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    const option = document.createElement("option");
+                    option.value = item.category;
+                    option.textContent = item.category;
+                    categorySelect.appendChild(option);
+                }
+            }
 
             list.innerHTML += `
 
@@ -2176,7 +2516,6 @@ db.collection("menu")
 
                     </div>
 
-
                     <div class="menu-actions">
 
                         <button
@@ -2187,7 +2526,6 @@ db.collection("menu")
                             <i class="fa-solid fa-pen"></i>
 
                         </button>
-
 
                         <button
                             class="small-btn delete-btn"
@@ -2232,7 +2570,6 @@ db.collection("menu")
 
 );
 
-
 /* =====================================================
    EDIT MENU
 ===================================================== */
@@ -2247,7 +2584,6 @@ async function editMenu(id){
             .doc(id)
             .get();
 
-
         if(!doc.exists){
 
             showToast(
@@ -2259,45 +2595,52 @@ async function editMenu(id){
 
         }
 
-
         const item =
             doc.data();
-
 
         document
             .getElementById("editingMenuId")
             .value = id;
-
 
         document
             .getElementById("itemName")
             .value =
             item.name || "";
 
-
         document
             .getElementById("itemPrice")
             .value =
             item.price || "";
 
-
-        document
-            .getElementById("itemCategory")
-            .value =
-            item.category || "Food";
-
+        const categorySelect = document.getElementById("itemCategory");
+        if (item.category) {
+            let exists = false;
+            for (let i = 0; i < categorySelect.options.length; i++) {
+                if (categorySelect.options[i].value === item.category) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                const option = document.createElement("option");
+                option.value = item.category;
+                option.textContent = item.category;
+                categorySelect.appendChild(option);
+            }
+            categorySelect.value = item.category;
+        } else {
+            categorySelect.value = "Food";
+        }
 
         document
             .getElementById("itemImage")
             .value =
             item.image || "";
 
-
         document
             .getElementById("formTitle")
             .textContent =
             "Edit Menu Item";
-
 
         document
             .getElementById("saveMenuButton")
@@ -2305,17 +2648,14 @@ async function editMenu(id){
             `<i class="fa-solid fa-save"></i>
              Update Menu`;
 
-
         document
             .getElementById("cancelEdit")
             .style.display =
             "inline-flex";
 
-
         const preview =
             document
             .getElementById("imagePreview");
-
 
         if(item.image){
 
@@ -2326,7 +2666,6 @@ async function editMenu(id){
                 "block";
 
         }
-
 
         scrollToMenu();
 
@@ -2343,7 +2682,6 @@ async function editMenu(id){
 
 }
 
-
 /* =====================================================
    CANCEL EDIT
 ===================================================== */
@@ -2354,17 +2692,14 @@ function cancelEdit(){
         .getElementById("addMenuForm")
         .reset();
 
-
     document
         .getElementById("editingMenuId")
         .value = "";
-
 
     document
         .getElementById("formTitle")
         .textContent =
         "Add New Menu";
-
 
     document
         .getElementById("saveMenuButton")
@@ -2372,12 +2707,10 @@ function cancelEdit(){
         `<i class="fa-solid fa-cloud-arrow-up"></i>
          Save Menu`;
 
-
     document
         .getElementById("cancelEdit")
         .style.display =
         "none";
-
 
     document
         .getElementById("imagePreview")
@@ -2385,7 +2718,6 @@ function cancelEdit(){
         "none";
 
 }
-
 
 /* =====================================================
    DELETE MENU
@@ -2401,14 +2733,12 @@ async function deleteMenuItem(id){
 
     }
 
-
     try{
 
         await db
             .collection("menu")
             .doc(id)
             .delete();
-
 
         showToast(
             "Menu item deleted."
@@ -2427,7 +2757,6 @@ async function deleteMenuItem(id){
 
 }
 
-
 /* =====================================================
    ORDERS REALTIME
 ===================================================== */
@@ -2439,7 +2768,6 @@ db.collection("orders")
     snapshot=>{
 
         allOrders = [];
-
 
         snapshot.forEach(doc=>{
 
@@ -2453,11 +2781,9 @@ db.collection("orders")
 
         });
 
-
         updateDashboardStats();
 
         renderOrders();
-
 
         const pending =
             allOrders.filter(
@@ -2467,12 +2793,12 @@ db.collection("orders")
                 "Pending"
             ).length;
 
+        const sidebarPending =
+            document.getElementById("sidebarPending");
 
-        document
-            .getElementById("sidebarPending")
-            .textContent =
-            pending;
-
+        if(sidebarPending){
+            sidebarPending.textContent = pending;
+        }
 
         if(
             pending >
@@ -2480,22 +2806,23 @@ db.collection("orders")
         ){
 
             document
-                .getElementById(
-                    "notificationDot"
-                )
-                .style.display =
-                "block";
+                .getElementById("notificationDot")
+                .style.display = "block";
 
+            playNewOrderSound();
 
             showToast(
                 "🔔 New restaurant order received!"
             );
 
+            showBrowserNotification(
+                "🍽️ New Restaurant Order",
+                "A new customer order has been received."
+            );
+
         }
 
-
-        previousPendingCount =
-            pending;
+        previousPendingCount = pending;
 
     },
 
@@ -2512,7 +2839,6 @@ db.collection("orders")
 
 );
 
-
 /* =====================================================
    DASHBOARD STATISTICS
 ===================================================== */
@@ -2521,9 +2847,6 @@ function updateDashboardStats(){
 
     const today = new Date();
 
-    // =========================
-    // TODAY'S ORDERS
-    // =========================
     const todayOrders = allOrders.filter(order => {
 
         if(!order.timestamp){
@@ -2548,46 +2871,26 @@ function updateDashboardStats(){
 
     }).length;
 
-
-    // =========================
-    // PENDING ORDERS
-    // =========================
     const pendingOrders = allOrders.filter(order => {
 
         return (order.status || "Pending") === "Pending";
 
     }).length;
 
-
-    // =========================
-    // FINISHED ORDERS
-    // =========================
     const finishedOrders = allOrders.filter(order => {
 
         return (order.status || "") === "Completed";
 
     }).length;
 
-
-    // =========================
-    // UPDATE TODAY'S ORDERS
-    // =========================
     document
         .getElementById("statTodayOrders")
         .textContent = todayOrders;
 
-
-    // =========================
-    // UPDATE PENDING
-    // =========================
     document
         .getElementById("statPendingOrders")
         .textContent = pendingOrders;
 
-
-    // =========================
-    // UPDATE FINISHED
-    // =========================
     document
         .getElementById("statFinishedOrders")
         .textContent = finishedOrders;
@@ -2604,7 +2907,6 @@ function renderOrders(){
         document
         .getElementById("liveOrdersList");
 
-
     const search =
         document
         .getElementById("orderSearch")
@@ -2612,12 +2914,10 @@ function renderOrders(){
         .toLowerCase()
         .trim();
 
-
     const filter =
         document
         .getElementById("orderFilter")
         .value;
-
 
     const filtered =
         allOrders.filter(order=>{
@@ -2625,7 +2925,6 @@ function renderOrders(){
             const status =
                 order.status ||
                 "Pending";
-
 
             const searchText = `
                 ${order.id}
@@ -2635,23 +2934,19 @@ function renderOrders(){
                 ${status}
             `.toLowerCase();
 
-
             const matchesSearch =
                 !search ||
                 searchText.includes(search);
-
 
             const matchesFilter =
                 filter === "All"
                 ||
                 status === filter;
 
-
             return matchesSearch &&
                    matchesFilter;
 
         });
-
 
     if(filtered.length === 0){
 
@@ -2673,9 +2968,7 @@ function renderOrders(){
 
     }
 
-
     list.innerHTML = "";
-
 
     filtered.forEach(order=>{
 
@@ -2683,14 +2976,11 @@ function renderOrders(){
             order.status ||
             "Pending";
 
-
         const statusClass =
             status.toLowerCase();
 
-
         let time =
             "Just now";
-
 
         if(order.timestamp){
 
@@ -2713,9 +3003,7 @@ function renderOrders(){
 
         }
 
-
         let itemsHTML = "";
-
 
         if(
             Array.isArray(order.items)
@@ -2728,12 +3016,10 @@ function renderOrders(){
                         item.quantity || 0
                     );
 
-
                 const price =
                     Number(
                         item.price || 0
                     );
-
 
                 itemsHTML += `
 
@@ -2748,7 +3034,6 @@ function renderOrders(){
                             × ${qty}
 
                         </span>
-
 
                         <strong>
 
@@ -2766,22 +3051,23 @@ function renderOrders(){
 
         }
 
-
         const customer =
             order.customerName ||
             order.customer ||
             "Walk-in Customer";
 
-
         const table =
             order.table ||
             "N/A";
-
 
         const payment =
             order.paymentMethod ||
             "Cash";
 
+        // Check if customer is a Member
+        const isMember = order.isMember || order.isMemberCustomer || false;
+        const memberBadgeHTML = isMember ? 
+            `<span class="member-badge"><i class="fa-solid fa-star"></i> Member: ${escapeHTML(customer)}</span>` : '';
 
         list.innerHTML += `
 
@@ -2801,7 +3087,6 @@ function renderOrders(){
 
                         </span>
 
-
                         <span class="table">
 
                             <i class="fa-solid fa-chair"></i>
@@ -2811,8 +3096,9 @@ function renderOrders(){
 
                         </span>
 
-                    </div>
+                        ${memberBadgeHTML}
 
+                    </div>
 
                     <span class="order-time">
 
@@ -2824,7 +3110,6 @@ function renderOrders(){
 
                 </div>
 
-
                 <div class="customer-info">
 
                     <i class="fa-solid fa-user"></i>
@@ -2832,7 +3117,6 @@ function renderOrders(){
                     ${escapeHTML(customer)}
 
                 </div>
-
 
                 <div class="order-items">
 
@@ -2854,7 +3138,6 @@ function renderOrders(){
 
                 </div>
 
-
                 <div class="order-bottom">
 
                     <div>
@@ -2864,7 +3147,6 @@ function renderOrders(){
                             ${money(order.total)}
 
                         </div>
-
 
                         <div class="payment">
 
@@ -2879,7 +3161,6 @@ function renderOrders(){
                         </div>
 
                     </div>
-
 
                     <select
                         class="status-select"
@@ -2904,7 +3185,6 @@ function renderOrders(){
 
                         </option>
 
-
                         <option
                             value="Cooking"
                             ${
@@ -2919,7 +3199,6 @@ function renderOrders(){
 
                         </option>
 
-
                         <option
                             value="Completed"
                             ${
@@ -2933,7 +3212,6 @@ function renderOrders(){
                             ✅ Completed
 
                         </option>
-
 
                         <option
                             value="Cancelled"
@@ -2961,7 +3239,6 @@ function renderOrders(){
 
 }
 
-
 /* =====================================================
    UPDATE ORDER STATUS
 ===================================================== */
@@ -2973,25 +3250,36 @@ async function updateOrderStatus(
 
     try{
 
+        const updateData = {
+
+            status: status,
+
+            updatedAt:
+                firebase.firestore
+                .FieldValue
+                .serverTimestamp()
+
+        };
+
+        // If status is Cancelled, set customer view message
+        if (status === "Cancelled") {
+
+            updateData.message = "your order is not available";
+
+        } else {
+
+            updateData.message = "";
+
+        }
+
         await db
             .collection("orders")
             .doc(id)
-            .update({
-
-                status:status,
-
-                updatedAt:
-                    firebase.firestore
-                    .FieldValue
-                    .serverTimestamp()
-
-            });
-
+            .update(updateData);
 
         showToast(
             `Order updated to ${status}.`
         );
-
 
         if(status !== "Pending"){
 
@@ -3017,7 +3305,6 @@ async function updateOrderStatus(
 
 }
 
-
 /* =====================================================
    REFRESH
 ===================================================== */
@@ -3033,7 +3320,6 @@ function refreshDashboard(){
     renderOrders();
 
 }
-
 
 /* =====================================================
    SEARCH ESCAPE
@@ -3055,7 +3341,6 @@ document
 
     }
 );
-
 
 /* =====================================================
    STARTUP
