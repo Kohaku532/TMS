@@ -130,7 +130,15 @@ select{
     padding:12px;
     display:flex;
     align-items:center;
+    justify-content:space-between;
     gap:10px;
+}
+
+.owner-info-wrapper{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    overflow:hidden;
 }
 
 .owner-avatar{
@@ -141,6 +149,7 @@ select{
     display:flex;
     align-items:center;
     justify-content:center;
+    flex-shrink:0;
 }
 
 .owner-box strong{
@@ -150,6 +159,24 @@ select{
 .owner-box small{
     color:#9ca3af;
     font-size:11px;
+    word-break:break-all;
+}
+
+.sidebar-logout-btn{
+    background:#dc2626;
+    color:white;
+    border:none;
+    padding:8px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:bold;
+    flex-shrink:0;
+    transition:.2s;
+}
+
+.sidebar-logout-btn:hover{
+    background:#b91c1c;
 }
 
 /* MAIN */
@@ -745,9 +772,9 @@ input:focus{
 @media(max-width:700px){
     .sidebar{ width:70px; padding:20px 9px; }
     .logo{ justify-content:center; padding:0; }
-    .logo h2, .logo small, .menu span, .menu-title, .owner-box div{ display:none; }
+    .logo h2, .logo small, .menu span, .menu-title, .owner-box div strong, .owner-box div small{ display:none; }
     .menu a{ justify-content:center; font-size:20px; }
-    .owner-box{ justify-content:center; }
+    .owner-box{ justify-content:center; padding:8px; }
     .main{ margin-left:70px; width:calc(100% - 70px); padding:14px; }
     .topbar{ flex-direction:column; align-items:flex-start; gap:12px; }
     .stats{ grid-template-columns:1fr; }
@@ -911,20 +938,20 @@ input:focus{
             <span class="menu-icon">👥</span>
             <span>Members Info</span>
         </a>
-
-        <a class="nav-link" data-page="settingsPage" data-title="Settings" data-description="Owner account and system settings">
-            <span class="menu-icon">⚙️</span>
-            <span>Settings</span>
-        </a>
     </nav>
 
     <div class="sidebar-bottom">
         <div class="owner-box">
-            <div class="owner-avatar">👨‍💼</div>
-            <div>
-                <strong id="sidebarOwnerName">Owner</strong>
-                <small id="sidebarOwnerEmail" style="display:block;">Not signed in</small>
+            <div class="owner-info-wrapper">
+                <div class="owner-avatar">👨‍💼</div>
+                <div>
+                    <strong id="sidebarOwnerName">Owner</strong>
+                    <small id="sidebarOwnerEmail" style="display:block;">Not signed in</small>
+                </div>
             </div>
+            <button class="sidebar-logout-btn" onclick="logoutOwner()" title="Logout">
+                🚪
+            </button>
         </div>
     </div>
 
@@ -1252,62 +1279,6 @@ input:focus{
 
 </section>
 
-
-<!-- SETTINGS PAGE -->
-<section id="settingsPage" class="page">
-    <div class="page-header">
-        <div>
-            <h2>⚙️ Owner Settings</h2>
-            <p>Manage your owner login session.</p>
-        </div>
-    </div>
-
-    <div class="dashboard-grid">
-        <div class="card">
-            <div class="card-title">👤 Owner Account</div>
-            <div class="card-subtitle">Currently signed-in owner</div>
-
-            <div class="info-row">
-                <span class="info-label">Name</span>
-                <span class="info-value" id="settingsOwnerName">Owner</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Email</span>
-                <span class="info-value" id="settingsOwnerEmail">-</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">UID</span>
-                <span class="info-value" id="settingsOwnerUid" style="font-size:12px;">-</span>
-            </div>
-
-            <button onclick="logoutOwner()" style="width:100%; margin-top:18px; padding:13px; border:0; background:#dc2626; color:white; border-radius:99px; cursor:pointer; font-weight:700;">
-                🚪 Logout
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="card-title">🔐 Security</div>
-            <div class="card-subtitle">Your dashboard data is filtered by the logged-in owner's UID.</div>
-            <div class="info-row">
-                <span class="info-label">Orders</span>
-                <span class="info-value">Owner only</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Members</span>
-                <span class="info-value">Owner only</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Promotions</span>
-                <span class="info-value">Owner only</span>
-            </div>
-            <p style="margin-top:18px;color:#6b7280;font-size:13px;line-height:1.6;">
-                ⚠️ Member passwords are not shown. Firebase Authentication does not expose user passwords,
-                and storing plaintext passwords in Firestore is unsafe.
-            </p>
-        </div>
-    </div>
-</section>
-
 </main>
 
 </div>
@@ -1328,7 +1299,7 @@ input:focus{
         <label>Password</label>
         <input type="password" id="ownerLoginPassword" placeholder="Enter password" autocomplete="current-password">
 
-        <button id="ownerLoginBtn" onclick="loginOwner()" style="width:100%;padding:12px;border:0;background:#f59e0b;color:white;border-radius:9px;cursor:pointer;font-weight:700;">
+        <button id="ownerLoginBtn" onclick="loginOwner()" style="width:100%;padding:12px;border:0;background:#f59e0b;color:white;border-radius:99px;cursor:pointer;font-weight:700;">
             🔐 Login
         </button>
 
@@ -1463,7 +1434,7 @@ function getOrderDate(order){
 document.querySelectorAll(".nav-link").forEach(link => {
     link.addEventListener("click", function(){
         const page = this.dataset.page;
-        openPage(page);
+        if(page) openPage(page);
     });
 });
 
@@ -1599,6 +1570,7 @@ function startPromotionListener(){
         .where("active", "==", true)
         .onSnapshot(snapshot => {
             const promoContainer = document.getElementById("promoContainer");
+            if(!promoContainer) return;
             promoContainer.innerHTML = "";
 
             let highestDiscount = 0;
@@ -1636,8 +1608,11 @@ function startPromotionListener(){
             updateMenuDiscounts(highestDiscount);
         }, error => {
             console.error("Promotion listener:", error);
-            document.getElementById("promoContainer").innerHTML =
-                '<div class="empty" style="grid-column:1/-1;">⚠️ Unable to load promotions.</div>';
+            const promoContainer = document.getElementById("promoContainer");
+            if(promoContainer){
+                promoContainer.innerHTML =
+                    '<div class="empty" style="grid-column:1/-1;">⚠️ Unable to load promotions.</div>';
+            }
         });
 }
 
@@ -1677,7 +1652,6 @@ function updateMenuDiscounts(discountPercent) {
 function startOrdersListener(){
     if(unsubscribeOrders) unsubscribeOrders();
 
-    // Querying orders in realtime
     unsubscribeOrders = db.collection("orders")
         .orderBy("timestamp", "desc")
         .onSnapshot(
@@ -1689,13 +1663,11 @@ function startOrdersListener(){
                     const orderData = doc.data();
                     allOrders.push({ id: doc.id, ...orderData });
 
-                    // Calculate Total Revenue
                     const orderTotal = Number(orderData.total || 0);
                     grandTotalRevenue += orderTotal;
                 });
 
-                // Display Overall Total Income
-                totalIncome.innerText = formatMoney(grandTotalRevenue);
+                if(totalIncome) totalIncome.innerText = formatMoney(grandTotalRevenue);
 
                 updateAllDashboardData();
                 filterSalesByDate();
@@ -1726,7 +1698,6 @@ function filterSalesByDate() {
 
     if (displayDateLabel) displayDateLabel.innerText = selectedDateStr;
 
-    // Filter orders based on selected date
     const filteredOrders = allOrders.filter(order => {
         const createdAt = getOrderDate(order);
         if (createdAt) {
@@ -1735,7 +1706,6 @@ function filterSalesByDate() {
         return false;
     });
 
-    // Update Daily Sales Count
     if (dailySalesCountElement) dailySalesCountElement.innerText = `${filteredOrders.length} Orders`;
 
     filteredOrders.forEach(order => {
@@ -1749,17 +1719,15 @@ function filterSalesByDate() {
         }
     });
 
-    // Update Daily Income Elements
-    dailyIncome.innerText = formatMoney(dailyRevenue);
+    if(dailyIncome) dailyIncome.innerText = formatMoney(dailyRevenue);
     
-    // Update Summary Card
-    document.getElementById("selectedDateText").innerText = formatDisplayDate(selectedDateStr);
-    document.getElementById("summaryDate").innerText = formatDisplayDate(selectedDateStr);
-    document.getElementById("summaryOrders").innerText = filteredOrders.length;
-    document.getElementById("summaryRevenue").innerText = formatMoney(dailyRevenue);
-    document.getElementById("summaryPending").innerText = pendingCount;
-    document.getElementById("summaryFinished").innerText = finishedCount;
-    document.getElementById("averageOrder").innerText = formatMoney(filteredOrders.length ? dailyRevenue / filteredOrders.length : 0);
+    if(document.getElementById("selectedDateText")) document.getElementById("selectedDateText").innerText = formatDisplayDate(selectedDateStr);
+    if(document.getElementById("summaryDate")) document.getElementById("summaryDate").innerText = formatDisplayDate(selectedDateStr);
+    if(document.getElementById("summaryOrders")) document.getElementById("summaryOrders").innerText = filteredOrders.length;
+    if(document.getElementById("summaryRevenue")) document.getElementById("summaryRevenue").innerText = formatMoney(dailyRevenue);
+    if(document.getElementById("summaryPending")) document.getElementById("summaryPending").innerText = pendingCount;
+    if(document.getElementById("summaryFinished")) document.getElementById("summaryFinished").innerText = finishedCount;
+    if(document.getElementById("averageOrder")) document.getElementById("averageOrder").innerText = formatMoney(filteredOrders.length ? dailyRevenue / filteredOrders.length : 0);
 
     renderOrdersPage();
 }
@@ -1774,7 +1742,7 @@ function updateAllDashboardData(){
         if(isPending(order)){ pending++; }
     });
 
-    pendingOrders.innerText = pending;
+    if(pendingOrders) pendingOrders.innerText = pending;
 
     updateMonthlyData();
     createChart();
@@ -1799,12 +1767,12 @@ function updateMonthlyData(){
         }
     });
 
-    monthlyIncome.innerText = formatMoney(income);
-    monthlyOrders.innerText = count;
+    if(monthlyIncome) monthlyIncome.innerText = formatMoney(income);
+    if(monthlyOrders) monthlyOrders.innerText = count;
 
-    document.getElementById("monthIncomeTitle").innerText = monthNames[month];
-    document.getElementById("monthlyIncomeLabel").innerText = monthNames[month] + " " + currentYear;
-    document.getElementById("chartMonthLabel").innerText = monthNames[month] + " " + currentYear;
+    if(document.getElementById("monthIncomeTitle")) document.getElementById("monthIncomeTitle").innerText = monthNames[month];
+    if(document.getElementById("monthlyIncomeLabel")) document.getElementById("monthlyIncomeLabel").innerText = monthNames[month] + " " + currentYear;
+    if(document.getElementById("chartMonthLabel")) document.getElementById("chartMonthLabel").innerText = monthNames[month] + " " + currentYear;
 }
 
 
@@ -1941,6 +1909,7 @@ function renderOrdersPage(){
 }
 
 function displayOrders(orders){
+    if(!ordersContainer) return;
     ordersContainer.innerHTML = "";
 
     if(orders.length === 0){
@@ -2005,6 +1974,7 @@ function escapeHTML(value){
 
 function showToast(message){
     const toast = document.getElementById("toast");
+    if(!toast) return;
     toast.innerText = message;
     toast.style.display = "block";
     setTimeout(function(){ toast.style.display = "none"; }, 2500);
@@ -2014,12 +1984,14 @@ function showToast(message){
 
 function showLoginError(message){
     const el = document.getElementById("loginError");
+    if(!el) return;
     el.innerText = message;
     el.style.display = "block";
 }
 
 function clearLoginError(){
     const el = document.getElementById("loginError");
+    if(!el) return;
     el.innerText = "";
     el.style.display = "none";
 }
@@ -2072,11 +2044,8 @@ function updateOwnerUI(user){
     const name = user.displayName || (user.email ? user.email.split("@")[0] : "Owner");
     const email = user.email || "-";
 
-    document.getElementById("sidebarOwnerName").innerText = name;
-    document.getElementById("sidebarOwnerEmail").innerText = email;
-    document.getElementById("settingsOwnerName").innerText = name;
-    document.getElementById("settingsOwnerEmail").innerText = email;
-    document.getElementById("settingsOwnerUid").innerText = user.uid;
+    if(document.getElementById("sidebarOwnerName")) document.getElementById("sidebarOwnerName").innerText = name;
+    if(document.getElementById("sidebarOwnerEmail")) document.getElementById("sidebarOwnerEmail").innerText = email;
 }
 
 function stopOwnerListeners(){
@@ -2115,6 +2084,7 @@ function startMembersListener(){
             },
             error => {
                 console.error("Members Error:", error);
+                const membersTableBody = document.getElementById("membersTableBody");
                 if (membersTableBody) {
                     membersTableBody.innerHTML = `
                         <tr>
@@ -2140,6 +2110,10 @@ function getMemberDate(member){
 }
 
 function renderMembersTable(){
+    const memberSearch = document.getElementById("memberSearch");
+    const totalMembers = document.getElementById("totalMembers");
+    const membersTableBody = document.getElementById("membersTableBody");
+
     const search = (memberSearch?.value || "").trim().toLowerCase();
 
     const filteredMembers = allMembers.filter(member => {
@@ -2150,6 +2124,8 @@ function renderMembersTable(){
     });
 
     if(totalMembers) totalMembers.innerText = allMembers.length;
+
+    if(!membersTableBody) return;
 
     if(filteredMembers.length === 0){
         membersTableBody.innerHTML = `
@@ -2180,8 +2156,9 @@ function renderMembersTable(){
     }).join("");
 }
 
-if(typeof memberSearch !== 'undefined' && memberSearch){
-    memberSearch.addEventListener("input", renderMembersTable);
+const memberSearchEl = document.getElementById("memberSearch");
+if(memberSearchEl){
+    memberSearchEl.addEventListener("input", renderMembersTable);
 }
 
 /* AUTH STATE */
@@ -2190,20 +2167,17 @@ auth.onAuthStateChanged(user => {
 
     if(user){
         currentOwner = user;
-        overlay.style.display = "none";
+        if(overlay) overlay.style.display = "none";
         updateOwnerUI(user);
         startOwnerListeners();
         showToast("Owner login successful.");
     }else{
         currentOwner = null;
         stopOwnerListeners();
-        overlay.style.display = "flex";
+        if(overlay) overlay.style.display = "flex";
 
-        document.getElementById("sidebarOwnerName").innerText = "Owner";
-        document.getElementById("sidebarOwnerEmail").innerText = "Not signed in";
-        document.getElementById("settingsOwnerName").innerText = "Owner";
-        document.getElementById("settingsOwnerEmail").innerText = "-";
-        document.getElementById("settingsOwnerUid").innerText = "-";
+        if(document.getElementById("sidebarOwnerName")) document.getElementById("sidebarOwnerName").innerText = "Owner";
+        if(document.getElementById("sidebarOwnerEmail")) document.getElementById("sidebarOwnerEmail").innerText = "Not signed in";
 
         if(salesChart){
             salesChart.destroy();
