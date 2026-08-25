@@ -2933,7 +2933,7 @@ function renderOrders(){
             const searchText = `
                 ${order.id}
                 ${order.table || ""}
-                ${order.customerName || ""}
+                ${order.customerEmail || ""}
                 ${order.customer || ""}
                 ${status}
             `.toLowerCase();
@@ -3057,8 +3057,7 @@ function renderOrders(){
 
         const customer =
             order.customerName ||
-            order.customer ||
-            "Walk-in Customer";
+            order.customer;
 
         const table =
             order.table ||
