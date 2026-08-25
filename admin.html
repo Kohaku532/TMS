@@ -1546,10 +1546,6 @@ body.dark .logout-btn:hover{
                                         Drink
                                     </option>
 
-                                    <option value="Snack">
-                                        Snack
-                                    </option>
-
                                     <option value="Dessert">
                                         Dessert
                                     </option>
@@ -1562,6 +1558,14 @@ body.dark .logout-btn:hover{
                                     onclick="addNewCategoryPrompt()" 
                                     title="Add New Category">
                                     <i class="fa-solid fa-plus"></i>
+                                </button>
+
+                                 <button 
+                                    type="button" 
+                                    class="btn btn-danger btn-delete-category" 
+                                    onclick="deleteCurrentCategory()" 
+                                    title="Delete Current Category">
+                                    <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
 
